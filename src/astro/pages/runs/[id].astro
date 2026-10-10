@@ -1,5 +1,5 @@
 ---
-import type { RunPage } from "../../../../scripts/run-pages.ts";
+import type { AstroPages, RunPage } from "../../../../scripts/astro-pages.ts";
 import {
   measurementRows,
   type MetadataPair,
@@ -10,11 +10,11 @@ import Metadata from "../../components/Metadata.astro";
 import Preview from "../../components/Preview.astro";
 import Shell from "../../layouts/Shell.astro";
 
-declare const __CAPYBOARD_RUN_PAGES__: RunPage[];
+declare const __CAPYBOARD_ASTRO_PAGES__: AstroPages;
 type Props = RunPage;
 
 export function getStaticPaths() {
-  return __CAPYBOARD_RUN_PAGES__.map((page) => ({
+  return __CAPYBOARD_ASTRO_PAGES__.runs.map((page) => ({
     params: { id: page.entry.run.id },
     props: page,
   }));

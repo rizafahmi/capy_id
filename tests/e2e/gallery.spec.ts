@@ -9,6 +9,86 @@ import { animationHtml, fixtureMetadata } from "../../scripts/fixtures.ts";
 import { curationSchema } from "../../scripts/schema.ts";
 import { serveStatic } from "../../scripts/server.ts";
 
+test("gallery metadata remains text in the browser and filters by its original values", async ({
+  page,
+}) => {
+  const root = await mkdtemp(join(tmpdir(), "capyboard-gallery-escaping-"));
+  const content = join(root, "content");
+  const injected = '<img src=x onerror="document.documentElement.dataset.injected=1">';
+  try {
+    await initializeContent(content);
+    for (const id of ["fixture-gallery-escaping", "fixture-other"]) {
+      const metadata = fixtureMetadata(id);
+      const run = await importRun({
+        root: content,
+        metadata:
+          id === "fixture-gallery-escaping"
+            ? {
+                ...metadata,
+                provider: injected,
+                model: {
+                  display_name: injected,
+                  identifier: injected,
+                  identifier_kind: "display-only",
+                },
+                generation: {
+                  mode: "one-shot",
+                  interface: "other",
+                  tools_used: "no",
+                  harness: { name: injected, version: "test", effort: null },
+                },
+              }
+            : metadata,
+        response: Buffer.from("No HTML returned."),
+      });
+      const path = join(content, `curation/${run.id}.json`);
+      const curation = curationSchema.parse(JSON.parse(await readFile(path, "utf8")));
+      await writeFile(
+        path,
+        jsonBytes({ ...curation, visible: true, published_at: "2026-10-10T00:00:00Z" }),
+      );
+    }
+    const out = join(root, "site");
+    await buildSite({
+      root: content,
+      out,
+      galleryOrigin: "http://127.0.0.1:4173",
+      previewOrigin: "http://127.0.0.1:4174",
+      development: true,
+    });
+    const server = await serveStatic(join(out, "gallery"), 0);
+    try {
+      const address = server.address();
+      if (!address || typeof address === "string")
+        throw new Error("Gallery server has no TCP address");
+      await page.goto(`http://127.0.0.1:${address.port}/`);
+      const card = page.locator('[data-card="fixture-gallery-escaping"]');
+      for (const attribute of ["data-provider", "data-name", "data-identifier"]) {
+        await expect(card).toHaveAttribute(attribute, injected);
+      }
+      await expect(card.locator("h3")).toHaveText(injected);
+      await expect(card.locator(".card-meta .eyebrow")).toHaveText(injected);
+      await expect(page.locator("img")).toHaveCount(1);
+      await expect(page.locator("html")).not.toHaveAttribute("data-injected");
+      await page.getByText("Filter and sort", { exact: true }).click();
+      await page
+        .getByRole("combobox", { name: "Provider", exact: true })
+        .selectOption({ label: injected });
+      await expect(page.locator("[data-card]:visible")).toHaveCount(1);
+      await expect(card).toBeVisible();
+      await page.getByLabel("Search models").fill(injected);
+      await expect(page.locator("[data-card]:visible")).toHaveCount(1);
+      await expect(card).toBeVisible();
+    } finally {
+      await new Promise<void>((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      );
+    }
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("one attempt stays visible without unusable controls and links to complete evidence", async ({
   page,
 }, info) => {

@@ -1,9 +1,9 @@
 import { cp, lstat, mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve, sep } from "node:path";
+import { buildAstroPages, type PublishedEntry, type RunPage } from "./astro-pages.ts";
 import { readArtifact, utf8, validateContent } from "./content.ts";
 import { prepareCodeView } from "./highlight.ts";
-import { type MeasurementRows, type MetadataPair, measurementRows } from "./presentation.ts";
-import { buildRunPages, type RunPage } from "./run-pages.ts";
+import { measurementRows } from "./presentation.ts";
 import type { Collection, Entry, Ledger, Preview } from "./schema.ts";
 import { headerFile, previewPolicyVersion } from "./security.ts";
 
@@ -14,45 +14,12 @@ export const escapeHtml = (value: unknown): string =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
-type PublishedEntry = Entry & { preview: Preview; measurementRows: MeasurementRows };
 const e = escapeHtml;
 const evidenceUrl = (path: string) => `/evidence/${path}`;
 const inspirationLink =
   '<a href="https://simonwillison.net/tags/pelican-riding-a-bicycle/">Simon Willison\'s pelican-riding-a-bicycle experiments</a>';
-const screenshot = (entry: Entry) =>
-  entry.curation.thumbnail
-    ? `<img src="/${e(entry.curation.thumbnail.path)}" width="640" height="480" loading="lazy" alt="Screenshot of ${e(entry.run.model.display_name)} output">`
-    : `<div class="placeholder" role="img" aria-label="Screenshot not captured"><span class="placeholder-mark" aria-hidden="true">?</span><span aria-hidden="true">Screenshot not captured</span></div>`;
-
 function page(title: string, body: string, fixtures: boolean, section: string): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="A curated, inspectable gallery of model responses to one creative coding challenge. Not a model leaderboard."><title>${e(title)} · Capyboard</title><link rel="icon" href="/assets/favicon.png" type="image/png"><link rel="preload" href="/assets/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/site.css"><script type="module" src="/assets/app.js"></script></head><body data-page="${e(section)}"><a class="skip" href="#main">Skip to content</a><header class="site-header"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">cb</span>capyboard<span class="brand-tag">/ experiments</span></a><nav aria-label="Main navigation"><a href="/" ${section === "gallery" ? 'aria-current="page"' : ""}>Gallery</a><a href="/challenge/" ${section === "challenge" ? 'aria-current="page"' : ""}>The challenge <span aria-hidden="true">↗</span></a></nav></header>${fixtures ? '<div class="development-banner" role="note">Development fixtures. These are test examples, not genuine model experiments.</div>' : ""}<main id="main">${body}</main><footer class="site-footer"><span>Showcase first. Inspect everything.</span><a href="/challenge/#limits">Interpretation and limitations</a></footer><div id="global-status" class="sr-only" role="status"></div></body></html>`;
-}
-function card(entry: PublishedEntry, comparable: boolean): string {
-  const run = entry.run;
-  const harness = run.generation.harness?.name ?? "Unknown harness";
-  const effort = run.generation.harness?.effort;
-  const effortLabel =
-    effort == null
-      ? "Effort unknown"
-      : `${effort.charAt(0).toUpperCase()}${effort.slice(1)} effort`;
-  const [time, , , , total] = entry.measurementRows;
-  const generated = run.generated_at
-    ? `<time datetime="${e(run.generated_at)}">${e(new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(run.generated_at)))}</time>`
-    : "Unknown date";
-  const state = !run.artifacts.html
-    ? "No runnable HTML returned"
-    : entry.preview.kind === "unavailable"
-      ? "Live preview unavailable"
-      : "Opt-in live preview";
-  return `<article class="card" data-card="${e(run.id)}" data-provider="${e(run.provider)}" data-name="${e(run.model.display_name)}" data-identifier="${e(run.model.identifier)}" data-date="${e(run.generated_at ?? "")}"><a class="card-image" href="/runs/${e(run.id)}/"><span class="sr-only">Inspect ${e(run.model.display_name)}</span>${screenshot(entry)}</a><div class="card-body"><div class="card-meta"><p class="eyebrow">${e(harness)}</p><span class="mode-badge">${e(run.generation.mode)}</span></div><div class="card-title"><h3><a href="/runs/${e(run.id)}/">${e(run.model.display_name)}</a></h3><p class="card-effort">${e(effortLabel)}</p></div><p class="card-date">${generated}</p>${metadata([time, total], "card-measurements")}<p class="card-state">${e(state)}</p><div class="card-bottom"><a class="text-link inspect-link" href="/runs/${e(run.id)}/">Inspect attempt<span class="sr-only"> from ${e(run.model.display_name)}</span> <span aria-hidden="true">↗</span></a>${comparable ? `<label class="selection" hidden><input type="checkbox" value="${e(run.id)}" data-select> Compare</label>` : ""}</div></div></article>`;
-}
-function gallery(entries: PublishedEntry[]): string {
-  const providers = [...new Set(entries.map((entry) => entry.run.provider))].sort();
-  const comparable = entries.length > 1;
-  return `<section class="hero"><div class="hero-copy"><p class="eyebrow">One fixed creative coding challenge</p><h1>One prompt.<br><span>Many capybaras.</span></h1><p class="hero-description">Each model gets the same prompt: animate a capybara on a hoverboard. Browse the outputs, then inspect the evidence.</p><div class="hero-actions"><a class="button hero-cta" href="#attempts">Browse attempts <span aria-hidden="true">↓</span></a><a class="text-link" href="/challenge/">Read the exact prompt</a></div></div><figure class="hero-visual"><div class="hero-photo"><img src="/assets/capybara.webp" srcset="/assets/capybara-small.webp 640w, /assets/capybara.webp 960w" sizes="240px" width="960" height="640" fetchpriority="high" alt="A capybara resting beside a river, the real-life subject of our coding challenge"></div><figcaption>Photo by <a href="https://commons.wikimedia.org/wiki/File:Capybaracropped.jpg">Giles Laurent</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a></figcaption></figure></section><section id="attempts" aria-labelledby="attempts-title" tabindex="-1"><div class="collection-heading"><h2 id="attempts-title">Collected attempts <span class="count">${entries.length}</span></h2><p id="about" class="interpretation">One task, not an overall model ranking. Original evidence is preserved.</p></div>${comparable ? `<details class="gallery-controls" hidden><summary>Filter and sort</summary><form class="filters"><label>Search models<input name="search" type="search" placeholder="Name, identifier, or provider" autocomplete="off" spellcheck="false" autocapitalize="none"></label><label>Provider<select name="provider"><option value="">All providers</option>${providers.map((provider) => `<option>${e(provider)}</option>`).join("")}</select></label><label>Sort by<select name="sort"><option value="newest">Newest first</option><option value="name">Model name</option></select></label><button type="reset" class="secondary" hidden>Reset</button></form></details><p id="results-status" class="results-status" role="status" hidden>${entries.length} attempts</p>` : ""}<div class="gallery-grid${entries.length === 1 ? " single-attempt" : ""}">${entries.map((entry) => card(entry, comparable)).join("")}</div><div id="empty-state" class="empty-state" ${entries.length ? "hidden" : ""}><h2>${entries.length ? "No matching attempts" : "No experiments published yet"}</h2><p>${entries.length ? "Try another search or reset your filters." : "Genuine experiments will appear here after curator review."}</p><button type="button" data-reset hidden>Reset filters</button></div></section>${comparable ? '<aside class="comparison-tray" hidden aria-label="Selected comparison"><p id="selection-count" role="status">0 of 2 selected</p><ul id="selected-runs"></ul><a id="compare-link" class="button" aria-disabled="true">Compare two</a></aside>' : ""}<p class="hero-inspiration">Inspired by ${inspirationLink}.</p>`;
-}
-function metadata(pairs: MetadataPair[], className = ""): string {
-  return `<dl class="metadata${className ? ` ${e(className)}` : ""}">${pairs.map(([key, value]) => `<div><dt>${e(key)}</dt><dd>${e(value)}</dd></div>`).join("")}</dl>`;
 }
 const highlightUrl = (id: string, kind: string) => `/assets/highlights/${id}-${kind}.json`;
 function challengePage(collection: Collection): string {
@@ -209,21 +176,18 @@ export async function buildSite(options: {
           await readArtifact(content.root, curation.thumbnail.path),
         );
     }
-    await buildRunPages({ pages: runPages, staging });
+    await buildAstroPages({
+      pages: {
+        gallery: { entries: views.filter((entry) => !corrections.has(entry.run.id)), fixtures },
+        runs: runPages,
+      },
+      staging,
+    });
     for (const challenge of content.challenges.values())
       await put(
         `gallery/evidence/${challenge.prompt_path}`,
         await readArtifact(content.root, challenge.prompt_path),
       );
-    await put(
-      "gallery/index.html",
-      page(
-        "Gallery",
-        gallery(views.filter((entry) => !corrections.has(entry.run.id))),
-        fixtures,
-        "gallery",
-      ),
-    );
     await put(
       "gallery/challenge/index.html",
       page("The challenge", challengePage(content), fixtures, "challenge"),

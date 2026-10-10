@@ -108,6 +108,45 @@ The build-on-start development server remains in place. Astro hot reloading,
 remote CI, deployed HTTPS verification, and independent review are not completed
 by this slice. No commit, push, or PR was performed.
 
+## Astro gallery migration
+
+The gallery now uses Astro alongside run detail. Challenge, comparison, and
+not-found pages retain the existing renderer. Browser controls and styles are
+unchanged. No new client runtime was added.
+
+- Formatting, lint, tooling TypeScript, Astro template checks, and all 55 tooling
+  tests pass. `npm run check` also passed while browser tests built sites concurrently.
+- All 114 browser tests pass across Chromium, Firefox, and WebKit without retries.
+  New tests verify that hostile-looking metadata remains text, cannot inject an
+  image, and still works with provider filtering and search.
+- All 21 compared Chromium screenshots have zero changed pixels. They cover
+  fixture galleries, real-content galleries, single-attempt galleries, and run
+  detail at desktop and mobile widths in light and dark mode.
+- Concurrent builds use different collections and preview origins. Tests verify
+  the respective card counts, detail URLs, and exclusion of staged metadata.
+- Validation passes for nine real attempts. Static generation with HTTPS origins
+  passes locally. This does not verify a deployed site.
+- `npm audit` reports zero known vulnerabilities. The 100-run compressed shell is
+  17,604 bytes, below the 200 KiB budget.
+
+Concurrent verification exposed shared Astro prerender output and Vite optimizer
+cache races. The CLI now runs from a canonical per-build workspace, and Astro and
+Vite caches are isolated explicitly. Stronger concurrent-build tests pass without
+locks, retries, or suppressed errors.
+
+Logs are in `.audit/astro-gallery-format.txt`, `.audit/astro-gallery-check.txt`,
+`.audit/astro-gallery-e2e.txt`, `.audit/astro-gallery-validation.txt`,
+`.audit/astro-gallery-production-build.txt`, and `.audit/astro-gallery-audit.txt`.
+`.audit/astro-gallery-visual-parity.json` records image comparisons. Browser
+screenshots are in `test-results/` and real-content captures are in
+`.audit/astro-gallery-real/`.
+
+Direct code review found no new comments or suppressions. The active LSP probe
+reported no errors, but one file's response was inconclusive. Full tooling and
+template compilation pass independently. Existing Zod deprecation hints remain.
+Hot reloading, remote CI, deployed HTTPS verification, and independent review are
+not completed. No commit, push, or PR was performed.
+
 ## Reproduce
 
 ```sh

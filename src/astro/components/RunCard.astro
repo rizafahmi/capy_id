@@ -1,0 +1,80 @@
+---
+import type { PublishedEntry } from "../../../scripts/astro-pages.ts";
+import Metadata from "./Metadata.astro";
+import Screenshot from "./Screenshot.astro";
+
+interface Props {
+  entry: PublishedEntry;
+  comparable: boolean;
+}
+const { entry, comparable } = Astro.props;
+const run = entry.run;
+const harness = run.generation.harness?.name ?? "Unknown harness";
+const effort = run.generation.harness?.effort;
+const effortLabel =
+  effort == null
+    ? "Effort unknown"
+    : `${effort.charAt(0).toUpperCase()}${effort.slice(1)} effort`;
+const [time, , , , total] = entry.measurementRows;
+const generated = run.generated_at
+  ? new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(new Date(run.generated_at))
+  : "Unknown date";
+const state = !run.artifacts.html
+  ? "No runnable HTML returned"
+  : entry.preview.kind === "unavailable"
+    ? "Live preview unavailable"
+    : "Opt-in live preview";
+const url = `/runs/${run.id}/`;
+---
+
+<article
+  class="card"
+  data-card={run.id}
+  data-provider={run.provider}
+  data-name={run.model.display_name}
+  data-identifier={run.model.identifier}
+  data-date={run.generated_at ?? ""}
+>
+  <a class="card-image" href={url}>
+    <span class="sr-only">Inspect {run.model.display_name}</span>
+    <Screenshot entry={entry} />
+  </a>
+  <div class="card-body">
+    <div class="card-meta">
+      <p class="eyebrow">{harness}</p>
+      <span class="mode-badge">{run.generation.mode}</span>
+    </div>
+    <div class="card-title">
+      <h3>
+        <a href={url}>{run.model.display_name}</a>
+      </h3>
+      <p class="card-effort">{effortLabel}</p>
+    </div>
+    <p class="card-date">
+      {run.generated_at ? (
+        <time datetime={run.generated_at}>{generated}</time>
+      ) : (
+        generated
+      )}
+    </p>
+    <Metadata pairs={[time, total]} className="card-measurements" />
+    <p class="card-state">{state}</p>
+    <div class="card-bottom">
+      <a class="text-link inspect-link" href={url}>
+        Inspect attempt
+        <span class="sr-only"> from {run.model.display_name}</span>{" "}
+        <span aria-hidden="true">↗</span>
+      </a>
+      {comparable && (
+        <label class="selection" hidden>
+          <input type="checkbox" value={run.id} data-select /> Compare
+        </label>
+      )}
+    </div>
+  </div>
+</article>

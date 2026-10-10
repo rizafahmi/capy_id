@@ -1,5 +1,6 @@
 ---
 import type { Entry, Preview } from "../../../scripts/schema.ts";
+import Screenshot from "./Screenshot.astro";
 
 interface Props {
   entry: Entry;
@@ -52,21 +53,6 @@ const { entry, preview } = Astro.props;
       : "Evidence remains available."}
   </p>
   <div class="preview-stage">
-    {entry.curation.thumbnail ? (
-      <img
-        src={`/${entry.curation.thumbnail.path}`}
-        width="640"
-        height="480"
-        loading="lazy"
-        alt={`Screenshot of ${entry.run.model.display_name} output`}
-      />
-    ) : (
-      <div class="placeholder" role="img" aria-label="Screenshot not captured">
-        <span class="placeholder-mark" aria-hidden="true">
-          ?
-        </span>
-        <span aria-hidden="true">Screenshot not captured</span>
-      </div>
-    )}
+    <Screenshot entry={entry} />
   </div>
 </section>

@@ -1,0 +1,150 @@
+---
+import type { AstroPages } from "../../../scripts/astro-pages.ts";
+import RunCard from "../components/RunCard.astro";
+import Shell from "../layouts/Shell.astro";
+
+declare const __CAPYBOARD_ASTRO_PAGES__: AstroPages;
+const { entries, fixtures } = __CAPYBOARD_ASTRO_PAGES__.gallery;
+const providers = [
+  ...new Set(entries.map((entry) => entry.run.provider)),
+].sort();
+const comparable = entries.length > 1;
+---
+
+<Shell title="Gallery" fixtures={fixtures} section="gallery">
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">One fixed creative coding challenge</p>
+      <h1>
+        One prompt.
+        <br />
+        <span>Many capybaras.</span>
+      </h1>
+      <p class="hero-description">
+        Each model gets the same prompt: animate a capybara on a hoverboard.
+        Browse the outputs, then inspect the evidence.
+      </p>
+      <div class="hero-actions">
+        <a class="button hero-cta" href="#attempts">
+          Browse attempts <span aria-hidden="true">↓</span>
+        </a>
+        <a class="text-link" href="/challenge/">
+          Read the exact prompt
+        </a>
+      </div>
+    </div>
+    <figure class="hero-visual">
+      <div class="hero-photo">
+        <img
+          src="/assets/capybara.webp"
+          srcset="/assets/capybara-small.webp 640w, /assets/capybara.webp 960w"
+          sizes="240px"
+          width="960"
+          height="640"
+          fetchpriority="high"
+          alt="A capybara resting beside a river, the real-life subject of our coding challenge"
+        />
+      </div>
+      <figcaption>
+        Photo by{" "}
+        <a href="https://commons.wikimedia.org/wiki/File:Capybaracropped.jpg">
+          Giles Laurent
+        </a>
+        ,{" "}
+        <a href="https://creativecommons.org/licenses/by-sa/4.0">
+          CC BY-SA 4.0
+        </a>
+      </figcaption>
+    </figure>
+  </section>
+  <section id="attempts" aria-labelledby="attempts-title" tabindex="-1">
+    <div class="collection-heading">
+      <h2 id="attempts-title">
+        Collected attempts <span class="count">{entries.length}</span>
+      </h2>
+      <p id="about" class="interpretation">
+        One task, not an overall model ranking. Original evidence is preserved.
+      </p>
+    </div>
+    {comparable && (
+      <>
+        <details class="gallery-controls" hidden>
+          <summary>Filter and sort</summary>
+          <form class="filters">
+            <label>
+              Search models
+              <input
+                name="search"
+                type="search"
+                placeholder="Name, identifier, or provider"
+                autocomplete="off"
+                spellcheck="false"
+                autocapitalize="none"
+              />
+            </label>
+            <label>
+              Provider
+              <select name="provider">
+                <option value="">All providers</option>
+                {providers.map((provider) => (
+                  <option>{provider}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Sort by
+              <select name="sort">
+                <option value="newest">Newest first</option>
+                <option value="name">Model name</option>
+              </select>
+            </label>
+            <button type="reset" class="secondary" hidden>
+              Reset
+            </button>
+          </form>
+        </details>
+        <p id="results-status" class="results-status" role="status" hidden>
+          {entries.length} attempts
+        </p>
+      </>
+    )}
+    <div class={`gallery-grid${entries.length === 1 ? " single-attempt" : ""}`}>
+      {entries.map((entry) => (
+        <RunCard entry={entry} comparable={comparable} />
+      ))}
+    </div>
+    <div id="empty-state" class="empty-state" hidden={entries.length > 0}>
+      <h2>
+        {entries.length
+          ? "No matching attempts"
+          : "No experiments published yet"}
+      </h2>
+      <p>
+        {entries.length
+          ? "Try another search or reset your filters."
+          : "Genuine experiments will appear here after curator review."}
+      </p>
+      <button type="button" data-reset hidden>
+        Reset filters
+      </button>
+    </div>
+  </section>
+  {comparable && (
+    <aside class="comparison-tray" hidden aria-label="Selected comparison">
+      <p id="selection-count" role="status">
+        0 of 2 selected
+      </p>
+      <ul id="selected-runs"></ul>
+      <a id="compare-link" class="button" aria-disabled="true">
+        Compare two
+      </a>
+    </aside>
+  )}
+  <p class="hero-inspiration">
+    Inspired by{" "}
+    <a href="https://simonwillison.net/tags/pelican-riding-a-bicycle/">
+      Simon Willison's pelican-riding-a-bicycle experiments
+    </a>
+    .
+  </p>
+</Shell>

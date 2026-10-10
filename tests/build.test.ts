@@ -70,6 +70,46 @@ test("gallery is static, contains all attempts, and contains no experiment execu
   assert.match(html, /class="card-effort">Low effort<\/p>/);
   assert.match(html, /class="card-effort">Effort unknown<\/p>/);
 });
+test("gallery renders untrusted labels as text and keeps scripts external", async (t) => {
+  const { content, out } = await buildFixture(t);
+  const injected = '<img src=x onerror="alert(1)">';
+  const run = await importRun({
+    root: content,
+    metadata: {
+      ...fixtureMetadata("fixture-gallery-escaping"),
+      provider: injected,
+      model: { display_name: injected, identifier: injected, identifier_kind: "display-only" },
+      generation: {
+        mode: "one-shot",
+        interface: "other",
+        tools_used: "no",
+        harness: { name: injected, version: "test", effort: null },
+      },
+    },
+    response: Buffer.from("No HTML returned."),
+  });
+  const path = join(content, `curation/${run.id}.json`);
+  const curation = curationSchema.parse(JSON.parse(await readFile(path, "utf8")));
+  await writeFile(
+    path,
+    jsonBytes({ ...curation, visible: true, published_at: "2026-10-10T00:00:00Z" }),
+  );
+  await buildSite({
+    root: content,
+    out,
+    galleryOrigin: "http://127.0.0.1:4173",
+    previewOrigin: "http://127.0.0.1:4174",
+    development: true,
+  });
+  const html = await readFile(join(out, "gallery/index.html"), "utf8");
+  assert.doesNotMatch(html, /<iframe|<style|astro-island/);
+  assert.equal((html.match(/<script\b/g) ?? []).length, 1);
+  assert.match(html, /<script type="module" src="\/assets\/app.js"><\/script>/);
+  assert.match(html, /<h3><a[^>]*>&lt;img src=x onerror=/);
+  assert.match(html, /<option>&lt;img src=x onerror=/);
+  assert.match(html, /<p class="eyebrow">&lt;img src=x onerror=/);
+});
+
 test("small collections omit filtering and comparison and give one attempt a full row", async (t) => {
   const { content, out } = await buildFixture(t);
   for (const id of ["fixture-unknown", "fixture-broken", "fixture-disabled", "fixture-no-html"]) {
@@ -236,7 +276,7 @@ test("rebuilding removes withheld run routes without publishing build inputs", a
   for (const path of [
     "gallery/runs/fixture-animation/index.html",
     "preview/runs/fixture-animation/index.html",
-    "gallery/run-pages.json",
+    "gallery/pages.json",
   ]) {
     await assert.rejects(readFile(join(out, path)), { code: "ENOENT" });
   }
@@ -249,9 +289,20 @@ test("rebuilding removes withheld run routes without publishing build inputs", a
 test("concurrent builds keep their run-page data and preview origins separate", async (t) => {
   const first = await buildFixture(t);
   const second = await buildFixture(t);
+  const path = join(second.content, "curation/fixture-broken.json");
+  const curation = curationSchema.parse(JSON.parse(await readFile(path, "utf8")));
+  await writeFile(
+    path,
+    jsonBytes({
+      ...curation,
+      visible: false,
+      series_publication_complete: false,
+      series_incomplete_reason: "Withheld in the second concurrent build.",
+    }),
+  );
   const builds = [
-    { ...first, previewOrigin: "http://127.0.0.1:4174" },
-    { ...second, previewOrigin: "http://127.0.0.1:5174" },
+    { ...first, previewOrigin: "http://127.0.0.1:4174", expectedCards: 5 },
+    { ...second, previewOrigin: "http://127.0.0.1:5174", expectedCards: 4 },
   ];
   await Promise.all(
     builds.map(({ content, out, previewOrigin }) =>
@@ -264,11 +315,13 @@ test("concurrent builds keep their run-page data and preview origins separate", 
       }),
     ),
   );
-  for (const { out, previewOrigin } of builds) {
+  for (const { out, previewOrigin, expectedCards } of builds) {
+    const gallery = await readFile(join(out, "gallery/index.html"), "utf8");
+    assert.equal((gallery.match(/data-card=/g) ?? []).length, expectedCards);
     const html = await readFile(join(out, "gallery/runs/fixture-animation/index.html"), "utf8");
     assert.ok(html.includes(`data-preview-url="${previewOrigin}/runs/fixture-animation/"`));
     assert.ok(html.includes(`href="${previewOrigin}/runs/fixture-animation/"`));
-    await assert.rejects(readFile(join(out, ".astro/run-pages.json")), { code: "ENOENT" });
+    await assert.rejects(readFile(join(out, ".astro/pages.json")), { code: "ENOENT" });
   }
 });
 
@@ -591,7 +644,7 @@ test("100 imported attempts fit the compressed shell budget and preserve model t
   const gallery = await readFile(join(out, "gallery/index.html"));
   assert.equal((gallery.toString().match(/data-card=/g) ?? []).length, 100);
   assert.match(gallery.toString(), /&lt;img src=x onerror=alert\(1\)&gt;/);
-  assert.doesNotMatch(gallery.toString(), /<img src=x/);
+  assert.match(gallery.toString(), /<h3><a[^>]*>&lt;img src=x onerror=alert\(1\)&gt;<\/a><\/h3>/);
   const bytes = (
     await Promise.all(
       ["index.html", "assets/site.css", "assets/app.js"].map(

@@ -6,8 +6,9 @@ leaderboard.
 
 The public app uses HTML, CSS, and vanilla JavaScript. Node.js 24 and strict
 TypeScript handle import, validation, static generation, and screenshot capture.
-Astro generates run-detail pages. The remaining pages use the existing renderer
-while migration proceeds one page type at a time. There is no runtime backend or
+Astro generates the gallery and run-detail pages. Challenge, comparison, and
+not-found pages use the existing renderer while migration proceeds one page type
+at a time. There is no runtime backend or
 model API integration.
 
 ## Run locally
@@ -45,7 +46,7 @@ running browser tests. A crashed command may leave `.dev/lock`; remove that
 empty directory only after confirming no lifecycle command is still running.
 
 Use these commands rather than standalone `astro dev` or `astro build`. They run
-content validation and maintain both origins. This first migration slice keeps
+content validation and maintain both origins. The migration currently keeps
 the build-on-start development server. Restart it after template or content edits.
 Astro hot reloading is not wired into the two-origin server yet.
 
@@ -86,7 +87,7 @@ the generated response headers. Merely uploading HTML is not enough.
 - `scripts/content.ts` imports evidence and verifies historical integrity.
 - `scripts/build.ts` validates and stages both deployments, copies evidence, and
   generates the pages not yet migrated to Astro.
-- `scripts/run-pages.ts` builds Astro run-detail routes inside the staging directory.
+- `scripts/astro-pages.ts` builds Astro gallery and run-detail routes inside the staging directory.
 - `src/astro/` contains Astro pages, layouts, and components.
 - `src/site.css` and `src/app.js` contain shared styles and vanilla browser controls.
 - `content/` contains immutable evidence and separate mutable curation records.

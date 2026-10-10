@@ -4,8 +4,8 @@
 
 Migrate one page type per verified slice. Start with run detail. Preserve visible output,
 vanilla browser controls, original evidence bytes, preview isolation, response headers,
-and safe build replacement. Gallery, challenge, comparison, and not-found pages stay
-on the existing renderer until their own slices.
+and safe build replacement. Run detail and gallery are migrated. Challenge,
+comparison, and not-found pages stay on the existing renderer until their own slices.
 
 ### First-slice checklist
 
@@ -41,6 +41,45 @@ The development server still builds once at startup. No hot reloading, productio
 deployment, independent review, commit, push, or PR is included in this slice.
 Next slice: gallery. Suggested commit, not executed:
 `git commit -m "refactor: migrate run detail rendering to Astro"`.
+
+### Gallery-slice checklist
+
+- [x] Pin the behavior contract first. Run the baseline checks and capture gallery screenshots before moving markup.
+- [x] Name the structure the code is missing per principle-model-the-domain. Share PublishedEntry records through typed AstroPages data with separate gallery and run inputs.
+- [x] Name the target shape. Astro renders the gallery and run detail in one staged build. Existing tooling retains publication selection, validation, artifacts, headers, and deployment replacement. How and architect delegation skipped because subagents are not authorized.
+- [x] Subtract before you add. Delete gallery, card, screenshot, and metadata string templates when their callers migrate.
+- [x] Move in small behavior-preserving steps, each keeping the pin green. Migrate the gallery without changing browser controls or CSS. Mechanical delegation skipped because subagents are not authorized.
+- [x] Prove behavior is unchanged on the real artifact, not "it compiles". Verify static output, all browser engines, and screenshots.
+- [x] Confirm the change is worth keeping. Review the typed build boundary and components for duplicated rules or unnecessary adapters.
+- [x] Rebase into small ordered commits. Commits, rebasing, and opening a PR skipped because they are not authorized. Suggest the gallery-slice commit after verification.
+
+### Gallery throughput checkpoint
+
+- Blocking first steps. Passing baseline and gallery screenshots precede markup changes.
+- Independent workstreams. n/a: one page slice and no approved delegation.
+- Shared mutable state. Use the existing per-build Astro workspace. No process-global mutation or shared generated files.
+- Smallest safe decomposition. One gallery migration, followed by full verification before moving another page.
+
+### Gallery-slice handoff
+
+The gallery is migrated in `src/astro/pages/index.astro`. `RunCard.astro` owns card
+markup. `Screenshot.astro` is shared with run previews. The legacy gallery templates
+are removed. `scripts/astro-pages.ts` builds both page types from typed records.
+Browser controls, styles, evidence bytes, and preview deployment remain unchanged.
+
+Formatting, lint, both type checkers, all 55 tooling tests, and all 114 browser tests
+pass. All 21 compared Chromium screenshots match pixel-for-pixel. They cover fixture,
+real-content, single-attempt galleries, and run detail. Concurrent builds with
+separate collections and origins pass while the template checker runs. Canonical
+per-build working directories and separate Astro and Vite caches prevent races.
+
+Production generation, nine-attempt content validation, and dependency audit pass.
+Evidence is in `.audit/astro-gallery-check.txt`, `.audit/astro-gallery-e2e.txt`,
+and `.audit/astro-gallery-visual-parity.json`. Hot reloading, remote CI, deployment,
+independent review, and commits remain outside this slice.
+
+Next slice: challenge. Suggested commit, not executed:
+`git commit -m "refactor: migrate gallery rendering to Astro"`.
 
 ## Workflow
 

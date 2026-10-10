@@ -7,7 +7,6 @@ const projectRoot = fileURLToPath(new URL(".", import.meta.url));
 const workspace = process.env.CAPYBOARD_ASTRO_WORKSPACE;
 
 export default defineConfig({
-  root: workspace ?? projectRoot,
   srcDir: join(projectRoot, "src/astro"),
   outDir: workspace ? join(workspace, "site") : "./dist/gallery",
   cacheDir: workspace ? join(workspace, "cache") : "./node_modules/.astro",
@@ -16,7 +15,7 @@ export default defineConfig({
   build: { inlineStylesheets: "never" },
   integrations: [
     {
-      name: "validated-run-pages",
+      name: "validated-pages",
       hooks: {
         "astro:config:setup": ({ command }) => {
           if ((command === "build" || command === "dev") && !workspace) {
@@ -29,10 +28,11 @@ export default defineConfig({
     },
   ],
   vite: {
+    cacheDir: workspace ? join(workspace, "vite-cache") : "./node_modules/.astro-vite",
     define: {
-      __CAPYBOARD_RUN_PAGES__: workspace
-        ? readFileSync(join(workspace, "run-pages.json"), "utf8")
-        : "[]",
+      __CAPYBOARD_ASTRO_PAGES__: workspace
+        ? readFileSync(join(workspace, "pages.json"), "utf8")
+        : JSON.stringify({ gallery: { entries: [], fixtures: false }, runs: [] }),
     },
   },
 });

@@ -4,15 +4,17 @@
 
 The public application is generated HTML, CSS, and vanilla JavaScript. Every run has a real directory route. Evidence links and the challenge prompt remain readable without JavaScript. Browser code adds filters, exact-byte downloads, clipboard fallback, comparison selectors, and explicit preview controls.
 
-Node.js 24 executes erasable TypeScript directly. `tsc --noEmit` checks tooling types. `astro check --tsconfig tsconfig.astro.json` checks templates. Astro generates static run-detail routes from `src/astro/`. Gallery, challenge, comparison, and not-found pages still use the existing renderer. No production runtime server is required.
+Node.js 24 executes erasable TypeScript directly. `tsc --noEmit` checks tooling types. `astro check --tsconfig tsconfig.astro.json` checks templates. Astro generates the gallery and static run-detail routes from `src/astro/`. Challenge, comparison, and not-found pages still use the existing renderer. No production runtime server is required.
 
 Zod validates external JSON and exports JSON schemas. It is a local tooling dependency, not a browser bundle. Biome formats and lints the source. Playwright drives browser acceptance tests and curator capture. Axe checks detectable shell accessibility violations. These dependencies do not enter the static production runtime. Prettier with `prettier-plugin-astro` formats Astro templates. Biome checks JavaScript and TypeScript files. Its incomplete Astro template analysis is excluded in favor of Astro's template-aware checker.
 
 ## Astro rendering boundary
 
-The first migration slice replaces the run-detail template, not the evidence pipeline. `scripts/build.ts` validates content and prepares typed `RunPage` records before `scripts/run-pages.ts` invokes the Astro CLI. Each build has its own staging workspace, data file, generated types, and cache. The child process receives only that workspace path through its environment. Vite substitutes the validated records into the static route generator. The data file and intermediate output never enter either deployment.
+The migration replaces page templates, not the evidence pipeline. `scripts/build.ts` validates content and prepares typed `AstroPages` data before `scripts/astro-pages.ts` invokes the Astro CLI. The gallery input contains published entries after provenance-correction selection. The run input keeps every visible detail route, including superseded records.
 
-Astro renders `/runs/:id/` with a shared shell and metadata, preview, and artifact components. Measurements use `scripts/presentation.ts` so the gallery and Astro detail page keep the same formatting. Content collections do not replace the cross-file integrity validator.
+Each build has its own staging workspace, data file, generated types, and separate Astro and Vite caches. The CLI runs from the canonical staging directory so prerender files cannot race between builds. A temporary node_modules symlink lets emitted build modules resolve installed tooling without copying dependencies. Only the generated site is copied into the gallery deployment. The child process receives the workspace path through its environment to locate its data. Vite substitutes the validated records into the static page modules. The data file and intermediate output never enter either deployment.
+
+Astro renders `/` and `/runs/:id/` with a shared shell and metadata, screenshot, preview, and artifact components. Gallery cards use `RunCard.astro`. The gallery and run previews share `Screenshot.astro`. Measurements use `scripts/presentation.ts` so the gallery and Astro detail page keep the same formatting. Content collections do not replace the cross-file integrity validator.
 
 The CLI boundary uses Astro's supported build command rather than its experimental programmatic build or Container APIs. It adds process startup per build but avoids mutable process-wide build state. The original build keeps output-directory safeguards and replaces the final deployment only after all generation succeeds.
 
