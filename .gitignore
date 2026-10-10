@@ -2,6 +2,7 @@ node_modules/
 dist/
 .fixture-content/
 .test-site/
+.dev/
 test-results/
 playwright-report/
 .audit/

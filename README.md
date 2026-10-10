@@ -26,6 +26,22 @@ the server with Ctrl+C before running browser tests.
 `npm run dev` uses the real `content/` collection, which starts empty. Neither
 command needs a secret.
 
+For a managed background server:
+
+```sh
+./scripts/dev-server.sh start --fixtures
+./scripts/dev-server.sh restart --fixtures
+./scripts/dev-server.sh stop
+```
+
+PID and process start time are recorded in `.dev/server.pid`; output goes to
+`.dev/server.log`. Restart waits for shutdown and uses the arguments supplied to
+that command, not the previous invocation. Omit `--fixtures` to use real content.
+The script only stops a matching process it recorded. It does not adopt or kill
+an existing foreground or unmanaged server. Stop the background server before
+running browser tests. A crashed command may leave `.dev/lock`; remove that
+empty directory only after confirming no lifecycle command is still running.
+
 ## Verify
 
 ```sh
