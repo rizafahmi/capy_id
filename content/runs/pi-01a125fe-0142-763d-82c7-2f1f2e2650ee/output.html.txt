@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Midnight Glide — Capybara Hoverboard Ride</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --cream: #f8e8c7;
+    --muted: #a8acc5;
+    --cyan: #7ef5e4;
+    --pink: #f39acc;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    min-height: 100svh;
+    overflow-x: hidden;
+    background:
+      radial-gradient(ellipse at 50% 70%, #222646 0%, #13152b 46%, #10111e 100%);
+    color: var(--cream);
+    font-family: ui-rounded, "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  }
+  .page {
+    width: min(1120px, calc(100% - 48px));
+    min-height: 100svh;
+    margin: auto;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 26px 0 22px;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 0 18px 8px;
+    z-index: 1;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-mark {
+    width: 35px;
+    height: 35px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #ffffff27;
+    border-radius: 12px;
+    color: var(--cyan);
+    background: #ffffff08;
+    box-shadow: 0 0 24px #7ef5e41a;
+    font-size: 17px;
+  }
+  .brand-name {
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+  }
+  .brand-sub {
+    margin-top: 4px;
+    color: #9ea2bd;
+    font-size: 9px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 13px;
+    border: 1px solid #ffffff1c;
+    border-radius: 999px;
+    background: #ffffff08;
+    color: #c6c8d9;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 11px var(--cyan);
+    animation: blink 2s ease-in-out infinite;
+  }
+  .scene {
+    position: relative;
+    align-self: center;
+    width: 100%;
+    aspect-ratio: 10 / 7;
+    max-height: 75svh;
+    isolation: isolate;
+  }
+  .scene::before {
+    position: absolute;
+    z-index: -1;
+    content: "";
+    inset: 7% 4% 4%;
+    border-radius: 50%;
+    background: #7779ff0c;
+    filter: blur(40px);
+  }
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  #art {
+    transform: translate3d(var(--tilt-x, 0), var(--tilt-y, 0), 0);
+    transition: transform 500ms cubic-bezier(.2,.8,.2,1);
+  }
+  .star {
+    fill: #d9e6ff;
+    animation: twinkle var(--duration, 3s) ease-in-out var(--delay, 0s) infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .city-window {
+    fill: #ffcf8b;
+    opacity: .48;
+    animation: window-glow 4s ease-in-out infinite alternate;
+  }
+  .city-window:nth-of-type(3n) { animation-delay: -1.7s; }
+  .city-window:nth-of-type(4n) { animation-delay: -2.8s; }
+  #ride {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: hover 3.4s ease-in-out infinite;
+  }
+  .board-halo { animation: halo 2.4s ease-in-out infinite alternate; }
+  .wheel-ring { animation: wheel-pulse 1.6s ease-in-out infinite alternate; }
+  .trail {
+    stroke-dasharray: 9 13;
+    animation: dash 2.4s linear infinite;
+  }
+  .spark-field {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .spark {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #9ff8e8;
+    opacity: 0;
+    box-shadow: 0 0 10px 2px #7ef5e477;
+    animation: drift var(--duration) ease-in-out var(--delay) infinite;
+  }
+  footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 18px 0;
+    color: #8f93ad;
+    font-size: 9px;
+    font-weight: 650;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+  .caption { display: flex; align-items: center; gap: 10px; }
+  .caption-line {
+    width: 24px;
+    height: 1px;
+    background: #7ef5e477;
+  }
+  .pause {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 11px;
+    border: 1px solid #ffffff20;
+    border-radius: 999px;
+    background: #ffffff08;
+    color: #bfc1d1;
+    font: inherit;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .2s, color .2s, border-color .2s;
+  }
+  .pause:hover, .pause:focus-visible {
+    outline: none;
+    border-color: #7ef5e477;
+    background: #7ef5e412;
+    color: #fff;
+  }
+  .pause-icon { color: var(--cyan); font-size: 11px; }
+  .paused *, .paused *::before, .paused *::after {
+    animation-play-state: paused !important;
+  }
+  @keyframes hover {
+    0%, 100% { transform: translateY(0) rotate(-.35deg); }
+    50% { transform: translateY(-12px) rotate(.45deg); }
+  }
+  @keyframes halo {
+    from { opacity: .35; transform: scale(.94); }
+    to { opacity: .8; transform: scale(1.06); }
+  }
+  @keyframes wheel-pulse {
+    from { opacity: .6; }
+    to { opacity: 1; }
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: .25; transform: scale(.7); }
+    50% { opacity: .95; transform: scale(1.2); }
+  }
+  @keyframes window-glow {
+    from { opacity: .27; }
+    to { opacity: .8; }
+  }
+  @keyframes dash { to { stroke-dashoffset: -44; } }
+  @keyframes drift {
+    0% { transform: translate3d(0, 20px, 0) scale(.5); opacity: 0; }
+    25% { opacity: .8; }
+    75% { opacity: .5; }
+    100% { transform: translate3d(18px, -60px, 0) scale(1.1); opacity: 0; }
+  }
+  @keyframes blink { 50% { opacity: .45; } }
+  @media (max-width: 640px) {
+    .page { width: calc(100% - 20px); padding: 16px 0 14px; }
+    header { padding: 0 8px 4px; }
+    .brand-mark { width: 31px; height: 31px; }
+    .brand-name { font-size: 9px; }
+    .brand-sub { font-size: 8px; }
+    .status { padding: 8px 10px; font-size: 8px; }
+    .scene { width: 112%; margin-left: -6%; }
+    footer { padding: 0 8px; font-size: 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+    #art { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">✳</div>
+      <div>
+        <div class="brand-name">Small Hours Club</div>
+        <div class="brand-sub">A very important night ride</div>
+      </div>
+    </div>
+    <div class="status"><span class="status-dot"></span>Drift mode&nbsp; · &nbsp;01:17 AM</div>
+  </header>
+
+  <main class="scene" id="scene">
+    <div class="spark-field" id="sparks" aria-hidden="true"></div>
+    <svg id="art" viewBox="0 0 1000 700" role="img" aria-labelledby="title desc">
+      <title id="title">A capybara cruising through a dreamy city on a hoverboard</title>
+      <desc id="desc">A fluffy brown capybara wearing a golden scarf rides a glowing teal hoverboard beneath a moonlit sky.</desc>
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#17182f"/>
+          <stop offset=".58" stop-color="#292747"/>
+          <stop offset="1" stop-color="#484064"/>
+        </linearGradient>
+        <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+          <stop stop-color="#34334f"/>
+          <stop offset="1" stop-color="#171a30"/>
+        </linearGradient>
+        <radialGradient id="moonGlow">
+          <stop stop-color="#fff1c9" stop-opacity=".24"/>
+          <stop offset="1" stop-color="#fff1c9" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="fur" x1=".1" y1="0" x2=".9" y2="1">
+          <stop stop-color="#d69a5b"/>
+          <stop offset=".55" stop-color="#b87945"/>
+          <stop offset="1" stop-color="#875538"/>
+        </linearGradient>
+        <linearGradient id="faceFur" x1="0" y1="0" x2=".8" y2="1">
+          <stop stop-color="#e2ae70"/>
+          <stop offset="1" stop-color="#b77a48"/>
+        </linearGradient>
+        <linearGradient id="belly" x1="0" y1="0" x2="0" y2="1">
+          <stop stop-color="#e4b47d"/>
+          <stop offset="1" stop-color="#c88e5c"/>
+        </linearGradient>
+        <linearGradient id="board" x1="0" y1="0" x2="1" y2="1">
+          <stop stop-color="#8bf8e8"/>
+          <stop offset=".48" stop-color="#46cfc9"/>
+          <stop offset="1" stop-color="#4a8fe0"/>
+        </linearGradient>
+        <linearGradient id="deck" x1="0" y1="0" x2="0" y2="1">
+          <stop stop-color="#373750"/>
+          <stop offset="1" stop-color="#171d35"/>
+        </linearGradient>
+        <radialGradient id="wheel">
+          <stop stop-color="#31455b"/>
+          <stop offset=".6" stop-color="#172139"/>
+          <stop offset="1" stop-color="#101426"/>
+        </radialGradient>
+        <filter id="blur18" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="18"/>
+        </filter>
+        <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="5" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <g id="artwork">
+        <rect width="1000" height="700" rx="32" fill="url(#sky)"/>
+        <ellipse cx="500" cy="382" rx="465" ry="210" fill="#8a78bd" opacity=".08"/>
+        <circle cx="792" cy="133" r="108" fill="url(#moonGlow)"/>
+        <circle cx="792" cy="133" r="39" fill="#f6e7c4"/>
+        <circle cx="779" cy="121" r="4" fill="#e9d8b5" opacity=".65"/>
+        <circle cx="805" cy="146" r="6" fill="#e9d8b5" opacity=".55"/>
+        <circle cx="808" cy="116" r="2.5" fill="#e9d8b5" opacity=".7"/>
+        <g id="stars"></g>
+
+        <path d="M0 365 C115 343 162 369 263 350 C358 332 427 362 528 346 C644 328 713 356 810 337 C882 323 943 340 1000 326 L1000 520 L0 520Z" fill="#292b49" opacity=".68"/>
+        <path d="M0 413 C118 394 197 416 291 396 C391 375 465 410 560 391 C657 372 760 398 849 375 C912 360 970 373 1000 365 L1000 530 L0 530Z" fill="#252840" opacity=".88"/>
+
+        <g fill="#20243c">
+          <path d="M0 411h76v-75h12v-22h9v22h14v75h59v-93h18v-35h8v35h10v93h53v-57h18v-43h11v43h18v57h63v-114h13v-24h10v24h12v114h55v-75h15v-38h12v38h17v75h62v-101h17v-19h8v19h18v101h51v-69h20v-28h10v28h12v69h62v-99h14v-30h10v30h14v99h49v-75h17v-28h10v28h12v75h48v-106h15v-25h9v25h13v106h74v115H0Z"/>
+        </g>
+        <g>
+          <rect class="city-window" x="33" y="356" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="51" y="356" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="33" y="377" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="69" y="377" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="197" y="330" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="214" y="330" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="197" y="349" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="233" y="350" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="292" y="368" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="311" y="368" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="390" y="315" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="410" y="315" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="390" y="335" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="425" y="335" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="501" y="358" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="519" y="358" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="638" y="337" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="657" y="337" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="638" y="357" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="734" y="361" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="753" y="361" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="864" y="337" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="883" y="337" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="921" y="367" width="5" height="8" rx="1"/>
+          <rect class="city-window" x="942" y="367" width="5" height="8" rx="1"/>
+        </g>
+
+        <path d="M0 471 C124 448 232 463 341 450 C469 435 558 464 674 447 C781 431 897 447 1000 428 L1000 700 L0 700Z" fill="url(#ground)"/>
+        <path d="M0 476 C189 458 306 476 444 458 C623 435 741 465 1000 440" fill="none" stroke="#8c82ad" stroke-opacity=".22" stroke-width="2"/>
+        <path d="M67 520 C216 500 277 514 394 498" fill="none" stroke="#7e7da6" stroke-opacity=".18" stroke-width="2"/>
+        <path d="M700 511 C807 496 881 506 969 485" fill="none" stroke="#7e7da6" stroke-opacity=".15" stroke-width="2"/>
+        <path class="trail" d="M145 447 C195 431 234 435 271 428" fill="none" stroke="#7ef5e4" stroke-opacity=".42" stroke-width="2" stroke-linecap="round"/>
+        <path class="trail" d="M735 432 C781 419 825 423 861 414" fill="none" stroke="#f39acc" stroke-opacity=".38" stroke-width="2" stroke-linecap="round"/>
+
+        <g id="ride">
+          <ellipse cx="500" cy="506" rx="180" ry="24" fill="#111527" opacity=".6"/>
+          <ellipse class="board-halo" cx="501" cy="484" rx="174" ry="23" fill="#5ef2dd" opacity=".35" filter="url(#blur18)"/>
+
+          <!-- Far legs -->
+          <path d="M355 390 C351 405 353 421 355 438 Q357 445 368 444 L382 441 Q385 438 377 434 L369 431 L374 400Z" fill="#a96d43"/>
+          <path d="M465 392 C465 407 468 423 467 438 Q469 445 480 444 L494 441 Q497 438 489 434 L480 431 L484 401Z" fill="#a96d43"/>
+
+          <!-- Hoverboard wheels and deck -->
+          <g>
+            <ellipse cx="379" cy="465" rx="35" ry="28" fill="#14223a"/>
+            <ellipse cx="379" cy="465" rx="25" ry="22" fill="url(#wheel)" stroke="#47667c" stroke-width="2"/>
+            <ellipse class="wheel-ring" cx="379" cy="465" rx="15" ry="14" fill="none" stroke="#7ef5e4" stroke-width="3" filter="url(#glow)"/>
+            <circle cx="379" cy="465" r="5" fill="#e4fff6"/>
+            <ellipse cx="621" cy="465" rx="35" ry="28" fill="#14223a"/>
+            <ellipse cx="621" cy="465" rx="25" ry="22" fill="url(#wheel)" stroke="#47667c" stroke-width="2"/>
+            <ellipse class="wheel-ring" cx="621" cy="465" rx="15" ry="14" fill="none" stroke="#7ef5e4" stroke-width="3" filter="url(#glow)"/>
+            <circle cx="621" cy="465" r="5" fill="#e4fff6"/>
+            <path d="M319 430 Q500 450 681 430 L662 465 Q500 486 338 465Z" fill="url(#deck)" stroke="#7184a7" stroke-opacity=".75" stroke-width="2"/>
+            <path d="M326 431 Q500 451 674 431 L669 441 Q500 461 331 441Z" fill="url(#board)" filter="url(#glow)"/>
+            <path d="M368 435 Q500 450 632 435" fill="none" stroke="#e6fff6" stroke-opacity=".85" stroke-width="2" stroke-linecap="round"/>
+            <path d="M348 461 Q500 478 651 461" fill="none" stroke="#5ce9db" stroke-opacity=".65" stroke-width="2"/>
+            <circle cx="352" cy="436" r="3" fill="#fff2cf"/>
+            <circle cx="649" cy="436" r="3" fill="#fff2cf"/>
+          </g>
+
+          <!-- Near legs -->
+          <path d="M386 390 C383 405 386 424 388 438 Q389 446 402 446 L418 443 Q423 439 413 435 L401 433 L405 400Z" fill="#c3844e" stroke="#8d5a3d" stroke-width="1.5"/>
+          <path d="M478 394 C478 408 480 424 480 438 Q482 446 495 446 L512 443 Q516 439 506 435 L493 433 L498 400Z" fill="#c3844e" stroke="#8d5a3d" stroke-width="1.5"/>
+          <path d="M390 440 Q401 443 416 440 M483 440 Q496 443 510 440" fill="none" stroke="#e8bb86" stroke-width="2" stroke-linecap="round"/>
+
+          <!-- Body -->
+          <path d="M282 348 C282 292 321 251 378 243 C432 235 485 255 510 294 C530 325 529 375 504 401 C479 427 429 432 377 423 C320 414 284 391 282 348Z" fill="url(#fur)" stroke="#754a36" stroke-width="3"/>
+          <path d="M306 356 C310 306 340 273 380 264 C414 256 449 264 472 282 C441 274 409 282 390 300 C371 321 364 364 376 410 C336 405 308 386 306 356Z" fill="#e6b77f" opacity=".26"/>
+          <path d="M330 383 C365 406 426 416 474 397 C462 414 432 423 398 420 C367 418 343 406 330 383Z" fill="url(#belly)" opacity=".62"/>
+
+          <!-- Face and head -->
+          <path d="M461 320 C465 284 487 253 520 240 C548 229 578 239 592 262 C599 273 602 284 601 295 L625 297 Q645 299 646 312 Q646 326 627 332 L605 334 C598 358 579 374 552 376 C523 378 492 360 478 342Z" fill="url(#faceFur)" stroke="#754a36" stroke-width="3"/>
+          <path d="M512 247 C521 232 535 228 544 235 C550 239 550 247 546 254 C536 251 526 251 516 255Z" fill="#9d6744" stroke="#754a36" stroke-width="2"/>
+          <path d="M522 242 Q535 237 542 244" fill="none" stroke="#e8bd87" stroke-width="2" stroke-linecap="round"/>
+          <path d="M575 276 Q582 270 589 276" fill="none" stroke="#724733" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="584" cy="275" r="1.7" fill="#fff1d7"/>
+          <path d="M598 311 Q615 318 631 311" fill="none" stroke="#925d41" stroke-width="2" stroke-linecap="round"/>
+          <ellipse cx="641" cy="311" rx="10" ry="7.5" fill="#523b3a"/>
+          <ellipse cx="643" cy="309" rx="3" ry="1.5" fill="#b99487" opacity=".8"/>
+          <path d="M613 323 Q620 330 631 326" fill="none" stroke="#714a3d" stroke-width="1.8" stroke-linecap="round"/>
+          <g fill="#754a36" opacity=".65">
+            <circle cx="612" cy="311" r="1.3"/><circle cx="619" cy="315" r="1.2"/>
+            <circle cx="609" cy="319" r="1.1"/><circle cx="625" cy="320" r="1.1"/>
+          </g>
+
+          <!-- Wind-swept scarf -->
+          <path d="M475 335 C458 327 447 321 430 326 C441 338 453 345 471 349Z" fill="#f2bd69"/>
+          <path d="M475 337 Q504 350 536 337 L544 352 Q511 369 481 353Z" fill="#f3c66f" stroke="#b77d4b" stroke-width="2"/>
+          <path d="M485 343 Q510 354 533 345" fill="none" stroke="#fff0bf" stroke-opacity=".75" stroke-width="2"/>
+          <path d="M438 328 Q450 329 462 337" fill="none" stroke="#ffe4a4" stroke-width="2" stroke-linecap="round"/>
+
+          <!-- Fur details -->
+          <g fill="none" stroke="#f0c28c" stroke-linecap="round" opacity=".52">
+            <path d="M333 296l-7 8 M350 278l-7 8 M373 270l-5 8 M402 265l-3 7"/>
+            <path d="M321 327l-8 5 M327 373l-8 2 M348 395l-6 4 M451 405l-4 7"/>
+            <path d="M500 267l-3 7 M522 258l-2 7 M557 251l-1 6"/>
+          </g>
+          <path d="M292 349 Q292 324 302 306" fill="none" stroke="#f0c28c" stroke-opacity=".45" stroke-width="3" stroke-linecap="round"/>
+        </g>
+
+        <g fill="#c4fff2" filter="url(#glow)">
+          <circle cx="278" cy="470" r="2.5"/>
+          <circle cx="718" cy="460" r="2"/>
+          <circle cx="736" cy="486" r="1.6"/>
+          <circle cx="251" cy="492" r="1.6"/>
+        </g>
+        <g fill="none" stroke="#fbce91" stroke-opacity=".35" stroke-width="2" stroke-linecap="round">
+          <path d="M813 279v16 M805 287h16"/>
+          <path d="M160 315v12 M154 321h12"/>
+        </g>
+      </g>
+    </svg>
+  </main>
+
+  <footer>
+    <div class="caption"><span class="caption-line"></span>Quiet streets, happy feet</div>
+    <button class="pause" id="pause" type="button" aria-label="Pause animation">
+      <span class="pause-icon" aria-hidden="true">Ⅱ</span><span id="pause-label">Pause ride</span>
+    </button>
+  </footer>
+</div>
+<script>
+  (() => {
+    const svgNS = "http://www.w3.org/2000/svg";
+    const starGroup = document.getElementById("stars");
+    for (let i = 0; i < 76; i++) {
+      const star = document.createElementNS(svgNS, "circle");
+      const x = Math.random() * 980 + 10;
+      const y = Math.random() * 270 + 18;
+      star.setAttribute("cx", x.toFixed(1));
+      star.setAttribute("cy", y.toFixed(1));
+      star.setAttribute("r", (Math.random() * 1.5 + .45).toFixed(2));
+      star.setAttribute("class", "star");
+      star.style.setProperty("--duration", (2 + Math.random() * 4).toFixed(2) + "s");
+      star.style.setProperty("--delay", (-Math.random() * 5).toFixed(2) + "s");
+      starGroup.appendChild(star);
+    }
+
+    const sparkField = document.getElementById("sparks");
+    for (let i = 0; i < 12; i++) {
+      const spark = document.createElement("span");
+      spark.className = "spark";
+      spark.style.left = (23 + Math.random() * 54) + "%";
+      spark.style.top = (57 + Math.random() * 20) + "%";
+      spark.style.setProperty("--duration", (3.5 + Math.random() * 4) + "s");
+      spark.style.setProperty("--delay", (-Math.random() * 7) + "s");
+      sparkField.appendChild(spark);
+    }
+
+    const scene = document.getElementById("scene");
+    const art = document.getElementById("art");
+    scene.addEventListener("pointermove", (event) => {
+      if (event.pointerType === "touch") return;
+      const rect = scene.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width - .5;
+      const y = (event.clientY - rect.top) / rect.height - .5;
+      art.style.setProperty("--tilt-x", (-x * 8).toFixed(1) + "px");
+      art.style.setProperty("--tilt-y", (-y * 6).toFixed(1) + "px");
+    });
+    scene.addEventListener("pointerleave", () => {
+      art.style.setProperty("--tilt-x", "0px");
+      art.style.setProperty("--tilt-y", "0px");
+    });
+
+    const button = document.getElementById("pause");
+    const label = document.getElementById("pause-label");
+    button.addEventListener("click", () => {
+      const paused = document.body.classList.toggle("paused");
+      label.textContent = paused ? "Resume ride" : "Pause ride";
+      button.setAttribute("aria-label", paused ? "Resume animation" : "Pause animation");
+      button.querySelector(".pause-icon").textContent = paused ? "▶" : "Ⅱ";
+    });
+  })();
+</script>
+</body>
+</html>
