@@ -147,6 +147,10 @@ test("run pages and challenge evidence exist without a SPA fallback", async (t) 
   const { out } = await buildFixture(t);
   const html = await readFile(join(out, "gallery/runs/fixture-animation/index.html"), "utf8");
   assert.match(html, /Run preview/);
+  assert.match(
+    html,
+    /<a class="button preview-open" href="http:\/\/127\.0\.0\.1:4174\/runs\/fixture-animation\/" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">Open preview in new tab<\/a>/,
+  );
   assert.match(html, /Exact user instructions/);
   assert.doesNotMatch(html, /<iframe/);
   assert.match(

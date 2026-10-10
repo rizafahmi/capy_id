@@ -69,6 +69,15 @@ test("run inspection preserves downloads, starts only on request, and unloads on
   await page.goto("/runs/fixture-animation/");
   await page.reload();
   await expect(page.locator("iframe")).toHaveCount(0);
+  const openPreview = page.getByRole("link", { name: "Open preview in new tab", exact: true });
+  await expect(openPreview).toBeVisible();
+  await expect(openPreview).toHaveAttribute("target", "_blank");
+  await expect(openPreview).toHaveAttribute("rel", /noopener/);
+  const previewPagePromise = page.waitForEvent("popup");
+  await openPreview.click();
+  const previewPage = await previewPagePromise;
+  await expect(previewPage).toHaveURL(/127\.0\.0\.1:4174\/runs\/fixture-animation\/$/);
+  await previewPage.close();
   await page.getByRole("button", { name: "Run preview", exact: true }).click();
   const originalFrame = await page.locator("iframe").elementHandle();
   await expect(page.locator("iframe")).toHaveAttribute("sandbox", "allow-scripts");
@@ -300,6 +309,9 @@ test("gallery selects exactly two runs and comparison reconstructs the URL", asy
   await page.reload();
   await expect(page.locator(".compare-panel")).toHaveCount(2);
   await expect(page.locator("iframe")).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "Open preview in new tab", exact: true }),
+  ).toHaveCount(1);
   await expect(
     page.getByText("Generation conditions differ or are incomplete.", { exact: true }),
   ).toBeVisible();

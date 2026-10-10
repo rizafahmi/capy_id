@@ -378,6 +378,12 @@ function comparePreview(entry) {
   } else stage.append(element("div", "Screenshot not captured", "placeholder"));
   const controls = element("div", undefined, "preview-controls");
   if (entry.preview.kind === "ready") {
+    const openPreview = element("a", "Open preview in new tab", "button preview-open");
+    openPreview.href = entry.preview.url;
+    openPreview.target = "_blank";
+    openPreview.rel = "noopener noreferrer";
+    openPreview.referrerPolicy = "no-referrer";
+    controls.append(openPreview);
     for (const [name, label] of [
       ["start", "Run preview"],
       ["stop", "Stop"],
