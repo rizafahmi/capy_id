@@ -79,6 +79,8 @@ test("run inspection preserves downloads, starts only on request, and unloads on
   await expect(page.locator("iframe")).toHaveCount(0);
   await page.getByText("Extracted HTML", { exact: true }).click();
   const source = page.locator("[data-evidence-url$='output.html.txt'] code");
+  await expect(page.getByRole("button", { name: "Formatted", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Formatted", exact: true }).click();
   await expect(source).toHaveText(animationHtml);
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Download HTML", exact: true }).click();
@@ -211,7 +213,7 @@ test("copy succeeds or leaves selectable exact text with an explanatory fallback
     }),
   );
   await page.getByText("Extracted HTML", { exact: true }).click();
-  await page.getByRole("button", { name: "Copy HTML", exact: true }).click();
+  await page.getByRole("button", { name: "Copy original HTML", exact: true }).click();
   await expect(
     page.locator("[data-evidence-url$='output.html.txt'] .evidence-status"),
   ).toContainText("Clipboard unavailable");
@@ -225,6 +227,7 @@ test("copy succeeds or leaves selectable exact text with an explanatory fallback
         node.selectionEnd === node.value.length,
     ),
   ).toBe(true);
+  await page.getByRole("button", { name: "Formatted", exact: true }).click();
   expect(await page.locator("[data-evidence-url$='output.html.txt'] code").textContent()).toBe(
     animationHtml,
   );

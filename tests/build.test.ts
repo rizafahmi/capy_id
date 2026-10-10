@@ -117,6 +117,30 @@ test("small collections omit filtering and comparison and give one attempt a ful
   assert.doesNotMatch(empty, /class="filters"|data-select|comparison-tray/);
 });
 
+test("build emits lazy Shiki ranges tied to preserved artifacts without a browser highlighter", async (t) => {
+  const { out } = await buildFixture(t);
+  const html = await readFile(join(out, "gallery/runs/fixture-animation/index.html"), "utf8");
+  assert.match(html, /data-highlight-url="\/assets\/highlights\/fixture-animation-html.json"/);
+  assert.match(html, /data-wrap aria-pressed="true"/);
+  assert.doesNotMatch(html, /class="syntax-token"/);
+  const run = JSON.parse(
+    await readFile(join(out, "gallery/evidence/runs/fixture-animation/run.json"), "utf8"),
+  );
+  for (const kind of ["html", "response"]) {
+    const highlight = JSON.parse(
+      await readFile(join(out, `gallery/assets/highlights/fixture-animation-${kind}.json`), "utf8"),
+    );
+    assert.equal(highlight.sha256, run.artifacts[kind].sha256);
+    assert.ok(highlight.tokens.length > 0);
+    if (kind === "html") {
+      assert.match(highlight.formatted.source, /body \{\n/);
+      assert.ok(highlight.formatted.tokens.length > 0);
+    } else assert.equal(highlight.formatted, null);
+  }
+  const app = await readFile(join(out, "gallery/assets/app.js"), "utf8");
+  assert.doesNotMatch(app, /from ["']shiki|WebAssembly|innerHTML/);
+});
+
 test("run pages and challenge evidence exist without a SPA fallback", async (t) => {
   const { out } = await buildFixture(t);
   const html = await readFile(join(out, "gallery/runs/fixture-animation/index.html"), "utf8");

@@ -38,7 +38,76 @@ function artifactStatus(button, message) {
     globalStatus;
   if (status) status.textContent = message;
 }
+function highlightedCode(source, tokens) {
+  if (!Array.isArray(tokens)) throw new Error("Invalid highlighting ranges.");
+  const fragment = document.createDocumentFragment();
+  let offset = 0;
+  for (const token of tokens) {
+    if (
+      !Number.isInteger(token.offset) ||
+      !Number.isInteger(token.length) ||
+      token.offset < offset ||
+      token.length <= 0 ||
+      token.offset + token.length > source.length ||
+      typeof token.light !== "string" ||
+      !/^#[\da-f]{6}$/i.test(token.light) ||
+      typeof token.dark !== "string" ||
+      !/^#[\da-f]{6}$/i.test(token.dark)
+    )
+      throw new Error("Invalid highlighting ranges.");
+    fragment.append(document.createTextNode(source.slice(offset, token.offset)));
+    const span = element(
+      "span",
+      source.slice(token.offset, token.offset + token.length),
+      "syntax-token",
+    );
+    span.style.setProperty("--syntax-light", token.light);
+    span.style.setProperty("--syntax-dark", token.dark);
+    fragment.append(span);
+    offset = token.offset + token.length;
+  }
+  fragment.append(document.createTextNode(source.slice(offset)));
+  return fragment;
+}
+async function highlightCode(details, code, source) {
+  const response = await fetch(details.dataset.highlightUrl, { credentials: "omit" });
+  if (!response.ok) throw new Error("Highlighting could not be loaded.");
+  const data = await response.json();
+  if (data.sha256 !== details.dataset.sha256)
+    throw new Error("Highlighting does not match this artifact.");
+  const original = highlightedCode(source, data.tokens);
+  const formatted =
+    typeof data.formatted?.source === "string"
+      ? highlightedCode(data.formatted.source, data.formatted.tokens)
+      : null;
+  const button = details.querySelector("[data-format]");
+  const status = details.querySelector(".evidence-status");
+  const show = (isFormatted) => {
+    code.replaceChildren((isFormatted ? formatted : original).cloneNode(true));
+    code.parentElement.scrollTop = 0;
+    code.parentElement.scrollLeft = 0;
+    status.textContent = isFormatted
+      ? "Formatted for readability. Original SHA-256 verified."
+      : "Preserved artifact loaded. SHA-256 verified.";
+    button?.setAttribute("aria-pressed", String(isFormatted));
+  };
+  show(formatted !== null);
+  if (formatted && button) {
+    button.hidden = false;
+    button.addEventListener("click", () => show(button.getAttribute("aria-pressed") !== "true"));
+  } else if (button) {
+    status.textContent += " Formatting unavailable. Showing the original.";
+  }
+}
 function enableEvidence() {
+  for (const button of document.querySelectorAll("[data-wrap]")) {
+    button.hidden = false;
+    button.addEventListener("click", () => {
+      const wrapped = button.getAttribute("aria-pressed") !== "true";
+      button.setAttribute("aria-pressed", String(wrapped));
+      button.closest(".evidence-body").querySelector("pre").classList.toggle("unwrapped", !wrapped);
+    });
+  }
   for (const details of document.querySelectorAll("[data-evidence-url]")) {
     details.addEventListener("toggle", async () => {
       if (!details.open || details.dataset.loaded === "true") return;
@@ -46,12 +115,22 @@ function enableEvidence() {
       status.textContent = "Loading preserved evidence…";
       try {
         const bytes = await artifact(details.dataset.evidenceUrl, details.dataset.sha256);
-        details.querySelector("code").textContent = new TextDecoder("utf-8", {
+        const code = details.querySelector("code");
+        const source = new TextDecoder("utf-8", {
           fatal: true,
           ignoreBOM: true,
         }).decode(bytes);
+        code.textContent = source;
         details.dataset.loaded = "true";
         status.textContent = "Preserved artifact loaded. SHA-256 verified.";
+        if (details.dataset.highlightUrl) {
+          try {
+            await highlightCode(details, code, source);
+          } catch {
+            status.textContent +=
+              " Syntax highlighting unavailable. Original text remains readable.";
+          }
+        }
       } catch (error) {
         status.textContent = `${error.message} Close and reopen this section to retry.`;
       }
@@ -467,7 +546,7 @@ try {
   for (const node of document.querySelectorAll("[data-preview-id]")) setupPreview(node);
   await enableComparison();
   resizePreviews();
-  const observer = new ResizeObserver(resizePreviews);
+  const observer = new ResizeObserver(() => requestAnimationFrame(resizePreviews));
   observer.observe(document.querySelector("main"));
 } catch {
   announce(

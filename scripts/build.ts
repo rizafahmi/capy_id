@@ -1,6 +1,7 @@
 import { cp, lstat, mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve, sep } from "node:path";
 import { readArtifact, utf8, validateContent } from "./content.ts";
+import { prepareCodeView } from "./highlight.ts";
 import type { Collection, Entry, Preview, Run } from "./schema.ts";
 import { headerFile, previewPolicyVersion } from "./security.ts";
 
@@ -75,8 +76,15 @@ function gallery(entries: PublishedEntry[]): string {
 function metadata(pairs: MetadataPair[], className = ""): string {
   return `<dl class="metadata${className ? ` ${e(className)}` : ""}">${pairs.map(([key, value]) => `<div><dt>${e(key)}</dt><dd>${e(value)}</dd></div>`).join("")}</dl>`;
 }
-function artifactSection(title: string, path: string, checksum: string): string {
-  return `<details class="evidence" data-evidence-url="${e(evidenceUrl(path))}" data-sha256="${e(checksum)}"><summary>${e(title)}</summary><div class="evidence-body"><p class="evidence-status" role="status">Expand to retrieve the preserved artifact.</p><pre tabindex="0" aria-label="${e(title)}"><code></code></pre><button type="button" data-copy-url="${e(evidenceUrl(path))}" hidden>Copy ${title === "Extracted HTML" ? "HTML" : "response"}</button><a href="${e(evidenceUrl(path))}">Open preserved text</a></div></details>`;
+const highlightUrl = (id: string, kind: string) => `/assets/highlights/${id}-${kind}.json`;
+function artifactSection(
+  title: string,
+  path: string,
+  checksum: string,
+  highlights: string,
+): string {
+  const isHtml = title === "Extracted HTML";
+  return `<details class="evidence" data-evidence-url="${e(evidenceUrl(path))}" data-sha256="${e(checksum)}" data-highlight-url="${e(highlights)}"><summary>${e(title)}</summary><div class="evidence-body"><div class="code-toolbar"><span class="code-language">${isHtml ? "HTML · CSS · JavaScript" : "Markdown / text"}</span><div class="code-actions">${isHtml ? '<button type="button" class="code-action" data-format aria-pressed="true" hidden>Formatted</button>' : ""}<button type="button" class="code-action" data-wrap aria-pressed="true" hidden>Wrap lines</button><button type="button" class="code-action" data-copy-url="${e(evidenceUrl(path))}" hidden>Copy ${isHtml ? "original HTML" : "response"}</button><a href="${e(evidenceUrl(path))}">Open preserved text</a></div></div><p class="evidence-status" role="status">Expand to retrieve the preserved artifact.</p><pre class="code-view" tabindex="0" aria-label="${e(title)}"><code></code></pre></div></details>`;
 }
 function detail(entry: Entry, preview: Preview, correction?: Entry): string {
   const { run, curation, transcript } = entry;
@@ -148,7 +156,7 @@ function detail(entry: Entry, preview: Preview, correction?: Entry): string {
           .map((turn) => `<pre tabindex="0"><code>${e(turn.content)}</code></pre>`)
           .join("")}</div></details>`
       : ""
-  }<details class="evidence run-provenance" id="run-provenance"><summary>Run provenance</summary><div class="evidence-body">${metadata(provenance)}${run.model.identifier_kind === "display-only" ? '<p class="notice">Display-only identifier. An exact model identifier was not recorded.</p>' : ""}${run.supersedes_run_id ? `<p class="notice">Corrects <a href="/runs/${e(run.supersedes_run_id)}/">${e(run.supersedes_run_id)}</a>. ${e(run.correction_reason)}</p>` : ""}<a href="${e(evidenceUrl(`runs/${run.id}/run.json`))}">Open recorded run metadata</a></div></details><details class="evidence"><summary>Curation observations and capture conditions</summary><div class="evidence-body"><ul>${curation.observations.map((observation) => `<li>${e(observation)}</li>`).join("")}</ul><pre tabindex="0">${e(JSON.stringify(curation.thumbnail, null, 2))}</pre><p>These are observations, not scores. Null capture metadata means unknown.</p></div></details>${artifactSection("Original response", run.artifacts.response.path, run.artifacts.response.sha256)}${run.artifacts.html ? artifactSection("Extracted HTML", run.artifacts.html.path, run.artifacts.html.sha256) : '<p class="notice">No runnable HTML returned. The original response is preserved above.</p>'}<div class="download-actions">${run.artifacts.html ? `<button type="button" data-download-url="${e(evidenceUrl(run.artifacts.html.path))}" data-sha256="${e(run.artifacts.html.sha256)}" data-filename="${e(run.id)}.html" hidden>Download HTML</button>` : ""}<button type="button" data-download-url="${e(evidenceUrl(run.artifacts.response.path))}" data-sha256="${e(run.artifacts.response.sha256)}" data-filename="${e(run.id)}-response.txt" hidden>Download original response</button></div><p id="artifact-status" role="status"></p></section>`;
+  }<details class="evidence run-provenance" id="run-provenance"><summary>Run provenance</summary><div class="evidence-body">${metadata(provenance)}${run.model.identifier_kind === "display-only" ? '<p class="notice">Display-only identifier. An exact model identifier was not recorded.</p>' : ""}${run.supersedes_run_id ? `<p class="notice">Corrects <a href="/runs/${e(run.supersedes_run_id)}/">${e(run.supersedes_run_id)}</a>. ${e(run.correction_reason)}</p>` : ""}<a href="${e(evidenceUrl(`runs/${run.id}/run.json`))}">Open recorded run metadata</a></div></details><details class="evidence"><summary>Curation observations and capture conditions</summary><div class="evidence-body"><ul>${curation.observations.map((observation) => `<li>${e(observation)}</li>`).join("")}</ul><pre tabindex="0">${e(JSON.stringify(curation.thumbnail, null, 2))}</pre><p>These are observations, not scores. Null capture metadata means unknown.</p></div></details>${artifactSection("Original response", run.artifacts.response.path, run.artifacts.response.sha256, highlightUrl(run.id, "response"))}${run.artifacts.html ? artifactSection("Extracted HTML", run.artifacts.html.path, run.artifacts.html.sha256, highlightUrl(run.id, "html")) : '<p class="notice">No runnable HTML returned. The original response is preserved above.</p>'}<div class="download-actions">${run.artifacts.html ? `<button type="button" data-download-url="${e(evidenceUrl(run.artifacts.html.path))}" data-sha256="${e(run.artifacts.html.sha256)}" data-filename="${e(run.id)}.html" hidden>Download HTML</button>` : ""}<button type="button" data-download-url="${e(evidenceUrl(run.artifacts.response.path))}" data-sha256="${e(run.artifacts.response.sha256)}" data-filename="${e(run.id)}-response.txt" hidden>Download original response</button></div><p id="artifact-status" role="status"></p></section>`;
 }
 function challengePage(collection: Collection): string {
   return `<header class="run-heading"><p class="eyebrow">Instructions and interpretation</p><h1>The challenge</h1><p class="hero-description">One deliberately narrow task. Every experiment keeps its instructions and generation history.</p></header>${[...collection.challenges.values()].map((challenge) => `<section id="${e(challenge.id)}"><h2>${e(challenge.title)}</h2><p class="eyebrow">${e(challenge.id)}</p><pre tabindex="0"><code>${e(collection.prompts.get(challenge.id))}</code></pre><button type="button" data-copy-url="${e(evidenceUrl(challenge.prompt_path))}" data-sha256="${e(challenge.prompt_sha256)}" hidden>Copy prompt</button><p class="checksum">SHA-256 ${e(challenge.prompt_sha256)}</p></section>`).join("")}<section class="prose"><h2 id="inspiration">From pelicans to capybaras</h2><p>${inspirationLink} inspired this challenge. Our version asks models to animate a capybara on a hoverboard in a single HTML file.</p><h2>Collection protocol</h2><ol><li>Start a fresh conversation or request with no previous user conversation.</li><li>Send the fixed prompt exactly once. Record known system instructions separately.</li><li>Do not edit, retry, or repair a canonical one-shot output.</li><li>Record provider, identifier, interface, timestamp, exposed settings, and known tool use. Leave unknown conditions unknown.</li><li>Save the full response and extracted HTML before publication.</li><li>Keep additional attempts as separate records in the same series. Publish all collected attempts or disclose incomplete publication.</li></ol><p>Revised and tool-assisted examples require prominent labels and their full user-turn transcript. A changed instruction creates a new challenge version.</p><h2 id="limits">What this gallery cannot tell you</h2><ul><li>One task cannot establish overall model quality.</li><li>Individual runs can vary.</li><li>Model aliases and chat products can change.</li><li>Publication may not represent all possible attempts.</li><li>Preview restrictions may affect behavior.</li></ul><h2>Preview policy ${previewPolicyVersion}</h2><p>Derived previews are byte-for-byte copies of extracted UTF-8 HTML. They are served on a separate origin under an enforced HTTP Content Security Policy and an iframe sandbox. Originals remain downloadable plain text on the gallery origin.</p><p>Inline scripts and styles can run. External resources, fetch requests, nested frames, forms, popups, and top navigation are restricted. No frame messages are trusted.</p><p>Sandboxing is not absolute network or CPU isolation. Scripts may navigate their own frame or block a browser. Curator-reviewed execution is opt-in, and suspect outputs remain evidence with execution disabled.</p><p>SHA-256 protects recorded integrity. It does not prove authorship or scientific validity.</p></section><p id="artifact-status" role="status"></p>`;
@@ -264,6 +272,19 @@ export async function buildSite(options: {
           await put(`preview/runs/${run.id}/index.html`, bytes);
           preview = { kind: "ready", url: `${previewOrigin}/runs/${run.id}/` };
         }
+      }
+      for (const [kind, artifact] of [
+        ["response", run.artifacts.response],
+        ["html", run.artifacts.html],
+      ] as const) {
+        if (!artifact) continue;
+        const source = utf8(await readArtifact(content.root, artifact.path));
+        await put(
+          `gallery${highlightUrl(run.id, kind)}`,
+          JSON.stringify(
+            await prepareCodeView(source, kind === "html" ? "html" : "markdown", artifact.sha256),
+          ),
+        );
       }
       views.push({
         ...entry,
