@@ -41,7 +41,8 @@ responsive layouts, and automated accessibility checks. Tests also build a
 
 ## Publish another attempt
 
-Follow [the curation workflow](docs/curation.md). Import preserves the response
+Use [Pi to collect coding-agent attempts](docs/pi-collection.md), then follow
+[the curation workflow](docs/curation.md). Import preserves the response
 and selected HTML bytes. Publication and execution remain disabled until curator
 review. Screenshot capture records its browser, viewport, delay, and preview
 policy.

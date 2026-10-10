@@ -14,13 +14,6 @@
   "generation": {
     "mode": "one-shot",
     "interface": "web-chat",
-    "tools_used": "unknown",
-    "settings": {
-      "temperature": null,
-      "top_p": null,
-      "max_output_tokens": null,
-      "seed": null
-    },
-    "system_instruction_known": false
+    "tools_used": "unknown"
   }
 }

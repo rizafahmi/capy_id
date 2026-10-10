@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "id": "example-pi-attempt-001",
+  "challenge_id": "capybara-hoverboard-v1",
+  "series_id": "example-pi-series-001",
+  "attempt_number": 1,
+  "provider": "Example provider",
+  "model": {
+    "display_name": "Example model",
+    "identifier": "replace-with-observed-model-id",
+    "identifier_kind": "display-only"
+  },
+  "generated_at": null,
+  "generation": {
+    "mode": "tool-assisted",
+    "interface": "coding-agent",
+    "tools_used": "unknown",
+    "harness": {
+      "name": "Pi",
+      "version": null,
+      "effort": null
+    },
+    "metrics": {
+      "time": null,
+      "tokens": {
+        "input": null,
+        "cached": null,
+        "output": null,
+        "total": null
+      }
+    }
+  }
+}

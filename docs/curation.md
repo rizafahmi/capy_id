@@ -2,15 +2,29 @@
 
 ## Collect evidence
 
+Use [the Pi collection workflow](pi-collection.md) for coding-agent attempts. Record the harness name, version, and effort. New imports discard legacy sampling controls and the system-instruction flag; historical evidence remains unchanged.
+
 Start a fresh conversation. Send `content/challenges/capybara-hoverboard-v1/prompt.txt` exactly once for a canonical one-shot attempt. Save the full response as UTF-8 without repairing it. Preserve failures too.
 
-Copy `examples/import-metadata.json` to a local metadata file. Its identity is illustrative, not a real submission. Replace it with observed provider, model, interface, time, settings, and tool information. Record unknown settings and dates as `null`. Do not invent a snapshot identifier or hidden system prompt.
+Copy `examples/import-metadata.json` to a local metadata file. Its identity is illustrative, not a real submission. Replace it with observed provider, model, interface, time, and tool information. For coding-agent attempts, add `generation.harness` with `name`, `version`, and `effort`. Use `null` for an unknown version, effort, or date. Do not invent a snapshot identifier or hidden system prompt.
 
 An attempt is the data unit. Different generations get different run IDs, even when their HTML matches. IDs must contain lowercase letters, digits, and hyphens. Omitting `id` and `series_id` creates fresh UUID-based identifiers; omitting `attempt_number` defaults to 1. Keep explicit IDs if retries of your import command must reject the same attempt.
 
 Repeated generations share a series ID and use distinct positive attempt numbers. Publish every collected attempt in that series or disclose the missing attempts. Revised and tool-assisted attempts need those labels and their full transcript.
 
 ## Import
+
+A Pi harness record has this shape. Replace the version and effort with observed values.
+
+```json
+{
+  "name": "Pi",
+  "version": "1.1.0",
+  "effort": "low"
+}
+```
+
+Put that object inside `generation.harness`. Effort uses Pi\'s thinking level, not an inferred provider setting. Sampling controls are not recorded for new imports. Superseded records stay reachable through their original URLs, but the gallery shows their corrections instead of duplicate attempts.
 
 ```sh
 npm run import -- --metadata /path/to/metadata.json --response /path/to/response.txt
