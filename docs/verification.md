@@ -147,6 +147,50 @@ template compilation pass independently. Existing Zod deprecation hints remain.
 Hot reloading, remote CI, deployed HTTPS verification, and independent review are
 not completed. No commit, push, or PR was performed.
 
+## Astro challenge migration
+
+`src/astro/pages/challenge.astro` now renders the challenge. Comparison and
+not-found pages retain the existing renderer. The evidence pipeline, browser
+controls, styles, collection protocol, and preview policy are unchanged.
+
+- Formatting, lint, tooling TypeScript, Astro template checks, and all 56 tooling
+  tests pass. Template checks and browser builds also pass concurrently.
+- All 120 browser tests pass across Chromium, Firefox, and WebKit without retries.
+  Challenge tests cover direct refresh, exact prompt text, clipboard copying and
+  fallback, keyboard-focusable prompts, no-JavaScript reading, and limitations links.
+- A build regression covers a second challenge version with HTML-like title and
+  prompt text. Both versions render as escaped text with their own hashes and
+  copy URLs. Evidence files retain the original bytes, including prompt newlines.
+- All 29 compared Chromium screenshots have zero changed pixels. Twelve cover
+  real and fixture challenge pages at widths of 360, 768, and 1366 CSS pixels in
+  light and dark mode. Seventeen cover existing gallery and run-detail pages.
+- Content validation passes for nine real attempts. A local static production
+  build with separate HTTPS origins passes. This does not verify deployed headers.
+- `npm audit` reports zero known vulnerabilities. The 100-run gallery shell
+  remains 17,604 gzip bytes, below the 200 KiB budget.
+
+Screenshot comparison caught a missing space after the inspiration link. A new
+full-sentence browser assertion failed in all three engines before the template
+fix. An explicit space at the inline-element boundary restores the original text
+and appearance. `.audit/astro-challenge-spacing-red.txt` and
+`.audit/astro-challenge-spacing-green.txt` record the regression and fix.
+
+Logs are in `.audit/astro-challenge-format.txt`, `.audit/astro-challenge-check.txt`,
+`.audit/astro-challenge-e2e.txt`, `.audit/astro-challenge-validation.txt`,
+`.audit/astro-challenge-production-build.txt`, and `.audit/astro-challenge-audit.txt`.
+`.audit/astro-challenge-visual-parity.json` records image comparisons. Real-content
+screenshots are in `.audit/astro-challenge-real/`; browser captures are in
+`test-results/`. `.audit/capture-challenge.mjs` and `.audit/compare-challenge.mjs`
+can repeat the local real-content captures and pixel comparison while the matching
+managed server and saved baseline are available.
+
+Direct review found no new comments or suppressions. Delegated design and review
+were not authorized. The active LSP probe reported no errors but one file was
+inconclusive. Full tooling and template compilation pass independently.
+Hot reloading, remote CI, deployed HTTPS verification, and independent review
+remain unverified. No commit, push, or PR was performed. The pre-existing
+`AGENTS.md` edit was left untouched.
+
 ## Reproduce
 
 ```sh

@@ -4,8 +4,8 @@
 
 Migrate one page type per verified slice. Start with run detail. Preserve visible output,
 vanilla browser controls, original evidence bytes, preview isolation, response headers,
-and safe build replacement. Run detail and gallery are migrated. Challenge,
-comparison, and not-found pages stay on the existing renderer until their own slices.
+and safe build replacement. Run detail, gallery, and challenge are migrated.
+Comparison and not-found pages stay on the existing renderer until their own slices.
 
 ### First-slice checklist
 
@@ -80,6 +80,49 @@ independent review, and commits remain outside this slice.
 
 Next slice: challenge. Suggested commit, not executed:
 `git commit -m "refactor: migrate gallery rendering to Astro"`.
+
+### Challenge-slice checklist
+
+- [x] Pin the behavior contract first. Capture challenge behavior and screenshots before moving markup. How delegation skipped because subagents are not authorized; direct tracing covers validation, evidence copying, and browser copy controls.
+- [x] Name the structure the code is missing per principle-model-the-domain. Add typed challenge records paired with their exact prompt text to AstroPages.
+- [x] Name the target shape. Astro renders /challenge/ in the existing staged build. Existing tooling validates content and copies original evidence. Architect exploration skipped because subagents are not authorized.
+- [x] Subtract before you add. Remove the challenge HTML-string template and its orphaned inspiration constant when their callers migrate.
+- [x] Move in small behavior-preserving steps, each keeping the pin green. Keep controls, protocol, limitations, and styles unchanged. Mechanical delegation skipped because subagents are not authorized.
+- [x] Prove behavior is unchanged on the real artifact, not "it compiles". Verify multiple challenge versions, exact prompt evidence and copy behavior, all browser engines, and visual parity.
+- [x] Confirm the change is worth keeping. Review the typed boundary and readable page markup for duplicate rules and unnecessary components.
+- [x] Rebase into small ordered commits. Commits, rebasing, and opening a PR skipped because they are not authorized. Suggest the challenge-slice commit after verification.
+
+### Challenge throughput checkpoint
+
+- Blocking first steps. Pin prompt display and copy behavior and capture screenshots before replacing the renderer.
+- Independent workstreams. n/a: one page slice and no approved delegation.
+- Shared mutable state. Retain canonical per-build workspaces and isolated Astro and Vite caches. Browser tests use separate content and output directories.
+- Smallest safe decomposition. Migrate only challenge, then verify before changing comparison or not-found pages.
+
+### Challenge-slice handoff
+
+`src/astro/pages/challenge.astro` replaces the challenge string template. Typed
+`ChallengePrompt` records pair validated metadata with prompt text. Tooling still
+copies the original evidence bytes. Copy controls, protocol, limitations, preview
+policy, styles, and client JavaScript remain unchanged. No new component layer or
+dependency was added.
+
+Formatting, lint, both type checkers, 56 tooling tests, and 120 browser tests pass.
+All 29 compared Chromium screenshots match pixel-for-pixel. Twelve cover real and
+fixture challenge pages at three widths in light and dark mode. Seventeen protect
+existing gallery and run-detail rendering. A browser regression caught and verifies
+the repaired space after the inspiration link.
+
+Production generation, validation of nine real attempts, and dependency audit
+pass. Evidence is in `.audit/astro-challenge-check.txt`,
+`.audit/astro-challenge-e2e.txt`, and `.audit/astro-challenge-visual-parity.json`.
+The active LSP probe reported no errors but could not confirm one file. Full
+compiler checks pass independently. Hot reloading, remote CI, deployed HTTPS
+verification, independent review, and commits remain outside this slice.
+Your existing `AGENTS.md` edit is untouched.
+
+Next slice: comparison. Suggested commit, not executed:
+`git commit -m "refactor: migrate challenge rendering to Astro"`.
 
 ## Workflow
 

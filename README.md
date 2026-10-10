@@ -6,10 +6,9 @@ leaderboard.
 
 The public app uses HTML, CSS, and vanilla JavaScript. Node.js 24 and strict
 TypeScript handle import, validation, static generation, and screenshot capture.
-Astro generates the gallery and run-detail pages. Challenge, comparison, and
+Astro generates the gallery, challenge, and run-detail pages. Comparison and
 not-found pages use the existing renderer while migration proceeds one page type
-at a time. There is no runtime backend or
-model API integration.
+at a time. There is no runtime backend or model API integration.
 
 ## Run locally
 
@@ -87,7 +86,7 @@ the generated response headers. Merely uploading HTML is not enough.
 - `scripts/content.ts` imports evidence and verifies historical integrity.
 - `scripts/build.ts` validates and stages both deployments, copies evidence, and
   generates the pages not yet migrated to Astro.
-- `scripts/astro-pages.ts` builds Astro gallery and run-detail routes inside the staging directory.
+- `scripts/astro-pages.ts` builds Astro gallery, challenge, and run-detail routes inside the staging directory.
 - `src/astro/` contains Astro pages, layouts, and components.
 - `src/site.css` and `src/app.js` contain shared styles and vanilla browser controls.
 - `content/` contains immutable evidence and separate mutable curation records.

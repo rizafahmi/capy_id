@@ -32,7 +32,11 @@ export default defineConfig({
     define: {
       __CAPYBOARD_ASTRO_PAGES__: workspace
         ? readFileSync(join(workspace, "pages.json"), "utf8")
-        : JSON.stringify({ gallery: { entries: [], fixtures: false }, runs: [] }),
+        : JSON.stringify({
+            gallery: { entries: [], fixtures: false },
+            challenge: { challenges: [], fixtures: false },
+            runs: [],
+          }),
     },
   },
 });

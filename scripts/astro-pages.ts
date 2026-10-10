@@ -4,7 +4,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import type { MeasurementRows } from "./presentation.ts";
-import type { Entry, Preview } from "./schema.ts";
+import type { Challenge, Entry, Preview } from "./schema.ts";
 
 export type PublishedEntry = Entry & { preview: Preview; measurementRows: MeasurementRows };
 type GalleryPage = { entries: PublishedEntry[]; fixtures: boolean };
@@ -16,7 +16,14 @@ export type RunPage = {
   fixtures: boolean;
 };
 
-export type AstroPages = { gallery: GalleryPage; runs: RunPage[] };
+export type ChallengePrompt = Challenge & { prompt: string };
+type ChallengePage = { challenges: ChallengePrompt[]; fixtures: boolean };
+
+export type AstroPages = {
+  gallery: GalleryPage;
+  challenge: ChallengePage;
+  runs: RunPage[];
+};
 
 const execute = promisify(execFile);
 const projectRoot = fileURLToPath(new URL("../", import.meta.url));

@@ -1,11 +1,16 @@
 import { cp, lstat, mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve, sep } from "node:path";
-import { buildAstroPages, type PublishedEntry, type RunPage } from "./astro-pages.ts";
+import {
+  buildAstroPages,
+  type ChallengePrompt,
+  type PublishedEntry,
+  type RunPage,
+} from "./astro-pages.ts";
 import { readArtifact, utf8, validateContent } from "./content.ts";
 import { prepareCodeView } from "./highlight.ts";
 import { measurementRows } from "./presentation.ts";
-import type { Collection, Entry, Ledger, Preview } from "./schema.ts";
-import { headerFile, previewPolicyVersion } from "./security.ts";
+import type { Entry, Ledger, Preview } from "./schema.ts";
+import { headerFile } from "./security.ts";
 
 export const escapeHtml = (value: unknown): string =>
   String(value ?? "")
@@ -15,16 +20,10 @@ export const escapeHtml = (value: unknown): string =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 const e = escapeHtml;
-const evidenceUrl = (path: string) => `/evidence/${path}`;
-const inspirationLink =
-  '<a href="https://simonwillison.net/tags/pelican-riding-a-bicycle/">Simon Willison\'s pelican-riding-a-bicycle experiments</a>';
 function page(title: string, body: string, fixtures: boolean, section: string): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="A curated, inspectable gallery of model responses to one creative coding challenge. Not a model leaderboard."><title>${e(title)} · Capyboard</title><link rel="icon" href="/assets/favicon.png" type="image/png"><link rel="preload" href="/assets/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/site.css"><script type="module" src="/assets/app.js"></script></head><body data-page="${e(section)}"><a class="skip" href="#main">Skip to content</a><header class="site-header"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">cb</span>capyboard<span class="brand-tag">/ experiments</span></a><nav aria-label="Main navigation"><a href="/" ${section === "gallery" ? 'aria-current="page"' : ""}>Gallery</a><a href="/challenge/" ${section === "challenge" ? 'aria-current="page"' : ""}>The challenge <span aria-hidden="true">↗</span></a></nav></header>${fixtures ? '<div class="development-banner" role="note">Development fixtures. These are test examples, not genuine model experiments.</div>' : ""}<main id="main">${body}</main><footer class="site-footer"><span>Showcase first. Inspect everything.</span><a href="/challenge/#limits">Interpretation and limitations</a></footer><div id="global-status" class="sr-only" role="status"></div></body></html>`;
 }
 const highlightUrl = (id: string, kind: string) => `/assets/highlights/${id}-${kind}.json`;
-function challengePage(collection: Collection): string {
-  return `<header class="run-heading"><p class="eyebrow">Instructions and interpretation</p><h1>The challenge</h1><p class="hero-description">One deliberately narrow task. Every experiment keeps its instructions and generation history.</p></header>${[...collection.challenges.values()].map((challenge) => `<section id="${e(challenge.id)}"><h2>${e(challenge.title)}</h2><p class="eyebrow">${e(challenge.id)}</p><pre tabindex="0"><code>${e(collection.prompts.get(challenge.id))}</code></pre><button type="button" data-copy-url="${e(evidenceUrl(challenge.prompt_path))}" data-sha256="${e(challenge.prompt_sha256)}" hidden>Copy prompt</button><p class="checksum">SHA-256 ${e(challenge.prompt_sha256)}</p></section>`).join("")}<section class="prose"><h2 id="inspiration">From pelicans to capybaras</h2><p>${inspirationLink} inspired this challenge. Our version asks models to animate a capybara on a hoverboard in a single HTML file.</p><h2>Collection protocol</h2><ol><li>Start a fresh conversation or request with no previous user conversation.</li><li>Send the fixed prompt exactly once. Record known system instructions separately.</li><li>Do not edit, retry, or repair a canonical one-shot output.</li><li>Record provider, identifier, interface, timestamp, exposed settings, and known tool use. Leave unknown conditions unknown.</li><li>Save the full response and extracted HTML before publication.</li><li>Keep additional attempts as separate records in the same series. Publish all collected attempts or disclose incomplete publication.</li></ol><p>Revised and tool-assisted examples require prominent labels and their full user-turn transcript. A changed instruction creates a new challenge version.</p><h2 id="limits">What this gallery cannot tell you</h2><ul><li>One task cannot establish overall model quality.</li><li>Individual runs can vary.</li><li>Model aliases and chat products can change.</li><li>Publication may not represent all possible attempts.</li><li>Preview restrictions may affect behavior.</li></ul><h2>Preview policy ${previewPolicyVersion}</h2><p>Derived previews are byte-for-byte copies of extracted UTF-8 HTML. They are served on a separate origin under an enforced HTTP Content Security Policy and an iframe sandbox. Originals remain downloadable plain text on the gallery origin.</p><p>Inline scripts and styles can run. External resources, fetch requests, nested frames, forms, popups, and top navigation are restricted. No frame messages are trusted.</p><p>Sandboxing is not absolute network or CPU isolation. Scripts may navigate their own frame or block a browser. Curator-reviewed execution is opt-in, and suspect outputs remain evidence with execution disabled.</p><p>SHA-256 protects recorded integrity. It does not prove authorship or scientific validity.</p></section><p id="artifact-status" role="status"></p>`;
-}
 function comparePage(entries: Entry[]): string {
   return `<a class="back-link" href="/">← All attempts</a><header class="run-heading"><p class="eyebrow">Two attempts, one shared viewport</p><h1>Compare outputs</h1><p class="hero-description">Inspect the differences. No scores, no automatic winners.</p></header><form id="compare-form" action="/compare/" method="get"><div class="compare-selectors">${["left", "right"].map((side) => `<label>${side === "left" ? "Left" : "Right"} run<select name="${side}" required><option value="">Select a run</option>${entries.map((entry) => `<option value="${e(entry.run.id)}">${e(entry.run.model.display_name)} · ${e(entry.run.id)}</option>`).join("")}</select></label>`).join("")}<button type="submit">Compare</button></div></form><noscript><p>Comparison controls and previews require JavaScript. Open the individual run pages to inspect their evidence.</p></noscript><p id="compare-status" role="status">Choose two distinct runs.</p><div id="condition-notices"></div><button type="button" id="run-both" hidden>Run both</button><div id="compare-panels" class="compare-panels"></div>`;
 }
@@ -176,22 +175,20 @@ export async function buildSite(options: {
           await readArtifact(content.root, curation.thumbnail.path),
         );
     }
+    const challenges: ChallengePrompt[] = [];
+    for (const challenge of content.challenges.values()) {
+      const bytes = await readArtifact(content.root, challenge.prompt_path);
+      challenges.push({ ...challenge, prompt: utf8(bytes) });
+      await put(`gallery/evidence/${challenge.prompt_path}`, bytes);
+    }
     await buildAstroPages({
       pages: {
         gallery: { entries: views.filter((entry) => !corrections.has(entry.run.id)), fixtures },
+        challenge: { challenges, fixtures },
         runs: runPages,
       },
       staging,
     });
-    for (const challenge of content.challenges.values())
-      await put(
-        `gallery/evidence/${challenge.prompt_path}`,
-        await readArtifact(content.root, challenge.prompt_path),
-      );
-    await put(
-      "gallery/challenge/index.html",
-      page("The challenge", challengePage(content), fixtures, "challenge"),
-    );
     await put(
       "gallery/compare/index.html",
       page("Compare", comparePage(entries), fixtures, "compare"),

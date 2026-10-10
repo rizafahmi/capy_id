@@ -1,0 +1,101 @@
+---
+import type { AstroPages } from "../../../scripts/astro-pages.ts";
+import { previewPolicyVersion } from "../../../scripts/security.ts";
+import Shell from "../layouts/Shell.astro";
+
+declare const __CAPYBOARD_ASTRO_PAGES__: AstroPages;
+const { challenges, fixtures } = __CAPYBOARD_ASTRO_PAGES__.challenge;
+---
+
+<Shell title="The challenge" fixtures={fixtures} section="challenge">
+  <header class="run-heading">
+    <p class="eyebrow">Instructions and interpretation</p>
+    <h1>The challenge</h1>
+    <p class="hero-description">
+      One deliberately narrow task. Every experiment keeps its instructions and
+      generation history.
+    </p>
+  </header>
+  {challenges.map((challenge) => (
+    <section id={challenge.id}>
+      <h2>{challenge.title}</h2>
+      <p class="eyebrow">{challenge.id}</p>
+      <pre tabindex="0"><code>{challenge.prompt}</code></pre>
+      <button
+        type="button"
+        data-copy-url={`/evidence/${challenge.prompt_path}`}
+        data-sha256={challenge.prompt_sha256}
+        hidden
+      >
+        Copy prompt
+      </button>
+      <p class="checksum">SHA-256 {challenge.prompt_sha256}</p>
+    </section>
+  ))}
+  <section class="prose">
+    <h2 id="inspiration">From pelicans to capybaras</h2>
+    <p>
+      <a href="https://simonwillison.net/tags/pelican-riding-a-bicycle/">
+        Simon Willison's pelican-riding-a-bicycle experiments
+      </a>{" "}
+      inspired this challenge. Our version asks models to animate a capybara on
+      a hoverboard in a single HTML file.
+    </p>
+    <h2>Collection protocol</h2>
+    <ol>
+      <li>
+        Start a fresh conversation or request with no previous user
+        conversation.
+      </li>
+      <li>
+        Send the fixed prompt exactly once. Record known system instructions
+        separately.
+      </li>
+      <li>Do not edit, retry, or repair a canonical one-shot output.</li>
+      <li>
+        Record provider, identifier, interface, timestamp, exposed settings, and
+        known tool use. Leave unknown conditions unknown.
+      </li>
+      <li>Save the full response and extracted HTML before publication.</li>
+      <li>
+        Keep additional attempts as separate records in the same series. Publish
+        all collected attempts or disclose incomplete publication.
+      </li>
+    </ol>
+    <p>
+      Revised and tool-assisted examples require prominent labels and their full
+      user-turn transcript. A changed instruction creates a new challenge
+      version.
+    </p>
+    <h2 id="limits">What this gallery cannot tell you</h2>
+    <ul>
+      <li>One task cannot establish overall model quality.</li>
+      <li>Individual runs can vary.</li>
+      <li>Model aliases and chat products can change.</li>
+      <li>Publication may not represent all possible attempts.</li>
+      <li>Preview restrictions may affect behavior.</li>
+    </ul>
+    <h2>Preview policy {previewPolicyVersion}</h2>
+    <p>
+      Derived previews are byte-for-byte copies of extracted UTF-8 HTML. They
+      are served on a separate origin under an enforced HTTP Content Security
+      Policy and an iframe sandbox. Originals remain downloadable plain text on
+      the gallery origin.
+    </p>
+    <p>
+      Inline scripts and styles can run. External resources, fetch requests,
+      nested frames, forms, popups, and top navigation are restricted. No frame
+      messages are trusted.
+    </p>
+    <p>
+      Sandboxing is not absolute network or CPU isolation. Scripts may navigate
+      their own frame or block a browser. Curator-reviewed execution is opt-in,
+      and suspect outputs remain evidence with execution disabled.
+    </p>
+    <p>
+      SHA-256 protects recorded integrity. It does not prove authorship or
+      scientific validity.
+    </p>
+  </section>
+  <p id="artifact-status" role="status"></p>
+</Shell>

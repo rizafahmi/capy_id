@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { gzipSync } from "node:zlib";
 import { buildSite } from "../scripts/build.ts";
-import { importRun, initializeContent, jsonBytes } from "../scripts/content.ts";
+import { importRun, initializeContent, jsonBytes, sha256 } from "../scripts/content.ts";
 import { createFixtures, fixtureMetadata } from "../scripts/fixtures.ts";
-import { curationSchema } from "../scripts/schema.ts";
+import { challengeSchema, curationSchema, ledgerSchema } from "../scripts/schema.ts";
 
 async function buildFixture(t: test.TestContext) {
   const root = await mkdtemp(join(tmpdir(), "capyboard-build-"));
@@ -58,6 +58,64 @@ test("gallery and challenge credit Simon Willison with a linked explanation", as
     challenge,
     /Our version asks models to animate a capybara on a hoverboard in a single HTML file\./,
   );
+});
+
+test("challenge versions preserve prompt bytes, escape text, and keep scripts external", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "capyboard-challenges-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const content = join(root, "content");
+  await initializeContent(content);
+  const prompt = Buffer.from(
+    '\nDraw <canvas> & keep "quotes".\n<script>alert("prompt")</script>\n',
+  );
+  const challenge = challengeSchema.parse({
+    schema_version: 1,
+    id: "challenge-v2",
+    title: '<script>alert("title")</script>',
+    prompt_path: "challenges/challenge-v2/prompt.txt",
+    prompt_sha256: sha256(prompt),
+  });
+  const metadataPath = "challenges/challenge-v2/challenge.json";
+  const metadata = jsonBytes(challenge);
+  await mkdir(join(content, "challenges/challenge-v2"));
+  await writeFile(join(content, challenge.prompt_path), prompt);
+  await writeFile(join(content, metadataPath), metadata);
+  const ledger = ledgerSchema.parse(
+    JSON.parse(await readFile(join(content, "integrity.json"), "utf8")),
+  );
+  for (const [path, bytes] of [
+    [challenge.prompt_path, prompt],
+    [metadataPath, metadata],
+  ] as const)
+    ledger.files[path] = { sha256: sha256(bytes), size_bytes: bytes.length };
+  await writeFile(join(content, "integrity.json"), jsonBytes(ledger));
+  const out = join(root, "site");
+  await buildSite({
+    root: content,
+    out,
+    galleryOrigin: "https://gallery.example",
+    previewOrigin: "https://preview.example",
+    development: false,
+  });
+  const html = await readFile(join(out, "gallery/challenge/index.html"), "utf8");
+  assert.match(html, /<section id="capybara-hoverboard-v1">/);
+  assert.match(html, /<section id="challenge-v2">/);
+  assert.match(html, /<h2>&lt;script&gt;alert\([^<]*title[^<]*\)&lt;\/script&gt;<\/h2>/);
+  assert.match(
+    html,
+    /<pre tabindex="0"><code>\nDraw &lt;canvas&gt; &amp; keep [^\n]+\n&lt;script&gt;alert\([^<]*prompt[^<]*\)&lt;\/script&gt;\n<\/code><\/pre>/,
+  );
+  assert.match(html, /data-copy-url="\/evidence\/challenges\/challenge-v2\/prompt.txt"/);
+  assert.ok(html.includes(`data-sha256="${challenge.prompt_sha256}"`));
+  assert.match(html, /aria-current="page">The challenge/);
+  assert.doesNotMatch(html, /Development fixtures|<iframe|<style|astro-island/);
+  assert.equal((html.match(/<script\b/g) ?? []).length, 1);
+  assert.match(html, /<script type="module" src="\/assets\/app.js"><\/script>/);
+  for (const path of ["challenges/capybara-hoverboard-v1/prompt.txt", challenge.prompt_path])
+    assert.deepEqual(
+      await readFile(join(out, "gallery/evidence", path)),
+      await readFile(join(content, path)),
+    );
 });
 
 test("gallery is static, contains all attempts, and contains no experiment execution", async (t) => {
