@@ -89,6 +89,45 @@ test("run inspection preserves downloads, starts only on request, and unloads on
   expect(await readFile(await (await responseDownload).path())).toEqual(Buffer.from(animationHtml));
 });
 
+test("gallery defers harness details to inspection and comparison without sampling controls", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/");
+  const card = page.locator("[data-card='fixture-animation']");
+  await expect(card.getByText("Harness", { exact: true })).toHaveCount(0);
+  await expect(card.getByText("Version", { exact: true })).toHaveCount(0);
+  await expect(card.getByText("Effort", { exact: true })).toHaveCount(0);
+  await card.getByRole("link", { name: "Inspect attempt from animation", exact: true }).click();
+  await expect(page).toHaveURL(/\/runs\/fixture-animation\//);
+  await expect(
+    page.locator(".metadata").getByText("Development harness", { exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".metadata").getByText("low", { exact: true })).toBeVisible();
+  await expect(page.locator("main")).not.toContainText("Recorded settings");
+  await expect(page.locator("main")).not.toContainText("temperature");
+  await expect(page.locator("main")).not.toContainText("top_p");
+  const response = await request.get("/evidence/runs/fixture-animation/run.json");
+  const run = await response.json();
+  expect(run.generation).toEqual({
+    mode: "one-shot",
+    interface: "other",
+    tools_used: "no",
+    harness: { name: "Development harness", version: "test", effort: "low" },
+    metrics: {
+      time: { kind: "model", duration_ms: 17222 },
+      tokens: { input: 1262, cached: 0, output: 2464, total: 3726 },
+    },
+  });
+  await page.goto("/compare/?left=fixture-animation&right=fixture-unknown");
+  await expect(page.locator(".compare-panel")).toHaveCount(2);
+  await expect(page.locator(".compare-panel").first().locator("dl")).toContainText("low");
+  await expect(page.locator(".compare-panel").last().locator("dl")).toContainText("Unknown");
+  await expect(page.locator("#condition-notices")).toContainText("Effort: low versus Unknown");
+  await expect(page.locator("main")).not.toContainText("temperature");
+  await expect(page.locator("main")).not.toContainText("top_p");
+});
+
 test("time and token measurements are readable in gallery, detail and comparison", async ({
   page,
   browser,

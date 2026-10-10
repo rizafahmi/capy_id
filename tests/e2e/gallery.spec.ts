@@ -70,7 +70,7 @@ test("one attempt stays visible without unusable controls and links to complete 
       await page.getByRole("link", { name: "Inspect attempt from animation", exact: true }).click();
       await expect(page).toHaveURL(/\/runs\/fixture-animation\//);
       await expect(page.locator(".token-breakdown")).toContainText("1,262");
-      await expect(page.locator(".run-context")).toContainText("other");
+      await expect(page.locator(".run-context")).toContainText("Development harness");
       await page.getByText("Run provenance", { exact: true }).click();
       await expect(page.locator(".run-provenance")).toContainText("2026-10-08T12:00:00Z");
     } finally {

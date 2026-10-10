@@ -355,15 +355,18 @@ async function enableComparison() {
     if (a.run.challenge_id !== b.run.challenge_id)
       notices.append(element("p", "Different instructions.", "notice"));
     const differences = [];
-    for (const key of ["mode", "interface", "tools_used", "system_instruction_known"]) {
+    for (const key of ["mode", "interface", "tools_used"]) {
       if (a.run.generation[key] !== b.run.generation[key])
         differences.push(`${key}: ${a.run.generation[key]} versus ${b.run.generation[key]}`);
     }
-    for (const key of Object.keys(a.run.generation.settings)) {
-      if (a.run.generation.settings[key] !== b.run.generation.settings[key])
-        differences.push(
-          `${key}: ${a.run.generation.settings[key]} versus ${b.run.generation.settings[key]}`,
-        );
+    for (const [key, label] of [
+      ["name", "Harness"],
+      ["version", "Harness version"],
+      ["effort", "Effort"],
+    ]) {
+      const leftValue = a.run.generation.harness?.[key] ?? "Unknown";
+      const rightValue = b.run.generation.harness?.[key] ?? "Unknown";
+      if (leftValue !== rightValue) differences.push(`${label}: ${leftValue} versus ${rightValue}`);
     }
     const systems = (entry) =>
       entry.transcript.turns.filter((turn) => turn.role === "system").map((turn) => turn.content);
@@ -372,11 +375,13 @@ async function enableComparison() {
     const incomplete = [a, b].some(
       ({ run }) =>
         !run.generated_at ||
-        !run.generation.system_instruction_known ||
         run.generation.mode === "unknown" ||
         run.generation.interface === "unknown" ||
         run.generation.tools_used === "unknown" ||
-        Object.values(run.generation.settings).some((value) => value === null),
+        (run.generation.interface === "coding-agent" &&
+          (!run.generation.harness ||
+            run.generation.harness.version === null ||
+            run.generation.harness.effort === null)),
     );
     if (differences.length || incomplete) {
       const notice = element("div", undefined, "notice");
@@ -385,7 +390,7 @@ async function enableComparison() {
         notice.append(
           element(
             "p",
-            "Some generation dates, system instructions, or settings are unknown. Review each run's provenance.",
+            "Some generation dates or agent conditions are unknown. Review each run's provenance.",
           ),
         );
       if (differences.length) {
@@ -406,18 +411,18 @@ async function enableComparison() {
         `${entry.run.generation.mode} · ${entry.run.generation.interface} · ${entry.run.challenge_id}`,
         "muted",
       );
-      const settings = element(
-        "pre",
-        JSON.stringify(entry.run.generation.settings, null, 2),
-        "settings",
-      );
-      const measurements = element("dl", undefined, "metadata");
-      for (const [label, value] of entry.measurementRows) {
+      const provenance = element("dl", undefined, "metadata");
+      for (const [label, value] of [
+        ["Harness", entry.run.generation.harness?.name ?? "Unknown"],
+        ["Harness version", entry.run.generation.harness?.version ?? "Unknown"],
+        ["Effort", entry.run.generation.harness?.effort ?? "Unknown"],
+        ...entry.measurementRows,
+      ]) {
         const row = element("div");
         row.append(element("dt", label), element("dd", value));
-        measurements.append(row);
+        provenance.append(row);
       }
-      panel.append(conditions, settings, measurements);
+      panel.append(conditions, provenance);
       const preview = comparePreview(entry);
       panel.append(preview);
       const link = element("a", "Inspect full evidence ↗");

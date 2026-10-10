@@ -60,6 +60,14 @@ test("gallery and challenge credit Simon Willison with a linked explanation", as
   );
 });
 
+test("gallery is static, contains all attempts, and contains no experiment execution", async (t) => {
+  const { out } = await buildFixture(t);
+  const html = await readFile(join(out, "gallery/index.html"), "utf8");
+  assert.equal((html.match(/data-card=/g) ?? []).length, 5);
+  assert.doesNotMatch(html, /<iframe|Deliberately broken development fixture/);
+  assert.match(html, /Development fixtures/);
+  assert.match(html, /fixture-no-html/);
+});
 test("small collections omit filtering and comparison and give one attempt a full row", async (t) => {
   const { content, out } = await buildFixture(t);
   for (const id of ["fixture-unknown", "fixture-broken", "fixture-disabled", "fixture-no-html"]) {
@@ -109,14 +117,6 @@ test("small collections omit filtering and comparison and give one attempt a ful
   assert.doesNotMatch(empty, /class="filters"|data-select|comparison-tray/);
 });
 
-test("gallery is static, contains all attempts, and contains no experiment execution", async (t) => {
-  const { out } = await buildFixture(t);
-  const html = await readFile(join(out, "gallery/index.html"), "utf8");
-  assert.equal((html.match(/data-card=/g) ?? []).length, 5);
-  assert.doesNotMatch(html, /<iframe|Deliberately broken development fixture/);
-  assert.match(html, /Development fixtures/);
-  assert.match(html, /fixture-no-html/);
-});
 test("run pages and challenge evidence exist without a SPA fallback", async (t) => {
   const { out } = await buildFixture(t);
   const html = await readFile(join(out, "gallery/runs/fixture-animation/index.html"), "utf8");
@@ -129,18 +129,92 @@ test("run pages and challenge evidence exist without a SPA fallback", async (t) 
   );
   assert.match(await readFile(join(out, "gallery/404.html"), "utf8"), /Run not found/);
 });
-test("detail puts preview controls before output and defers provenance and instructions", async (t) => {
+test("detail hierarchy puts total tokens first and defers dates and identifiers to provenance", async (t) => {
   const { out } = await buildFixture(t);
   const html = await readFile(join(out, "gallery/runs/fixture-animation/index.html"), "utf8");
-  assert.ok(html.indexOf('class="preview-controls"') < html.indexOf('class="preview-stage"'));
+  assert.match(
+    html,
+    /class="metadata run-highlights"><div><dt>Total tokens<\/dt><dd>3,726<\/dd><\/div><div><dt>Model time<\/dt><dd>17\.222 s<\/dd>/,
+  );
+  assert.match(html, /class="metadata token-breakdown"/);
+  assert.match(html, /class="metadata run-context"/);
   assert.match(
     html,
     /<details class="evidence run-provenance" id="run-provenance"><summary>Run provenance<\/summary>/,
   );
+  assert.ok(html.indexOf("Total tokens") < html.indexOf("<dt>Generated</dt>"));
+  assert.ok(html.indexOf("Token breakdown") < html.indexOf("<dt>Published</dt>"));
   assert.match(html, /<dt>Run ID<\/dt><dd>fixture-animation<\/dd>/);
   assert.match(html, /<dt>Generated<\/dt><dd>2026-10-08T12:00:00Z<\/dd>/);
   assert.match(html, /id="run-instructions"><summary>Exact user instructions<\/summary>/);
   assert.doesNotMatch(html, /id="run-instructions" open|id="run-provenance" open/);
+});
+
+test("run conditions expose harness and effort without sampling controls", async (t) => {
+  const { content, out } = await buildFixture(t);
+  const run = await importRun({
+    root: content,
+    metadata: {
+      ...fixtureMetadata("fixture-pi"),
+      generation: {
+        mode: "one-shot",
+        interface: "coding-agent",
+        tools_used: "no",
+        harness: { name: "Pi", version: "1.1.0", effort: "low" },
+        metrics: {
+          time: { kind: "model", duration_ms: 17222 },
+          tokens: { input: 1262, cached: 100, output: 2464, total: 3926 },
+        },
+      },
+    },
+    response: Buffer.from("No HTML returned."),
+  });
+  const path = join(content, `curation/${run.id}.json`);
+  const curation = curationSchema.parse(JSON.parse(await readFile(path, "utf8")));
+  await writeFile(
+    path,
+    jsonBytes({ ...curation, visible: true, published_at: "2026-10-10T00:00:00Z" }),
+  );
+  await buildSite({
+    root: content,
+    out,
+    galleryOrigin: "http://127.0.0.1:4173",
+    previewOrigin: "http://127.0.0.1:4174",
+    development: true,
+  });
+  const html = await readFile(join(out, "gallery/runs/fixture-pi/index.html"), "utf8");
+  const gallery = await readFile(join(out, "gallery/index.html"), "utf8");
+  assert.match(gallery, /<dl class="metadata card-measurements">/);
+  assert.doesNotMatch(gallery, /<dt>Harness<\/dt>|<dt>Version<\/dt>|<dt>Effort<\/dt>/);
+  assert.match(html, /<dt>Harness<\/dt><dd>Pi<\/dd>/);
+  assert.match(html, /<dt>Version<\/dt><dd>1\.1\.0<\/dd>/);
+  assert.match(html, /<dt>Effort<\/dt><dd>low<\/dd>/);
+  for (const page of [gallery, html]) {
+    assert.match(page, /<dt>Model time<\/dt><dd>17\.222 s<\/dd>/);
+    assert.match(page, /<dt>Total tokens<\/dt><dd>3,926<\/dd>/);
+  }
+  assert.doesNotMatch(
+    gallery,
+    /<dt>Input tokens<\/dt>|<dt>Cached tokens<\/dt>|<dt>Output tokens<\/dt>/,
+  );
+  assert.match(html, /<dt>Input tokens<\/dt><dd>1,262<\/dd>/);
+  assert.match(html, /<dt>Cached tokens<\/dt><dd>100<\/dd>/);
+  assert.match(html, /<dt>Output tokens<\/dt><dd>2,464<\/dd>/);
+  const catalogue = JSON.parse(await readFile(join(out, "gallery/assets/runs.json"), "utf8"));
+  assert.deepEqual(
+    catalogue.find((entry: { run: { id: string } }) => entry.run.id === run.id).measurementRows,
+    [
+      ["Model time", "17.222 s"],
+      ["Input tokens", "1,262"],
+      ["Cached tokens", "100"],
+      ["Output tokens", "2,464"],
+      ["Total tokens", "3,926"],
+    ],
+  );
+  assert.doesNotMatch(
+    html,
+    /Recorded settings|temperature|top_p|max_output_tokens|<summary>Known system instruction/,
+  );
 });
 
 test("elapsed zero and missing historical measurements render without invented values", async (t) => {
@@ -163,8 +237,6 @@ test("elapsed zero and missing historical measurements render without invented v
           mode: "one-shot",
           interface: "other",
           tools_used: "no",
-          settings: { temperature: null, top_p: null, max_output_tokens: null, seed: null },
-          system_instruction_known: false,
           ...(metrics === undefined ? {} : { metrics }),
         },
       },
@@ -191,6 +263,49 @@ test("elapsed zero and missing historical measurements render without invented v
   const legacy = await readFile(join(out, "gallery/runs/fixture-legacy/index.html"), "utf8");
   for (const label of ["Time", "Input tokens", "Cached tokens", "Output tokens", "Total tokens"])
     assert.match(legacy, new RegExp(`<dt>${label}</dt><dd>Unknown</dd>`));
+});
+
+test("a provenance correction preserves the old route and replaces its gallery card", async (t) => {
+  const { content, out } = await buildFixture(t);
+  const oldPath = join(content, "runs/fixture-animation/run.json");
+  const oldBytes = await readFile(oldPath);
+  const original = JSON.parse(oldBytes.toString());
+  const run = await importRun({
+    root: content,
+    metadata: {
+      ...original,
+      id: "fixture-animation-provenance",
+      supersedes_run_id: "fixture-animation",
+      correction_reason: "Add observed harness and effort.",
+      generation: {
+        mode: "one-shot",
+        interface: "coding-agent",
+        tools_used: "no",
+        harness: { name: "Pi", version: "1.1.0", effort: "low" },
+      },
+    },
+    response: await readFile(join(content, original.artifacts.response.path)),
+  });
+  const path = join(content, `curation/${run.id}.json`);
+  const curation = curationSchema.parse(JSON.parse(await readFile(path, "utf8")));
+  await writeFile(
+    path,
+    jsonBytes({ ...curation, visible: true, published_at: "2026-10-10T00:00:00Z" }),
+  );
+  await buildSite({
+    root: content,
+    out,
+    galleryOrigin: "http://127.0.0.1:4173",
+    previewOrigin: "http://127.0.0.1:4174",
+    development: true,
+  });
+  const gallery = await readFile(join(out, "gallery/index.html"), "utf8");
+  assert.match(gallery, /data-card="fixture-animation-provenance"/);
+  assert.doesNotMatch(gallery, /data-card="fixture-animation"/);
+  const oldPage = await readFile(join(out, "gallery/runs/fixture-animation/index.html"), "utf8");
+  assert.match(oldPage, /href="\/runs\/fixture-animation-provenance\/"/);
+  assert.match(oldPage, /View corrected run/);
+  assert.deepEqual(await readFile(oldPath), oldBytes);
 });
 
 test("download artifacts and derived previews preserve the extracted bytes", async (t) => {

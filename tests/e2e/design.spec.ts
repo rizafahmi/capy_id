@@ -70,7 +70,7 @@ test("detail hierarchy foregrounds usage and keeps provenance accessible", async
       const total = page.locator(".run-highlights > div").first();
       await expect(total.locator("dt")).toHaveText("Total tokens");
       await expect(total.locator("dd")).toHaveText("3,726");
-      await expect(page.locator(".run-context")).toContainText("other");
+      await expect(page.locator(".run-context")).toContainText("Development harness");
       await expect(page.locator(".token-breakdown")).toContainText("1,262");
       await expect(page.locator(".run-provenance")).not.toHaveAttribute("open", "");
       await expect(page.locator("#run-instructions")).not.toHaveAttribute("open", "");
