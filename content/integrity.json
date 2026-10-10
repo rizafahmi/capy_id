@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "files": {
+    "challenges/capybara-hoverboard-v1/prompt.txt": {
+      "sha256": "e6b955ce7c23afabd2adf2115467e7b6c213ac2cab2a7596886ca71ad827fe1c",
+      "size_bytes": 514
+    },
+    "challenges/capybara-hoverboard-v1/challenge.json": {
+      "sha256": "78fb51dcbffa2a93f95012b0701c9d262cd01883046b91bdcc734d4365fa6e94",
+      "size_bytes": 251
+    }
+  }
+}
