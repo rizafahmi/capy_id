@@ -24,6 +24,25 @@ async function buildFixture(t: test.TestContext) {
   });
   return { root, content, out };
 }
+test("redesign ships local imagery and fonts without widening preview permissions", async (t) => {
+  const { out } = await buildFixture(t);
+  const html = await readFile(join(out, "gallery/index.html"), "utf8");
+  assert.match(html, /class="hero-visual"/);
+  assert.match(html, /fetchpriority="high"/);
+  assert.match(html, /color-scheme" content="light dark"/);
+  assert.match(html, /Giles Laurent/);
+  for (const file of [
+    "capybara.webp",
+    "capybara-small.webp",
+    "favicon.png",
+    "bricolage-grotesque-latin.woff2",
+    "BricolageGrotesque-OFL.txt",
+  ])
+    assert.ok((await readFile(join(out, "gallery/assets", file))).length > 0);
+  assert.match(await readFile(join(out, "gallery/_headers"), "utf8"), /font-src 'self'/);
+  assert.match(await readFile(join(out, "preview/_headers"), "utf8"), /font-src 'none'/);
+});
+
 test("gallery is static, contains all attempts, and contains no experiment execution", async (t) => {
   const { out } = await buildFixture(t);
   const html = await readFile(join(out, "gallery/index.html"), "utf8");

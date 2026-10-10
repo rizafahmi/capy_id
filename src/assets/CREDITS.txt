@@ -1,0 +1,14 @@
+Capybara photograph
+Photographer: Giles Laurent (https://gileslaurent.com)
+Source: https://commons.wikimedia.org/wiki/File:Capybaracropped.jpg
+License: CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)
+Local files: capybara.webp and capybara-small.webp
+Changes: Wikimedia's 960px derivative converted to WebP, with an additional 640px version. Both local derivatives remain CC BY-SA 4.0.
+
+Bricolage Grotesque
+Designer: Mathieu Triay and contributors
+Source: https://fonts.google.com/specimen/Bricolage+Grotesque
+Local file: bricolage-grotesque-latin.woff2 (Latin variable subset, weights 400-800)
+License: SIL Open Font License 1.1, included in BricolageGrotesque-OFL.txt.
+
+These are local presentation assets, not model outputs or experiment evidence.

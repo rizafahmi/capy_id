@@ -254,7 +254,7 @@ test("keyboard focus reaches evidence controls and host-owned Stop", async ({ pa
   await page.goto("/");
   await page.keyboard.press(tab);
   await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
-  await tabTo(page.getByRole("link", { name: "Inspect animation", exact: true }));
+  await tabTo(page.getByRole("link", { name: /^Inspect animation/ }));
   await page.keyboard.press("Enter");
   await tabTo(page.getByRole("button", { name: "Run preview", exact: true }));
   await page.keyboard.press("Enter");
