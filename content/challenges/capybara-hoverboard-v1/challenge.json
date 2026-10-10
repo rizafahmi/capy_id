@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "id": "capybara-hoverboard-v1",
+  "title": "Capybara on a hoverboard",
+  "prompt_path": "challenges/capybara-hoverboard-v1/prompt.txt",
+  "prompt_sha256": "e6b955ce7c23afabd2adf2115467e7b6c213ac2cab2a7596886ca71ad827fe1c"
+}

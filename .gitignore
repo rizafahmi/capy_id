@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.fixture-content/
+.test-site/
+test-results/
+playwright-report/
+.audit/
+.env
+.env.*
+*.pem

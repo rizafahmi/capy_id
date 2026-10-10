@@ -1,0 +1,7 @@
+Build an animated capybara riding a hoverboard using only HTML, CSS, and JavaScript.
+
+Deliver a single self-contained HTML file with all CSS and JavaScript inline. Do not use external libraries, external image assets, external fonts, or network requests. Inline SVG, CSS drawing, and canvas are allowed.
+
+The result should visibly show a capybara riding a hoverboard, with animation that makes the scene feel alive. Do not include audio.
+
+Return only the HTML source, without explanations or Markdown code fences.
