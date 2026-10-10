@@ -1,0 +1,11 @@
+ts	phase	decision	why	evidence	result
+2026-10-09T23:55:26.685Z	frame	Build five sequential units without deployment or commits	User approved implementation; genuine content and production headers remain launch gates	PLAN.md	open
+2026-10-10T00:02:14Z	evidence	Preserve UTF-8 bytes and validate immutable records before rendering	Keep unsafe or failed outputs as evidence; never rewrite them	.audit/foundation-tests.txt	11 tests passed
+2026-10-10T00:31:25Z	gallery	Generate real routes and load no experiment code during browsing	Keep navigation and evidence readable without JavaScript	.audit/implementation-checks.txt	15 tests and static checks passed
+2026-10-10T00:31:25Z	inspection	Use a read-only manual-copy field and preserve original downloads	Browser text selections can omit trailing newlines	.audit/browser-tests.txt	36 browser tests passed
+2026-10-10T00:31:25Z	comparison	Use equal unscaled 4:3 preview viewports with explicit condition notices	Make visual and provenance comparisons honest	.audit/browser-tests.txt	Chromium Firefox and WebKit passed
+2026-10-10T01:42:52Z	curation	Reject orphan records and delete only import-owned files on rollback	An existing curation file must survive a failed import	.audit/content-tests.txt	regression passed
+2026-10-10T01:42:52Z	capture	Use an attached-body wait and a whole-pixel crop	Blank failures must be capturable and PNG dimensions must match capture metadata	.audit/capture-tests.txt	three capture regressions passed
+2026-10-10T01:42:52Z	history	Add explicit prior-ledger validation and a CI base comparison	Rewriting the current ledger must not hide historical metadata changes	.audit/final-checks.txt	CLI historical-integrity regression passed; remote CI not run
+2026-10-10T01:42:52Z	verification	Verify the real generated app in three browser engines and over HTTP	Compilation alone cannot prove evidence retrieval or preview containment	.audit/final-browser-tests.txt, .audit/local-deployment-check.txt	24 content/build/CLI tests and 48 browser tests passed
+2026-10-10T01:42:52Z	handoff	Keep launch content, deployed headers, and independent review as open gates	Fixtures and local HTTP checks do not prove genuine provenance or production hosting	docs/verification.md	implementation handed back; no deployment or commits
