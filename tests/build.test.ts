@@ -43,6 +43,72 @@ test("redesign ships local imagery and fonts without widening preview permission
   assert.match(await readFile(join(out, "preview/_headers"), "utf8"), /font-src 'none'/);
 });
 
+test("gallery and challenge credit Simon Willison with a linked explanation", async (t) => {
+  const { out } = await buildFixture(t);
+  const gallery = await readFile(join(out, "gallery/index.html"), "utf8");
+  const challenge = await readFile(join(out, "gallery/challenge/index.html"), "utf8");
+  for (const html of [gallery, challenge])
+    assert.match(
+      html,
+      /href="https:\/\/simonwillison\.net\/tags\/pelican-riding-a-bicycle\/">Simon Willison's pelican-riding-a-bicycle experiments<\/a>/,
+    );
+  assert.match(gallery, /class="hero-inspiration">Inspired by /);
+  assert.match(challenge, /From pelicans to capybaras/);
+  assert.match(
+    challenge,
+    /Our version asks models to animate a capybara on a hoverboard in a single HTML file\./,
+  );
+});
+
+test("small collections omit filtering and comparison and give one attempt a full row", async (t) => {
+  const { content, out } = await buildFixture(t);
+  for (const id of ["fixture-unknown", "fixture-broken", "fixture-disabled", "fixture-no-html"]) {
+    const path = join(content, `curation/${id}.json`);
+    const curation = curationSchema.parse(JSON.parse(await readFile(path, "utf8")));
+    await writeFile(
+      path,
+      jsonBytes({
+        ...curation,
+        visible: false,
+        series_publication_complete: false,
+        series_incomplete_reason: "Withheld for small-collection test.",
+      }),
+    );
+  }
+  const build = () =>
+    buildSite({
+      root: content,
+      out,
+      galleryOrigin: "http://127.0.0.1:4173",
+      previewOrigin: "http://127.0.0.1:4174",
+      development: true,
+    });
+  await build();
+  const html = await readFile(join(out, "gallery/index.html"), "utf8");
+  assert.equal((html.match(/data-card=/g) ?? []).length, 1);
+  assert.match(html, /class="gallery-grid single-attempt"/);
+  assert.doesNotMatch(html, /class="filters"|data-select|comparison-tray/);
+  assert.match(html, /href="#attempts"/);
+  assert.match(html, /<h3><a[^>]*>animation<\/a><\/h3>/);
+  assert.match(html, /<time datetime="2026-10-08T12:00:00Z">Oct 8, 2026<\/time>/);
+  assert.match(html, /Inspect attempt/);
+  const path = join(content, "curation/fixture-animation.json");
+  const curation = curationSchema.parse(JSON.parse(await readFile(path, "utf8")));
+  await writeFile(
+    path,
+    jsonBytes({
+      ...curation,
+      visible: false,
+      series_publication_complete: false,
+      series_incomplete_reason: "Withheld for empty-collection test.",
+    }),
+  );
+  await build();
+  const empty = await readFile(join(out, "gallery/index.html"), "utf8");
+  assert.match(empty, /No experiments published yet/);
+  assert.doesNotMatch(empty, /class="filters"|data-select|comparison-tray/);
+});
+
 test("gallery is static, contains all attempts, and contains no experiment execution", async (t) => {
   const { out } = await buildFixture(t);
   const html = await readFile(join(out, "gallery/index.html"), "utf8");
@@ -224,7 +290,7 @@ test("unsafe preview preparation stays labelled unavailable on its gallery card"
   const html = await readFile(join(out, "gallery/index.html"), "utf8");
   assert.match(
     html,
-    /<article[^>]+data-card="fixture-null-html"[\s\S]*?<span class="card-state">Live preview unavailable<\/span>/,
+    /<article[^>]+data-card="fixture-null-html"[\s\S]*?<p class="card-state">Live preview unavailable<\/p>/,
   );
 });
 

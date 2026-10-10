@@ -7,6 +7,25 @@ import { AxeBuilder } from "@axe-core/playwright";
 import { expect, type Locator, test } from "@playwright/test";
 import { animationHtml, createFixtures } from "../../scripts/fixtures.ts";
 
+test("inspiration credit is visible and linked on gallery and challenge", async ({ page }) => {
+  for (const url of ["/", "/challenge/"]) {
+    await page.goto(url);
+    const credit = page.getByRole("link", {
+      name: "Simon Willison's pelican-riding-a-bicycle experiments",
+      exact: true,
+    });
+    await expect(credit).toBeVisible();
+    await expect(credit).toHaveAttribute(
+      "href",
+      "https://simonwillison.net/tags/pelican-riding-a-bicycle/",
+    );
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
+  await expect(page.getByRole("heading", { name: "From pelicans to capybaras" })).toBeVisible();
+});
+
 test("gallery browsing combines controls without loading experiment artifacts", async ({
   page,
 }) => {
@@ -21,7 +40,10 @@ test("gallery browsing combines controls without loading experiment artifacts", 
   await page.goto("/");
   await expect(page.locator("[data-card]:visible")).toHaveCount(6);
   await expect(page.locator("iframe")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Reset", exact: true })).not.toBeVisible();
+  await page.getByText("Filter and sort", { exact: true }).click();
   await page.getByLabel("Search models").fill("FIXTURE-ANIMATION");
+  await expect(page.getByRole("button", { name: "Reset", exact: true })).toBeVisible();
   await page
     .getByRole("combobox", { name: "Provider", exact: true })
     .selectOption("Development fixture");
@@ -30,6 +52,8 @@ test("gallery browsing combines controls without loading experiment artifacts", 
   await expect(page.getByText("No matching attempts", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Reset filters" }).click();
   await expect(page.locator("[data-card]:visible")).toHaveCount(6);
+  await expect(page.getByRole("button", { name: "Reset", exact: true })).not.toBeVisible();
+  await expect(page.locator("#results-status")).not.toBeVisible();
   await expect(page.locator("[data-card]").last()).toHaveAttribute("data-card", "fixture-unknown");
   await page.getByRole("combobox", { name: "Sort by", exact: true }).selectOption("name");
   await expect(page.locator("[data-card]").first()).toHaveAttribute(
@@ -86,7 +110,11 @@ test("time and token measurements are readable in gallery, detail and comparison
   ] satisfies [string, string][]) {
     await page.goto(url);
     const metadata = page.locator(selector);
-    for (const [label, value] of expected) {
+    const visibleMeasurements =
+      url === "/"
+        ? expected.filter(([label]) => label === "Model time" || label === "Total tokens")
+        : expected;
+    for (const [label, value] of visibleMeasurements) {
       const row = metadata
         .locator("div")
         .filter({ has: page.locator("dt", { hasText: new RegExp(`^${label}$`) }) });
@@ -304,7 +332,7 @@ test("keyboard focus reaches evidence controls and host-owned Stop", async ({ pa
   await page.goto("/");
   await page.keyboard.press(tab);
   await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
-  await tabTo(page.getByRole("link", { name: /^Inspect animation/ }));
+  await tabTo(page.getByRole("link", { name: "Inspect attempt from animation", exact: true }));
   await page.keyboard.press("Enter");
   await tabTo(page.getByRole("button", { name: "Run preview", exact: true }));
   await page.keyboard.press("Enter");

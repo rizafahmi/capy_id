@@ -119,7 +119,7 @@ function enableEvidence() {
 function enableGallery() {
   const filters = document.querySelector(".filters");
   if (!filters) return;
-  filters.hidden = false;
+  filters.closest(".gallery-controls").hidden = false;
   const cards = [...document.querySelectorAll("[data-card]")];
   const grid = document.querySelector(".gallery-grid");
   const selected = new Map();
@@ -151,7 +151,11 @@ function enableGallery() {
       if (!card.hidden) count++;
       grid.append(card);
     }
-    document.querySelector("#results-status").textContent = `${count} of ${cards.length} attempts`;
+    const filtered = query !== "" || provider.value !== "";
+    filters.querySelector("[type='reset']").hidden = !filtered && sort.value === "newest";
+    const status = document.querySelector("#results-status");
+    status.hidden = !filtered;
+    status.textContent = `${count} of ${cards.length} attempts`;
     document.querySelector("#empty-state").hidden = count !== 0;
   };
   const updateSelection = () => {

@@ -120,6 +120,23 @@ for (const width of [360, 390, 768, 1024, 1440]) {
     await page.evaluate(() => document.fonts.ready);
     const header = await page.locator(".site-header").boundingBox();
     expect(header?.height).toBeLessThanOrEqual(80);
+    await expect(page.locator(".hero .button")).toHaveAttribute("href", "#attempts");
+    const firstOutput = await page.locator(".card-image").first().boundingBox();
+    expect(firstOutput).not.toBeNull();
+    expect((firstOutput?.y ?? 844) + 120).toBeLessThan(844);
+    await expect(
+      page.getByRole("heading", { level: 3, name: "animation", exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reset", exact: true })).not.toBeVisible();
+    const measurements = await page
+      .locator(".card-measurements > div")
+      .first()
+      .evaluate((node) => {
+        const label = node.querySelector("dt")?.getBoundingClientRect();
+        const value = node.querySelector("dd")?.getBoundingClientRect();
+        return { labelBottom: label?.bottom, valueTop: value?.top };
+      });
+    expect(measurements.valueTop).toBeGreaterThanOrEqual(measurements.labelBottom ?? Infinity);
     const cta = await page.locator(".hero .button").boundingBox();
     expect(cta).not.toBeNull();
     expect((cta?.y ?? 844) + (cta?.height ?? 0)).toBeLessThan(844);
