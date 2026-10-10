@@ -63,6 +63,20 @@ test("run pages and challenge evidence exist without a SPA fallback", async (t) 
   );
   assert.match(await readFile(join(out, "gallery/404.html"), "utf8"), /Run not found/);
 });
+test("detail puts preview controls before output and defers provenance and instructions", async (t) => {
+  const { out } = await buildFixture(t);
+  const html = await readFile(join(out, "gallery/runs/fixture-animation/index.html"), "utf8");
+  assert.ok(html.indexOf('class="preview-controls"') < html.indexOf('class="preview-stage"'));
+  assert.match(
+    html,
+    /<details class="evidence run-provenance" id="run-provenance"><summary>Run provenance<\/summary>/,
+  );
+  assert.match(html, /<dt>Run ID<\/dt><dd>fixture-animation<\/dd>/);
+  assert.match(html, /<dt>Generated<\/dt><dd>2026-10-08T12:00:00Z<\/dd>/);
+  assert.match(html, /id="run-instructions"><summary>Exact user instructions<\/summary>/);
+  assert.doesNotMatch(html, /id="run-instructions" open|id="run-provenance" open/);
+});
+
 test("download artifacts and derived previews preserve the extracted bytes", async (t) => {
   const { out, content } = await buildFixture(t);
   const original = await readFile(join(content, "runs/fixture-animation/output.html.txt"));

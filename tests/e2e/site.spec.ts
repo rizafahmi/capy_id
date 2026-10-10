@@ -79,9 +79,10 @@ test("copy succeeds or leaves selectable exact text with an explanatory fallback
     });
   });
   await page.goto("/runs/fixture-animation/");
+  await page.getByText("Exact user instructions", { exact: true }).click();
   await page.getByRole("button", { name: "Copy prompt", exact: true }).click();
   await expect(page.locator("#artifact-status")).toContainText("Copied preserved text");
-  const prompt = await page.locator("details").first().locator("code").textContent();
+  const prompt = await page.locator("#run-instructions code").first().textContent();
   expect(await page.locator("html").getAttribute("data-copied")).toBe(prompt);
   await page.evaluate(() =>
     Object.defineProperty(navigator, "clipboard", {
