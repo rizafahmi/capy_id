@@ -1,10 +1,11 @@
-import { access, mkdir, mkdtemp } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { buildSite } from "./build.ts";
 import { createContainmentFixtures, createFixtures } from "./fixtures.ts";
+import { type Ledger, ledgerSchema } from "./schema.ts";
 import { serveStatic } from "./server.ts";
 
 const { values } = parseArgs({
@@ -15,6 +16,16 @@ const { values } = parseArgs({
     out: { type: "string", default: "dist" },
   },
 });
+
+async function readWorkingTreeIntegrity(root: string): Promise<Ledger> {
+  try {
+    return ledgerSchema.parse(JSON.parse(await readFile(join(root, "integrity.json"), "utf8")));
+  } catch (error) {
+    throw new Error(`Cannot read the working-tree integrity ledger in ${root}`, {
+      cause: error,
+    });
+  }
+}
 let root = resolve(values.content);
 if (values["test-fixtures"]) {
   root = await mkdtemp(join(tmpdir(), "capyboard-browser-content-"));
@@ -36,6 +47,7 @@ await buildSite({
   galleryOrigin: "http://127.0.0.1:4173",
   previewOrigin: "http://127.0.0.1:4174",
   development: true,
+  priorIntegrity: await readWorkingTreeIntegrity(root),
 });
 const servers = [
   await serveStatic(join(out, "gallery"), 4173),

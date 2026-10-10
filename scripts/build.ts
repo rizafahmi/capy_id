@@ -2,7 +2,7 @@ import { cp, lstat, mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node
 import { dirname, join, resolve, sep } from "node:path";
 import { readArtifact, utf8, validateContent } from "./content.ts";
 import { prepareCodeView } from "./highlight.ts";
-import type { Collection, Entry, Preview, Run } from "./schema.ts";
+import type { Collection, Entry, Ledger, Preview, Run } from "./schema.ts";
 import { headerFile, previewPolicyVersion } from "./security.ts";
 
 export const escapeHtml = (value: unknown): string =>
@@ -197,12 +197,13 @@ export async function buildSite(options: {
   galleryOrigin: string;
   previewOrigin: string;
   development: boolean;
+  priorIntegrity?: Ledger;
 }): Promise<void> {
   const galleryOrigin = origin(options.galleryOrigin, options.development);
   const previewOrigin = origin(options.previewOrigin, options.development);
   if (galleryOrigin === previewOrigin)
     throw new Error("Gallery and preview require separate origins");
-  const content = await validateContent(options.root);
+  const content = await validateContent(options.root, options.priorIntegrity);
   if (
     !options.development &&
     content.runs.some((entry) => entry.run.provider.startsWith("Development fixture"))
