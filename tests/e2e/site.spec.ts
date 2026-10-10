@@ -65,6 +65,55 @@ test("run inspection preserves downloads, starts only on request, and unloads on
   expect(await readFile(await (await responseDownload).path())).toEqual(Buffer.from(animationHtml));
 });
 
+test("time and token measurements are readable in gallery, detail and comparison", async ({
+  page,
+  browser,
+}) => {
+  const expected: [string, string][] = [
+    ["Model time", "17.222 s"],
+    ["Input tokens", "1,262"],
+    ["Cached tokens", "0"],
+    ["Output tokens", "2,464"],
+    ["Total tokens", "3,726"],
+  ];
+  for (const [url, selector] of [
+    ["/", "[data-card='fixture-animation'] .metadata"],
+    ["/runs/fixture-animation/", ".metadata"],
+    [
+      "/compare/?left=fixture-animation&right=fixture-unknown",
+      ".compare-panel:first-child .metadata",
+    ],
+  ] satisfies [string, string][]) {
+    await page.goto(url);
+    const metadata = page.locator(selector);
+    for (const [label, value] of expected) {
+      const row = metadata
+        .locator("div")
+        .filter({ has: page.locator("dt", { hasText: new RegExp(`^${label}$`) }) });
+      await expect(row.locator("dd")).toHaveText(value);
+    }
+    await expect(page.locator("iframe")).toHaveCount(0);
+  }
+  const unknown = page.locator(".compare-panel").last().locator(".metadata");
+  for (const label of ["Time", "Input tokens", "Cached tokens", "Output tokens", "Total tokens"]) {
+    const row = unknown
+      .locator("div")
+      .filter({ has: page.locator("dt", { hasText: new RegExp(`^${label}$`) }) });
+    await expect(row.locator("dd")).toHaveText("Unknown");
+  }
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const staticPage = await context.newPage();
+    for (const url of ["/", "/runs/fixture-animation/"]) {
+      await staticPage.goto(`http://127.0.0.1:4173${url}`);
+      await expect(staticPage.getByText("3,726", { exact: true }).first()).toBeVisible();
+      await expect(staticPage.getByText("17.222 s", { exact: true }).first()).toBeVisible();
+    }
+  } finally {
+    await context.close();
+  }
+});
+
 test("copy succeeds or leaves selectable exact text with an explanatory fallback", async ({
   page,
 }) => {

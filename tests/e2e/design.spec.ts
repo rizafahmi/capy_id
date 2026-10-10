@@ -58,38 +58,58 @@ for (const colorScheme of ["light", "dark"] as const) {
   });
 }
 
-test("detail keeps the preview action visible and defers provenance", async ({ page }, info) => {
+test("detail hierarchy foregrounds usage and keeps provenance accessible", async ({
+  page,
+}, info) => {
   for (const colorScheme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme, reducedMotion: "reduce" });
     for (const width of [360, 768, 1366]) {
       await page.setViewportSize({ width, height: 768 });
       await page.goto("/runs/fixture-animation/");
       await page.evaluate(() => document.fonts.ready);
+      const total = page.locator(".run-highlights > div").first();
+      await expect(total.locator("dt")).toHaveText("Total tokens");
+      await expect(total.locator("dd")).toHaveText("3,726");
+      await expect(page.locator(".run-context")).toContainText("other");
+      await expect(page.locator(".token-breakdown")).toContainText("1,262");
       await expect(page.locator(".run-provenance")).not.toHaveAttribute("open", "");
       await expect(page.locator("#run-instructions")).not.toHaveAttribute("open", "");
       await expect(
         page.locator(".run-provenance dt").getByText("Generated", { exact: true }),
       ).not.toBeVisible();
-      const action = await page
+      const totalBox = await total.boundingBox();
+      expect(totalBox).not.toBeNull();
+      expect((totalBox?.y ?? 768) + (totalBox?.height ?? 0)).toBeLessThan(768);
+      const actionBox = await page
         .getByRole("button", { name: "Run preview", exact: true })
         .boundingBox();
-      const stage = await page.locator(".preview-stage").boundingBox();
-      expect(action).not.toBeNull();
-      expect((action?.y ?? 768) + (action?.height ?? 0)).toBeLessThan(768);
-      expect(action?.y).toBeLessThan(stage?.y ?? 0);
+      expect(actionBox).not.toBeNull();
+      expect((actionBox?.y ?? 768) + (actionBox?.height ?? 0)).toBeLessThan(768);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );
-      await expect(page.locator("iframe")).toHaveCount(0);
-      await page.getByText("Run provenance", { exact: true }).click();
-      await expect(page.locator(".run-provenance")).toContainText("2026-10-08T12:00:00Z");
-      await expect(page.locator(".run-provenance")).toContainText("fixture-animation");
+      expect(await page.locator("iframe").count()).toBe(0);
       await page.screenshot({
         path: info.outputPath(`detail-${colorScheme}-${width}.png`),
         fullPage: true,
       });
+      await page.getByText("Run provenance", { exact: true }).click();
+      await expect(page.locator(".run-provenance")).toHaveAttribute("open", "");
+      await expect(page.locator(".run-provenance")).toContainText("2026-10-08T12:00:00Z");
+      const totalSize = await total
+        .locator("dd")
+        .evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize));
+      const dateSize = await page
+        .locator(".run-provenance dd")
+        .first()
+        .evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize));
+      expect(totalSize).toBeGreaterThan(dateSize * 2);
     }
   }
+  await page.setViewportSize({ width: 360, height: 768 });
+  await page.goto("/runs/fixture-unknown/");
+  await expect(page.locator(".run-highlights > div").first().locator("dd")).toHaveText("Unknown");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
 for (const width of [360, 390, 768, 1024, 1440]) {

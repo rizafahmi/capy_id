@@ -407,7 +407,13 @@ async function enableComparison() {
         JSON.stringify(entry.run.generation.settings, null, 2),
         "settings",
       );
-      panel.append(conditions, settings);
+      const measurements = element("dl", undefined, "metadata");
+      for (const [label, value] of entry.measurementRows) {
+        const row = element("div");
+        row.append(element("dt", label), element("dd", value));
+        measurements.append(row);
+      }
+      panel.append(conditions, settings, measurements);
       const preview = comparePreview(entry);
       panel.append(preview);
       const link = element("a", "Inspect full evidence ↗");

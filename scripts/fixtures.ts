@@ -39,6 +39,15 @@ export function fixtureMetadata(id: string, generatedAt: string | null = "2026-1
       tools_used: "no",
       settings: { temperature: null, top_p: null, max_output_tokens: null, seed: null },
       system_instruction_known: false,
+      metrics: {
+        time: generatedAt ? { kind: "model", duration_ms: 17222 } : null,
+        tokens: {
+          input: generatedAt ? 1262 : null,
+          cached: generatedAt ? 0 : null,
+          output: generatedAt ? 2464 : null,
+          total: generatedAt ? 3726 : null,
+        },
+      },
     },
   };
 }

@@ -1,7 +1,7 @@
 import { cp, lstat, mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve, sep } from "node:path";
 import { readArtifact, utf8, validateContent } from "./content.ts";
-import type { Collection, Entry, Preview } from "./schema.ts";
+import type { Collection, Entry, Preview, Run } from "./schema.ts";
 import { headerFile, previewPolicyVersion } from "./security.ts";
 
 export const escapeHtml = (value: unknown): string =>
@@ -11,7 +11,15 @@ export const escapeHtml = (value: unknown): string =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
-type PublishedEntry = Entry & { preview: Preview };
+type MetadataPair = [label: string, value: string];
+type MeasurementRows = [
+  time: MetadataPair,
+  input: MetadataPair,
+  cached: MetadataPair,
+  output: MetadataPair,
+  total: MetadataPair,
+];
+type PublishedEntry = Entry & { preview: Preview; measurementRows: MeasurementRows };
 const e = escapeHtml;
 const evidenceUrl = (path: string) => `/evidence/${path}`;
 const dateLabel = (value: string | null) => value ?? "Unknown date";
@@ -26,6 +34,26 @@ function page(title: string, body: string, fixtures: boolean, section: string): 
 export function previewMarkup(entry: Entry, preview: Preview): string {
   return `<section class="preview" data-preview-id="${e(entry.run.id)}" ${preview.kind === "ready" ? `data-preview-url="${e(preview.url)}"` : ""}><div class="preview-controls">${preview.kind === "ready" ? '<button type="button" data-start hidden>Run preview</button><button type="button" data-stop hidden>Stop</button><button type="button" data-restart hidden>Restart</button><noscript><p>JavaScript is required to start a restricted preview. Evidence remains available below.</p></noscript>' : `<p class="notice">${e(preview.reason)}</p>`}<span class="viewport-label" data-viewport></span></div><p class="preview-status" role="status">${preview.kind === "ready" ? "Preview is stopped. Starting it executes generated code." : "Evidence remains available."}</p><div class="preview-stage">${screenshot(entry)}</div></section>`;
 }
+function measurementRows(run: Run): MeasurementRows {
+  const metrics = run.generation.metrics;
+  const time = metrics?.time;
+  const numbers = new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 });
+  const count = (value: number | null | undefined) =>
+    value == null ? "Unknown" : numbers.format(value);
+  return [
+    [
+      time ? (time.kind === "model" ? "Model time" : "Elapsed time") : "Time",
+      time ? `${numbers.format(time.duration_ms / 1000)} s` : "Unknown",
+    ],
+    ["Input tokens", count(metrics?.tokens.input)],
+    ["Cached tokens", count(metrics?.tokens.cached)],
+    ["Output tokens", count(metrics?.tokens.output)],
+    ["Total tokens", count(metrics?.tokens.total)],
+  ];
+}
+function metadata(pairs: MetadataPair[], className = ""): string {
+  return `<dl class="metadata${className ? ` ${e(className)}` : ""}">${pairs.map(([key, value]) => `<div><dt>${e(key)}</dt><dd>${e(value)}</dd></div>`).join("")}</dl>`;
+}
 function card(entry: PublishedEntry): string {
   const run = entry.run;
   const state = !run.artifacts.html
@@ -33,13 +61,13 @@ function card(entry: PublishedEntry): string {
     : entry.preview.kind === "unavailable"
       ? "Live preview unavailable"
       : "Opt-in live preview";
-  return `<article class="card" data-card="${e(run.id)}" data-provider="${e(run.provider)}" data-name="${e(run.model.display_name)}" data-identifier="${e(run.model.identifier)}" data-date="${e(run.generated_at ?? "")}"><a class="card-image" href="/runs/${e(run.id)}/"><span class="sr-only">Inspect ${e(run.model.display_name)}</span>${screenshot(entry)}</a><div class="card-body"><div class="card-meta"><p class="eyebrow">${e(run.provider)}</p><span class="mode-badge">${e(run.generation.mode)}</span></div><h2><a href="/runs/${e(run.id)}/">${e(run.model.display_name)}</a></h2><p class="card-date">${e(dateLabel(run.generated_at))}</p><div class="card-bottom"><span class="card-state">${e(state)}</span><label class="selection" hidden><input type="checkbox" value="${e(run.id)}" data-select> Compare</label></div></div></article>`;
+  return `<article class="card" data-card="${e(run.id)}" data-provider="${e(run.provider)}" data-name="${e(run.model.display_name)}" data-identifier="${e(run.model.identifier)}" data-date="${e(run.generated_at ?? "")}"><a class="card-image" href="/runs/${e(run.id)}/"><span class="sr-only">Inspect ${e(run.model.display_name)}</span>${screenshot(entry)}</a><div class="card-body"><div class="card-meta"><p class="eyebrow">${e(run.provider)}</p><span class="mode-badge">${e(run.generation.mode)}</span></div><h2><a href="/runs/${e(run.id)}/">${e(run.model.display_name)}</a></h2><p class="card-date">${e(dateLabel(run.generated_at))}</p>${metadata(entry.measurementRows, "card-provenance")}<div class="card-bottom"><span class="card-state">${e(state)}</span><label class="selection" hidden><input type="checkbox" value="${e(run.id)}" data-select> Compare</label></div></div></article>`;
 }
 function gallery(entries: PublishedEntry[]): string {
   const providers = [...new Set(entries.map((entry) => entry.run.provider))].sort();
   return `<section class="hero"><div class="hero-copy"><p class="eyebrow">One fixed creative coding challenge</p><h1>One prompt.<br><span>Many capybaras.</span></h1><p class="hero-description">An animated capybara. A hoverboard. See what each model actually produced, then inspect the evidence.</p><a class="button hero-cta" href="/challenge/">Read the exact prompt <span aria-hidden="true">↗</span></a></div><figure class="hero-visual"><div class="hero-photo"><img src="/assets/capybara.webp" srcset="/assets/capybara-small.webp 640w, /assets/capybara.webp 960w" sizes="(max-width: 767px) min(348px, calc(100vw - 54px)), (max-width: 1336px) calc((100vw - 144px) / 2.35), 507px" width="960" height="640" fetchpriority="high" alt="A capybara resting beside a river, the real-life subject of our coding challenge"></div><figcaption>Photo by <a href="https://commons.wikimedia.org/wiki/File:Capybaracropped.jpg">Giles Laurent</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a></figcaption></figure></section><section aria-label="Experiment gallery"><div class="collection-heading"><h2>Collected attempts <span class="count">${entries.length}</span></h2><p id="about" class="interpretation">A curated experiment gallery, not a general model leaderboard.</p><p>Original responses and generation conditions are preserved.</p></div><form class="filters" hidden><label>Search models<input name="search" type="search" placeholder="Name, identifier, or provider" autocomplete="off" spellcheck="false" autocapitalize="none"></label><label>Provider<select name="provider"><option value="">All providers</option>${providers.map((provider) => `<option>${e(provider)}</option>`).join("")}</select></label><label>Sort by<select name="sort"><option value="newest">Newest first</option><option value="name">Model name</option></select></label><button type="reset" class="secondary">Reset</button></form><p id="results-status" class="results-status" role="status">${entries.length} attempts</p><div class="gallery-grid">${entries.map(card).join("")}</div><div id="empty-state" class="empty-state" ${entries.length ? "hidden" : ""}><h2>${entries.length ? "No matching attempts" : "No experiments published yet"}</h2><p>${entries.length ? "Try another search or reset your filters." : "Genuine experiments will appear here after curator review."}</p><button type="button" data-reset hidden>Reset filters</button></div></section><aside class="comparison-tray" hidden aria-label="Selected comparison"><p id="selection-count" role="status">0 of 2 selected</p><ul id="selected-runs"></ul><a id="compare-link" class="button" aria-disabled="true">Compare two</a></aside>`;
 }
-function metadata(entry: Entry): string {
+function runProvenance(entry: Entry): string {
   const { run, curation } = entry;
   const pairs: [string, string][] = [
     ["Run ID", run.id],
@@ -55,14 +83,25 @@ function metadata(entry: Entry): string {
     ["Series", run.series_id],
     ["Attempt", String(run.attempt_number)],
   ];
-  return `<dl class="metadata">${pairs.map(([key, value]) => `<div><dt>${e(key)}</dt><dd>${e(value)}</dd></div>`).join("")}</dl><h2>Recorded settings</h2><pre class="settings">${e(JSON.stringify(run.generation.settings, null, 2))}</pre><p class="muted">Null values mean the setting was not exposed or is unknown. Reproduction is limited to recorded conditions.</p>`;
+  return `${metadata(pairs)}<h2>Recorded settings</h2><pre class="settings">${e(JSON.stringify(run.generation.settings, null, 2))}</pre><p class="muted">Null values mean the setting was not exposed or is unknown. Reproduction is limited to recorded conditions.</p>`;
 }
 function artifactSection(title: string, path: string, checksum: string): string {
   return `<details class="evidence" data-evidence-url="${e(evidenceUrl(path))}" data-sha256="${e(checksum)}"><summary>${e(title)}</summary><div class="evidence-body"><p class="evidence-status" role="status">Expand to retrieve the preserved artifact.</p><pre tabindex="0" aria-label="${e(title)}"><code></code></pre><button type="button" data-copy-url="${e(evidenceUrl(path))}" hidden>Copy ${title === "Extracted HTML" ? "HTML" : "response"}</button><a href="${e(evidenceUrl(path))}">Open preserved text</a></div></details>`;
 }
 function detail(entry: Entry, preview: Preview): string {
   const { run, curation, transcript } = entry;
-  return `<a class="back-link" href="/">← All attempts</a><header class="run-heading run-overview"><p class="eyebrow">${e(run.provider)} · ${e(run.generation.mode)}</p><h1>${e(run.model.display_name)}</h1></header><div class="run-layout"><section class="run-output" aria-labelledby="run-output-title"><h2 class="section-label" id="run-output-title">Rendered output</h2>${previewMarkup(entry, preview)}<details class="preview-policy"><summary>Preview safety and restrictions</summary><p>Restricted preview policy ${previewPolicyVersion}. A blank result is not an automatic pass or failure. Restrictions may affect the output.</p><p>Generated scripts can consume CPU or navigate their own frame. Curator review is required. Stop cannot reliably recover a blocked browser.</p></details></section></div><section class="evidence-section"><div class="collection-heading"><h2>Inspect the evidence</h2><a href="/challenge/#${e(run.challenge_id)}">Challenge and protocol ↗</a></div><p class="notice">${curation.series_publication_complete ? "The curator reports this collected series is fully published." : `Publication is incomplete. ${e(curation.series_incomplete_reason ?? "No further reason was recorded.")}`}</p><details class="evidence" id="run-instructions"><summary>Exact user instructions</summary><div class="evidence-body">${transcript.turns
+  const [time, input, cached, output, total] = measurementRows(run);
+  const context: MetadataPair[] = [
+    ["Interface", run.generation.interface],
+    ["Tools used", run.generation.tools_used],
+  ];
+  const timingNote =
+    run.generation.metrics?.time?.kind === "model"
+      ? "Model time excludes tool execution and agent startup."
+      : run.generation.metrics?.time?.kind === "elapsed"
+        ? "Elapsed time covers the recorded attempt."
+        : "Timing was not recorded.";
+  return `<a class="back-link" href="/">← All attempts</a><header class="run-heading run-overview"><p class="eyebrow">${e(run.provider)} · ${e(run.generation.mode)}</p><h1>${e(run.model.display_name)}</h1>${metadata(context, "run-context")}</header><div class="run-layout"><aside class="conditions run-summary" aria-labelledby="run-summary-title"><h2 id="run-summary-title">Run summary</h2>${metadata([total, time], `run-highlights${total[1] === "Unknown" ? " measurements-unknown" : ""}`)}<h3>Token breakdown</h3>${metadata([input, cached, output], "token-breakdown")}<p class="metric-note">Cached tokens are cache reads. ${e(timingNote)}</p></aside><section class="run-output" aria-labelledby="run-output-title"><h2 class="section-label" id="run-output-title">Rendered output</h2>${previewMarkup(entry, preview)}<details class="preview-policy"><summary>Preview safety and restrictions</summary><p>Restricted preview policy ${previewPolicyVersion}. A blank result is not an automatic pass or failure. Restrictions may affect the output.</p><p>Generated scripts can consume CPU or navigate their own frame. Curator review is required. Stop cannot reliably recover a blocked browser.</p></details></section></div><section class="evidence-section"><div class="collection-heading"><h2>Inspect the evidence</h2><a href="/challenge/#${e(run.challenge_id)}">Challenge and protocol ↗</a></div><p class="notice">${curation.series_publication_complete ? "The curator reports this collected series is fully published." : `Publication is incomplete. ${e(curation.series_incomplete_reason ?? "No further reason was recorded.")}`}</p><details class="evidence" id="run-instructions"><summary>Exact user instructions</summary><div class="evidence-body">${transcript.turns
     .filter((turn) => turn.role === "user")
     .map(
       (turn, index) =>
@@ -77,7 +116,7 @@ function detail(entry: Entry, preview: Preview): string {
           .map((turn) => `<pre tabindex="0"><code>${e(turn.content)}</code></pre>`)
           .join("")
       : "<p>Unknown. No hidden system instruction was inferred.</p>"
-  }</div></details><details class="evidence run-provenance" id="run-provenance"><summary>Run provenance</summary><div class="evidence-body">${metadata(entry)}${run.model.identifier_kind === "display-only" ? '<p class="notice">Display-only identifier. An exact model identifier was not recorded.</p>' : ""}${run.supersedes_run_id ? `<p class="notice">Corrects <a href="/runs/${e(run.supersedes_run_id)}/">${e(run.supersedes_run_id)}</a>. ${e(run.correction_reason)}</p>` : ""}<a href="${e(evidenceUrl(`runs/${run.id}/run.json`))}">Open recorded run metadata</a></div></details><details class="evidence"><summary>Curation observations and capture conditions</summary><div class="evidence-body"><ul>${curation.observations.map((observation) => `<li>${e(observation)}</li>`).join("")}</ul><pre tabindex="0">${e(JSON.stringify(curation.thumbnail, null, 2))}</pre><p>These are observations, not scores. Null capture metadata means unknown.</p></div></details>${artifactSection("Original response", run.artifacts.response.path, run.artifacts.response.sha256)}${run.artifacts.html ? artifactSection("Extracted HTML", run.artifacts.html.path, run.artifacts.html.sha256) : '<p class="notice">No runnable HTML returned. The original response is preserved above.</p>'}<div class="download-actions">${run.artifacts.html ? `<button type="button" data-download-url="${e(evidenceUrl(run.artifacts.html.path))}" data-sha256="${e(run.artifacts.html.sha256)}" data-filename="${e(run.id)}.html" hidden>Download HTML</button>` : ""}<button type="button" data-download-url="${e(evidenceUrl(run.artifacts.response.path))}" data-sha256="${e(run.artifacts.response.sha256)}" data-filename="${e(run.id)}-response.txt" hidden>Download original response</button></div><p id="artifact-status" role="status"></p></section>`;
+  }</div></details><details class="evidence run-provenance" id="run-provenance"><summary>Run provenance</summary><div class="evidence-body">${runProvenance(entry)}${run.model.identifier_kind === "display-only" ? '<p class="notice">Display-only identifier. An exact model identifier was not recorded.</p>' : ""}${run.supersedes_run_id ? `<p class="notice">Corrects <a href="/runs/${e(run.supersedes_run_id)}/">${e(run.supersedes_run_id)}</a>. ${e(run.correction_reason)}</p>` : ""}<a href="${e(evidenceUrl(`runs/${run.id}/run.json`))}">Open recorded run metadata</a></div></details><details class="evidence"><summary>Curation observations and capture conditions</summary><div class="evidence-body"><ul>${curation.observations.map((observation) => `<li>${e(observation)}</li>`).join("")}</ul><pre tabindex="0">${e(JSON.stringify(curation.thumbnail, null, 2))}</pre><p>These are observations, not scores. Null capture metadata means unknown.</p></div></details>${artifactSection("Original response", run.artifacts.response.path, run.artifacts.response.sha256)}${run.artifacts.html ? artifactSection("Extracted HTML", run.artifacts.html.path, run.artifacts.html.sha256) : '<p class="notice">No runnable HTML returned. The original response is preserved above.</p>'}<div class="download-actions">${run.artifacts.html ? `<button type="button" data-download-url="${e(evidenceUrl(run.artifacts.html.path))}" data-sha256="${e(run.artifacts.html.sha256)}" data-filename="${e(run.id)}.html" hidden>Download HTML</button>` : ""}<button type="button" data-download-url="${e(evidenceUrl(run.artifacts.response.path))}" data-sha256="${e(run.artifacts.response.sha256)}" data-filename="${e(run.id)}-response.txt" hidden>Download original response</button></div><p id="artifact-status" role="status"></p></section>`;
 }
 function challengePage(collection: Collection): string {
   return `<header class="run-heading"><p class="eyebrow">Instructions and interpretation</p><h1>The challenge</h1><p class="hero-description">One deliberately narrow task. Every experiment keeps its instructions and generation history.</p></header>${[...collection.challenges.values()].map((challenge) => `<section id="${e(challenge.id)}"><h2>${e(challenge.title)}</h2><p class="eyebrow">${e(challenge.id)}</p><pre tabindex="0"><code>${e(collection.prompts.get(challenge.id))}</code></pre><button type="button" data-copy-url="${e(evidenceUrl(challenge.prompt_path))}" data-sha256="${e(challenge.prompt_sha256)}" hidden>Copy prompt</button><p class="checksum">SHA-256 ${e(challenge.prompt_sha256)}</p></section>`).join("")}<section class="prose"><h2>Collection protocol</h2><ol><li>Start a fresh conversation or request with no previous user conversation.</li><li>Send the fixed prompt exactly once. Record known system instructions separately.</li><li>Do not edit, retry, or repair a canonical one-shot output.</li><li>Record provider, identifier, interface, timestamp, exposed settings, and known tool use. Leave unknown conditions unknown.</li><li>Save the full response and extracted HTML before publication.</li><li>Keep additional attempts as separate records in the same series. Publish all collected attempts or disclose incomplete publication.</li></ol><p>Revised and tool-assisted examples require prominent labels and their full user-turn transcript. A changed instruction creates a new challenge version.</p><h2 id="limits">What this gallery cannot tell you</h2><ul><li>One task cannot establish overall model quality.</li><li>Individual runs can vary.</li><li>Model aliases and chat products can change.</li><li>Publication may not represent all possible attempts.</li><li>Preview restrictions may affect behavior.</li></ul><h2>Preview policy ${previewPolicyVersion}</h2><p>Derived previews are byte-for-byte copies of extracted UTF-8 HTML. They are served on a separate origin under an enforced HTTP Content Security Policy and an iframe sandbox. Originals remain downloadable plain text on the gallery origin.</p><p>Inline scripts and styles can run. External resources, fetch requests, nested frames, forms, popups, and top navigation are restricted. No frame messages are trusted.</p><p>Sandboxing is not absolute network or CPU isolation. Scripts may navigate their own frame or block a browser. Curator-reviewed execution is opt-in, and suspect outputs remain evidence with execution disabled.</p><p>SHA-256 protects recorded integrity. It does not prove authorship or scientific validity.</p></section><p id="artifact-status" role="status"></p>`;
@@ -198,6 +237,7 @@ export async function buildSite(options: {
           turns: entry.transcript.turns.filter((turn) => turn.role !== "assistant"),
         },
         preview,
+        measurementRows: measurementRows(run),
       });
       await put(
         `gallery/runs/${run.id}/index.html`,

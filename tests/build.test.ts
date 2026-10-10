@@ -77,6 +77,56 @@ test("detail puts preview controls before output and defers provenance and instr
   assert.doesNotMatch(html, /id="run-instructions" open|id="run-provenance" open/);
 });
 
+test("elapsed zero and missing historical measurements render without invented values", async (t) => {
+  const { content, out } = await buildFixture(t);
+  for (const [id, metrics] of [
+    [
+      "fixture-zero",
+      {
+        time: { kind: "elapsed", duration_ms: 0 },
+        tokens: { input: 0, cached: 0, output: 0, total: 0 },
+      },
+    ],
+    ["fixture-legacy", undefined],
+  ] satisfies [string, unknown][]) {
+    const run = await importRun({
+      root: content,
+      metadata: {
+        ...fixtureMetadata(id),
+        generation: {
+          mode: "one-shot",
+          interface: "other",
+          tools_used: "no",
+          settings: { temperature: null, top_p: null, max_output_tokens: null, seed: null },
+          system_instruction_known: false,
+          ...(metrics === undefined ? {} : { metrics }),
+        },
+      },
+      response: Buffer.from("No HTML returned."),
+    });
+    const path = join(content, `curation/${run.id}.json`);
+    const curation = curationSchema.parse(JSON.parse(await readFile(path, "utf8")));
+    await writeFile(
+      path,
+      jsonBytes({ ...curation, visible: true, published_at: "2026-10-10T00:00:00Z" }),
+    );
+  }
+  await buildSite({
+    root: content,
+    out,
+    galleryOrigin: "http://127.0.0.1:4173",
+    previewOrigin: "http://127.0.0.1:4174",
+    development: true,
+  });
+  const zero = await readFile(join(out, "gallery/runs/fixture-zero/index.html"), "utf8");
+  assert.match(zero, /<dt>Elapsed time<\/dt><dd>0 s<\/dd>/);
+  for (const label of ["Input tokens", "Cached tokens", "Output tokens", "Total tokens"])
+    assert.match(zero, new RegExp(`<dt>${label}</dt><dd>0</dd>`));
+  const legacy = await readFile(join(out, "gallery/runs/fixture-legacy/index.html"), "utf8");
+  for (const label of ["Time", "Input tokens", "Cached tokens", "Output tokens", "Total tokens"])
+    assert.match(legacy, new RegExp(`<dt>${label}</dt><dd>Unknown</dd>`));
+});
+
 test("download artifacts and derived previews preserve the extracted bytes", async (t) => {
   const { out, content } = await buildFixture(t);
   const original = await readFile(join(content, "runs/fixture-animation/output.html.txt"));

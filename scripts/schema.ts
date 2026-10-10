@@ -54,6 +54,22 @@ const runObject = z.strictObject({
     tools_used: z.enum(["yes", "no", "unknown"]),
     settings,
     system_instruction_known: z.boolean(),
+    metrics: z
+      .strictObject({
+        time: z
+          .strictObject({
+            kind: z.enum(["model", "elapsed"]),
+            duration_ms: z.number().int().nonnegative(),
+          })
+          .nullable(),
+        tokens: z.strictObject({
+          input: z.number().int().nonnegative().nullable(),
+          cached: z.number().int().nonnegative().nullable(),
+          output: z.number().int().nonnegative().nullable(),
+          total: z.number().int().nonnegative().nullable(),
+        }),
+      })
+      .optional(),
   }),
   instructions: z.strictObject({
     prompt_path: contentPath,
