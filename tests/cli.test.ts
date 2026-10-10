@@ -8,6 +8,79 @@ import { promisify } from "node:util";
 import { jsonBytes, sha256 } from "../scripts/content.ts";
 
 const execute = promisify(execFile);
+
+test("CLI schema export excludes legacy controls from new metadata", async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), "capyboard-schema-cli-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  await execute(process.execPath, [join(process.cwd(), "scripts/cli.ts"), "schemas"], {
+    cwd: directory,
+  });
+  const metadata = JSON.parse(await readFile(join(directory, "schemas/metadata.json"), "utf8"));
+  const run = JSON.parse(await readFile(join(directory, "schemas/run.json"), "utf8"));
+  assert.deepEqual(metadata.properties.generation.required, ["mode", "interface", "tools_used"]);
+  assert.deepEqual(Object.keys(metadata.properties.generation.properties), [
+    "mode",
+    "interface",
+    "tools_used",
+    "harness",
+    "metrics",
+  ]);
+  assert.deepEqual(run.properties.generation.required, ["mode", "interface", "tools_used"]);
+});
+
+test("CLI imports the Pi metadata example without generation controls", async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), "capyboard-pi-cli-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const root = join(directory, "content");
+  const cli = (command: string, args: string[] = []) =>
+    execute(process.execPath, ["scripts/cli.ts", command, "--content", root, ...args]);
+  await cli("init");
+  const response = join(directory, "response.txt");
+  const bytes = Buffer.from("<!doctype html><html><body>CLI Pi evidence</body></html>\r\n");
+  await writeFile(response, bytes);
+  const transcript = join(directory, "transcript.json");
+  await writeFile(
+    transcript,
+    jsonBytes({
+      schema_version: 1,
+      turns: [
+        {
+          role: "user",
+          content: await readFile(
+            join(root, "challenges/capybara-hoverboard-v1/prompt.txt"),
+            "utf8",
+          ),
+        },
+      ],
+    }),
+  );
+  const result = await cli("import", [
+    "--metadata",
+    "examples/pi-import-metadata.json",
+    "--response",
+    response,
+    "--transcript",
+    transcript,
+  ]);
+  assert.match(result.stdout, /Imported example-pi-attempt-001/);
+  const run = JSON.parse(
+    await readFile(join(root, "runs/example-pi-attempt-001/run.json"), "utf8"),
+  );
+  assert.deepEqual(run.generation, {
+    mode: "tool-assisted",
+    interface: "coding-agent",
+    tools_used: "unknown",
+    harness: { name: "Pi", version: null, effort: null },
+    metrics: {
+      time: null,
+      tokens: { input: null, cached: null, output: null, total: null },
+    },
+  });
+  assert.deepEqual(await readFile(join(root, run.artifacts.response.path)), bytes);
+  assert.deepEqual(await readFile(join(root, run.artifacts.html.path)), bytes);
+  assert.match((await cli("validate")).stdout, /1 attempts/);
+});
+
 test("CLI import, publication, build, and prior-ledger validation work end to end", async (t) => {
   const directory = await mkdtemp(join(tmpdir(), "capyboard-cli-"));
   t.after(() => rm(directory, { recursive: true, force: true }));

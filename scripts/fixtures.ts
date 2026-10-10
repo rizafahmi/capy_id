@@ -37,8 +37,7 @@ export function fixtureMetadata(id: string, generatedAt: string | null = "2026-1
       mode: "one-shot",
       interface: "other",
       tools_used: "no",
-      settings: { temperature: null, top_p: null, max_output_tokens: null, seed: null },
-      system_instruction_known: false,
+      harness: { name: "Development harness", version: "test", effort: generatedAt ? "low" : null },
       metrics: {
         time: generatedAt ? { kind: "model", duration_ms: 17222 } : null,
         tokens: {

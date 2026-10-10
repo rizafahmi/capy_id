@@ -52,8 +52,13 @@ const runObject = z.strictObject({
     mode: z.enum(["one-shot", "revised", "tool-assisted", "unknown"]),
     interface: z.enum(["api", "web-chat", "coding-agent", "other", "unknown"]),
     tools_used: z.enum(["yes", "no", "unknown"]),
-    settings,
-    system_instruction_known: z.boolean(),
+    harness: z
+      .strictObject({
+        name: z.string().min(1),
+        version: z.string().min(1).nullable(),
+        effort: z.enum(["off", "minimal", "low", "medium", "high", "xhigh", "max"]).nullable(),
+      })
+      .optional(),
     metrics: z
       .strictObject({
         time: z
@@ -70,6 +75,8 @@ const runObject = z.strictObject({
         }),
       })
       .optional(),
+    settings: settings.optional(),
+    system_instruction_known: z.boolean().optional(),
   }),
   instructions: z.strictObject({
     prompt_path: contentPath,
@@ -112,6 +119,11 @@ export const metadataSchema = runObject
     correction_reason: true,
   })
   .partial({ id: true, series_id: true, attempt_number: true })
+  .extend({
+    generation: runObject.shape.generation
+      .omit({ settings: true, system_instruction_known: true })
+      .strip(),
+  })
   .strip();
 export const transcriptSchema = z.strictObject({
   schema_version: z.literal(1),

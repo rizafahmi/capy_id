@@ -243,8 +243,9 @@ export async function validateContent(root: string, priorIntegrity?: unknown): P
     )
       throw new Error(`One-shot instructions differ from the exact challenge: ${run.id}`);
     if (
+      run.generation.system_instruction_known !== undefined &&
       run.generation.system_instruction_known !==
-      transcript.turns.some((turn) => turn.role === "system")
+        transcript.turns.some((turn) => turn.role === "system")
     )
       throw new Error(`System instruction provenance disagrees with transcript: ${run.id}`);
     const response = await readArtifact(root, run.artifacts.response.path);
@@ -362,13 +363,9 @@ export async function importRun(options: {
     }
     if (
       !options.transcript &&
-      (metadata.generation.mode === "revised" ||
-        metadata.generation.mode === "tool-assisted" ||
-        metadata.generation.system_instruction_known)
+      (metadata.generation.mode === "revised" || metadata.generation.mode === "tool-assisted")
     )
-      throw new Error(
-        "Supply the full transcript for revised, tool-assisted, or known-system runs",
-      );
+      throw new Error("Supply the full transcript for revised or tool-assisted runs");
     const transcript: Transcript = transcriptSchema.parse(
       options.transcript ?? {
         schema_version: 1,

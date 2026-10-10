@@ -97,39 +97,37 @@
             "unknown"
           ]
         },
-        "settings": {
+        "harness": {
           "type": "object",
           "properties": {
-            "temperature": {
-              "type": [
-                "number",
-                "null"
-              ]
+            "name": {
+              "type": "string",
+              "minLength": 1
             },
-            "top_p": {
-              "type": [
-                "number",
-                "null"
-              ]
-            },
-            "max_output_tokens": {
+            "version": {
               "anyOf": [
                 {
-                  "type": "integer",
-                  "exclusiveMinimum": 0,
-                  "maximum": 9007199254740991
+                  "type": "string",
+                  "minLength": 1
                 },
                 {
                   "type": "null"
                 }
               ]
             },
-            "seed": {
+            "effort": {
               "anyOf": [
                 {
-                  "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
+                  "type": "string",
+                  "enum": [
+                    "off",
+                    "minimal",
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max"
+                  ]
                 },
                 {
                   "type": "null"
@@ -138,15 +136,11 @@
             }
           },
           "required": [
-            "temperature",
-            "top_p",
-            "max_output_tokens",
-            "seed"
+            "name",
+            "version",
+            "effort"
           ],
           "additionalProperties": false
-        },
-        "system_instruction_known": {
-          "type": "boolean"
         },
         "metrics": {
           "type": "object",
@@ -251,11 +245,8 @@
       "required": [
         "mode",
         "interface",
-        "tools_used",
-        "settings",
-        "system_instruction_known"
-      ],
-      "additionalProperties": false
+        "tools_used"
+      ]
     },
     "supersedes_run_id": {
       "type": "string",
@@ -273,6 +264,5 @@
     "model",
     "generated_at",
     "generation"
-  ],
-  "additionalProperties": false
+  ]
 }

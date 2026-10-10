@@ -76,7 +76,10 @@ try {
     case "schemas":
       await mkdir("schemas", { recursive: true });
       for (const [name, schema] of Object.entries(schemas))
-        await writeFile(`schemas/${name}.json`, jsonBytes(z.toJSONSchema(schema)));
+        await writeFile(
+          `schemas/${name}.json`,
+          jsonBytes(z.toJSONSchema(schema, { io: name === "metadata" ? "input" : "output" })),
+        );
       process.stdout.write(
         "Exported schemas. scripts/schema.ts remains authoritative for semantic checks.\n",
       );

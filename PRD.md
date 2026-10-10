@@ -81,12 +81,14 @@ Return only the HTML source, without explanations or Markdown code fences.
 
 Do not add unstated visual requirements to this challenge. The gallery must retain outputs that ignore parts of the prompt. Changing any instruction creates a new challenge version; it does not overwrite v1.
 
+Use Pi as the coding-agent harness for initial collection. Keep its version, thinking level, enabled tools, and instruction configuration consistent across models where possible. Record differences rather than assuming equivalent conditions. Record the Pi harness name, version, and effort. Do not record sampling controls for new attempts. Preserve unknown harness versions and effort as null instead of inferring defaults. Supplied system instructions remain transcript evidence when available; do not add a system-instruction flag.
+
 Recommended collection protocol:
 
 1. Start a fresh conversation or request with no previous user conversation.
 2. Send the fixed prompt exactly once. Record any known system instruction separately.
 3. Do not edit, retry, or repair the output for a canonical one-shot run.
-4. Record provider, exact model identifier when available, interface, timestamp, exposed settings, and known tool use.
+4. Record provider, exact model identifier when available, interface, timestamp, harness version, effort, and known tool use.
 5. Save the full response and any HTML extracted from it before publication.
 
 An API call and a consumer chat interface can have different hidden conditions. Label the interface. Record unknown values as `null` or `unknown`; never infer a temperature, hidden system prompt, or model snapshot. Reproduction is limited to the recorded information.
@@ -126,7 +128,7 @@ Acceptance: all published runs appear, failures are not filtered out by default,
 
 ### F2. Run detail and live preview
 
-Display the model identity, provider, generated and published timestamps, challenge link, generation mode, interface, settings, attempt information, exact user instructions, known system instruction, curation observations, original response, and extracted HTML where present.
+Display the model identity, provider, generated and published timestamps, challenge link, generation mode, interface, harness name and version, effort, attempt information, exact user instructions, any supplied system instructions, curation observations, original response, and extracted HTML where present.
 
 Use clearly labelled collapsible evidence sections. Render code and responses as escaped text; syntax highlighting is optional. Provide Copy prompt, Copy HTML, Download HTML, and Download original response. Clipboard failure leaves selectable text and an explanatory status. Downloads initiated by the host produce the preserved original artifacts, not an instrumented preview document.
 
@@ -140,9 +142,9 @@ Acceptance: copying and downloading preserve source content; stopping unloads th
 
 Allow exactly two distinct run IDs. Gallery selection exposes a visible selection count, remove action, and Compare button enabled only with two selections. The comparison page also offers labelled selectors to replace either run. Reject unknown IDs and duplicate IDs with a recoverable message.
 
-Display both model labels, modes, exact challenge IDs, and settings above their previews. Use one shared preview width and height for both panels, based on the smaller available panel width, capped at 640 CSS pixels, with a 4:3 viewport. Display the actual viewport dimensions. No automatic scaling of one output to make it look better. Both frames start only after Run both; per-panel Stop and Restart remain available. Do not promise synchronized animation timing.
+Display both model labels, modes, exact challenge IDs, harness names and versions, and effort above their previews. Use one shared preview width and height for both panels, based on the smaller available panel width, capped at 640 CSS pixels, with a 4:3 viewport. Display the actual viewport dimensions. No automatic scaling of one output to make it look better. Both frames start only after Run both; per-panel Stop and Restart remain available. Do not promise synchronized animation timing.
 
-For different challenge versions, show “Different instructions.” For different modes/interfaces/settings or incomplete provenance, show “Generation conditions differ or are incomplete,” with the recorded differences. This is an interpretation notice, not a score. Comparison across conditions remains possible.
+For different challenge versions, show “Different instructions.” For different modes, interfaces, harnesses, or effort, or incomplete provenance, show “Generation conditions differ or are incomplete,” with the recorded differences. This is an interpretation notice, not a score. Comparison across conditions remains possible.
 
 Acceptance: a shared URL reconstructs the pair; mobile stacks the panels; both previews have equal viewport dimensions; failures occupy their own panel with evidence links rather than being replaced by a successful result.
 
@@ -209,15 +211,13 @@ Example run below is illustrative, not a real model submission. The import scrip
   "generated_at": null,
   "generation": {
     "mode": "one-shot",
-    "interface": "web-chat",
+    "interface": "coding-agent",
     "tools_used": "unknown",
-    "settings": {
-      "temperature": null,
-      "top_p": null,
-      "max_output_tokens": null,
-      "seed": null
-    },
-    "system_instruction_known": false
+    "harness": {
+      "name": "Pi",
+      "version": null,
+      "effort": null
+    }
   },
   "instructions": {
     "prompt_path": "challenges/capybara-hoverboard-v1/prompt.txt",
@@ -247,7 +247,7 @@ Required enums:
 - `generation.tools_used`: `yes`, `no`, `unknown`.
 - `model.identifier_kind`: `snapshot`, `alias`, `display-only`, `unknown`.
 
-Use `artifacts.html: null` when no HTML was returned. Settings not exposed are `null`, not assumed defaults. Timestamps are ISO 8601 with explicit offset or UTC, or `null` when genuinely unavailable. A display-only identifier must be visibly described as such.
+Use `artifacts.html: null` when no HTML was returned. Unknown harness versions and effort are `null`, not assumed defaults. New imports omit sampling controls and the system-instruction flag. Historical records keep their original bytes. Timestamps are ISO 8601 with explicit offset or UTC, or `null` when genuinely unavailable. A display-only identifier must be visibly described as such.
 
 Curation record fields: `run_id`, `published_at`, `visible`, `preview_allowed`, `preview_disabled_reason`, `observations`, `series_publication_complete`, and optional thumbnail metadata containing path, viewport, capture delay, browser version, and preview-policy version. Use `null` for unknown capture metadata and incomplete-series reasons. Keep thumbnails and curation notes outside the immutable run record.
 
@@ -342,7 +342,7 @@ Preserve the following extension points without implementing their interfaces or
 | --- | --- |
 | Automated browser checks | Original artifact bytes, hashes, challenge version, separate preview policy |
 | Repeated-run reliability | One record per attempt, series and attempt numbers, publication disclosure |
-| Reproducible evaluations | Recorded model/interface/settings/transcript, explicit unknowns |
+| Reproducible evaluations | Recorded model, interface, harness, effort, transcript, and explicit unknowns |
 | Human visual assessment | Stable run IDs and consistent capture metadata |
 | Historical comparisons | Immutable dated records and explicit model identifier kinds |
 | Additional challenges | Versioned challenge IDs, independent prompt records |

@@ -29,7 +29,7 @@ test("measurements distinguish missing data, measured zero, and elapsed time", (
   ])
     assert.deepEqual(parseMetrics(metrics).metrics, metrics);
   const metadata = fixtureMetadata("fixture-legacy");
-  const { metrics: _metrics, ...generation } = metadata.generation;
+  const generation = { mode: "one-shot", interface: "other", tools_used: "no" };
   assert.equal(metadataSchema.parse({ ...metadata, generation }).generation.metrics, undefined);
 });
 

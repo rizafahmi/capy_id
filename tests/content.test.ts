@@ -160,6 +160,114 @@ test("import supplies fresh attempt and series IDs when metadata omits them", as
   assert.equal((await validateContent(root)).runs.length, 6);
 });
 
+test("Pi imports record harness and effort without sampling controls", async (t) => {
+  const root = await fixture(t);
+  const response = Buffer.from("<!doctype html><html><body>Pi attempt</body></html>\n");
+  const run = await importRun({
+    root,
+    metadata: {
+      schema_version: 1,
+      id: "pi-attempt",
+      challenge_id: "capybara-hoverboard-v1",
+      provider: "Example provider",
+      model: {
+        display_name: "Example model",
+        identifier: "example-model",
+        identifier_kind: "display-only",
+      },
+      generated_at: null,
+      generation: {
+        mode: "tool-assisted",
+        interface: "coding-agent",
+        tools_used: "yes",
+        harness: { name: "Pi", version: "1.1.0", effort: "low" },
+      },
+    },
+    response,
+    transcript: {
+      schema_version: 1,
+      turns: [
+        {
+          role: "user",
+          content: await readFile(
+            join(root, "challenges/capybara-hoverboard-v1/prompt.txt"),
+            "utf8",
+          ),
+        },
+      ],
+    },
+  });
+  const collection = await validateContent(root);
+  const stored = collection.runs.find((entry) => entry.run.id === "pi-attempt");
+  assert.deepEqual(stored?.run.generation, {
+    mode: "tool-assisted",
+    interface: "coding-agent",
+    tools_used: "yes",
+    harness: { name: "Pi", version: "1.1.0", effort: "low" },
+  });
+  assert.deepEqual(await readFile(join(root, run.artifacts.response.path)), response);
+});
+
+test("omitted settings do not bypass the tool-assisted transcript requirement", async (t) => {
+  const root = await fixture(t);
+  const metadata = JSON.parse(
+    await readFile(join(root, "runs/fixture-animation/run.json"), "utf8"),
+  );
+  metadata.id = "pi-without-transcript";
+  metadata.generation.mode = "tool-assisted";
+  delete metadata.generation.settings;
+  delete metadata.generation.system_instruction_known;
+  await assert.rejects(
+    importRun({ root, metadata, response: Buffer.from("No HTML.") }),
+    /Supply the full transcript/,
+  );
+});
+
+test("new imports discard legacy controls but preserve supplied instruction turns", async (t) => {
+  const root = await fixture(t);
+  const metadata = JSON.parse(
+    await readFile(join(root, "runs/fixture-animation/run.json"), "utf8"),
+  );
+  metadata.id = "explicit-conditions";
+  metadata.series_id = "explicit-conditions-series";
+  metadata.generation.settings = { temperature: 0, top_p: 1, max_output_tokens: 1000, seed: 42 };
+  metadata.generation.system_instruction_known = true;
+  const run = await importRun({
+    root,
+    metadata,
+    response: Buffer.from("No HTML."),
+    transcript: {
+      schema_version: 1,
+      turns: [
+        { role: "system", content: "Exact supplied system instruction." },
+        {
+          role: "user",
+          content: await readFile(
+            join(root, "challenges/capybara-hoverboard-v1/prompt.txt"),
+            "utf8",
+          ),
+        },
+      ],
+    },
+  });
+  assert.deepEqual(run.generation, {
+    mode: "one-shot",
+    interface: "other",
+    tools_used: "no",
+    harness: { name: "Development harness", version: "test", effort: "low" },
+    metrics: {
+      time: { kind: "model", duration_ms: 17222 },
+      tokens: { input: 1262, cached: 0, output: 2464, total: 3726 },
+    },
+  });
+  const stored = JSON.parse(await readFile(join(root, run.instructions.transcript_path), "utf8"));
+  assert.deepEqual(stored.turns[0], {
+    role: "system",
+    content: "Exact supplied system instruction.",
+  });
+  assert.equal((await validateContent(root)).runs.length, 6);
+});
+
 test("a prior ledger rejects metadata edits even when the current ledger is rewritten", async (t) => {
   const root = await fixture(t);
   const ledgerPath = join(root, "integrity.json");
