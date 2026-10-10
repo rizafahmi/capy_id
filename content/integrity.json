@@ -8,6 +8,54 @@
     "challenges/capybara-hoverboard-v1/challenge.json": {
       "sha256": "78fb51dcbffa2a93f95012b0701c9d262cd01883046b91bdcc734d4365fa6e94",
       "size_bytes": 251
+    },
+    "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628/run.json": {
+      "sha256": "366c4366a155ecde8095c3e26f7d367a229e624e531855245fa44dfb9459d9af",
+      "size_bytes": 1465
+    },
+    "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628/response.txt": {
+      "sha256": "5a3b174e0eb7a4416c489828ce8943b0ffdede07bd1b1cb4cd51d6372d07dd86",
+      "size_bytes": 7279
+    },
+    "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628/transcript.json": {
+      "sha256": "8ad1241aa99e896ed184549334b3dcd0e400bc2b9ce86f25f2eacd16a00c3035",
+      "size_bytes": 8136
+    },
+    "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628/output.html.txt": {
+      "sha256": "5a3b174e0eb7a4416c489828ce8943b0ffdede07bd1b1cb4cd51d6372d07dd86",
+      "size_bytes": 7279
+    },
+    "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628-provenance/run.json": {
+      "sha256": "fc30f8babb774d777d0d859e699a17efb0d5efa52a5149dd940fa1223735b792",
+      "size_bytes": 1610
+    },
+    "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628-provenance/response.txt": {
+      "sha256": "5a3b174e0eb7a4416c489828ce8943b0ffdede07bd1b1cb4cd51d6372d07dd86",
+      "size_bytes": 7279
+    },
+    "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628-provenance/transcript.json": {
+      "sha256": "8ad1241aa99e896ed184549334b3dcd0e400bc2b9ce86f25f2eacd16a00c3035",
+      "size_bytes": 8136
+    },
+    "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628-provenance/output.html.txt": {
+      "sha256": "5a3b174e0eb7a4416c489828ce8943b0ffdede07bd1b1cb4cd51d6372d07dd86",
+      "size_bytes": 7279
+    },
+    "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628-metrics/run.json": {
+      "sha256": "6674f12fd5f4eff4c36bd24ca60dbb7cfee57f8bdc5096adc06d4f318c33fd2d",
+      "size_bytes": 1815
+    },
+    "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628-metrics/response.txt": {
+      "sha256": "5a3b174e0eb7a4416c489828ce8943b0ffdede07bd1b1cb4cd51d6372d07dd86",
+      "size_bytes": 7279
+    },
+    "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628-metrics/transcript.json": {
+      "sha256": "8ad1241aa99e896ed184549334b3dcd0e400bc2b9ce86f25f2eacd16a00c3035",
+      "size_bytes": 8136
+    },
+    "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628-metrics/output.html.txt": {
+      "sha256": "5a3b174e0eb7a4416c489828ce8943b0ffdede07bd1b1cb4cd51d6372d07dd86",
+      "size_bytes": 7279
     }
   }
 }

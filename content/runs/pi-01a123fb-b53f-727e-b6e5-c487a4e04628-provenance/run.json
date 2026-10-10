@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "id": "pi-01a123fb-b53f-727e-b6e5-c487a4e04628-provenance",
+  "challenge_id": "capybara-hoverboard-v1",
+  "series_id": "pi-series-01a123fb-b53f-727e-b6e5-c487a4e04628",
+  "attempt_number": 1,
+  "provider": "openai-codex",
+  "model": {
+    "display_name": "gpt-6-luna",
+    "identifier": "gpt-6-luna",
+    "identifier_kind": "unknown"
+  },
+  "generated_at": "2026-10-10T04:04:21.008Z",
+  "generation": {
+    "mode": "one-shot",
+    "interface": "coding-agent",
+    "tools_used": "no",
+    "harness": {
+      "name": "Pi",
+      "version": "1.1.0",
+      "effort": "low"
+    }
+  },
+  "instructions": {
+    "prompt_path": "challenges/capybara-hoverboard-v1/prompt.txt",
+    "prompt_sha256": "e6b955ce7c23afabd2adf2115467e7b6c213ac2cab2a7596886ca71ad827fe1c",
+    "transcript_path": "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628-provenance/transcript.json"
+  },
+  "artifacts": {
+    "response": {
+      "path": "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628-provenance/response.txt",
+      "sha256": "5a3b174e0eb7a4416c489828ce8943b0ffdede07bd1b1cb4cd51d6372d07dd86",
+      "size_bytes": 7279
+    },
+    "html": {
+      "path": "runs/pi-01a123fb-b53f-727e-b6e5-c487a4e04628-provenance/output.html.txt",
+      "sha256": "5a3b174e0eb7a4416c489828ce8943b0ffdede07bd1b1cb4cd51d6372d07dd86",
+      "size_bytes": 7279,
+      "extraction": {
+        "start_byte": 0,
+        "end_byte_exclusive": 7279
+      }
+    }
+  },
+  "supersedes_run_id": "pi-01a123fb-b53f-727e-b6e5-c487a4e04628",
+  "correction_reason": "Record the observed Pi version and effort; remove sampling-control placeholders."
+}

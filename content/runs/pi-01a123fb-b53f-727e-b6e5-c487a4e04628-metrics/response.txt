@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capybara Hoverboard</title>
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  display:grid;place-items:center;overflow:hidden;
+  background:linear-gradient(#b8e9f1 0%,#d8f2e9 60%,#b3d7ad 60%,#85b58c 100%);
+  font-family:system-ui,sans-serif;color:#5b4736
+}
+.scene{position:relative;width:min(100vw,900px);height:min(100vh,650px);overflow:hidden}
+.sun{position:absolute;right:13%;top:9%;width:92px;height:92px;border-radius:50%;background:#ffe7a3;box-shadow:0 0 50px #ffe7a355}
+.cloud{position:absolute;width:125px;height:32px;border-radius:40px;background:#ffffff9c;animation:drift 18s linear infinite}
+.cloud:before,.cloud:after{content:"";position:absolute;border-radius:50%;background:inherit}
+.cloud:before{width:48px;height:48px;left:20px;top:-23px}
+.cloud:after{width:64px;height:58px;right:18px;top:-30px}
+.c1{top:22%;left:-140px}.c2{top:37%;left:-300px;transform:scale(.7);animation-delay:-8s}
+@keyframes drift{to{left:110%}}
+.ground{position:absolute;bottom:0;width:100%;height:40%;background:linear-gradient(165deg,#a7ce9a,#73a77d)}
+.hill{position:absolute;bottom:28%;width:75%;height:22%;border-radius:50% 50% 0 0;background:#99c58e}
+.hill.left{left:-25%;transform:rotate(-4deg)}.hill.right{right:-28%;height:18%;background:#8abd89;transform:rotate(5deg)}
+.path{position:absolute;bottom:-20%;left:15%;width:70%;height:53%;border-radius:50%;background:#d7c295;transform:rotate(-7deg);opacity:.85}
+.plant{position:absolute;bottom:22%;width:42px;height:65px}
+.plant:before{content:"";position:absolute;bottom:0;left:20px;width:3px;height:50px;background:#528b62}
+.plant:after{content:"";position:absolute;left:0;top:15px;width:25px;height:13px;border-radius:100% 0 100% 0;background:#5f9b68;box-shadow:18px 10px #6ba874,2px 27px #579463}
+.p1{left:12%;transform:scale(.8)}.p2{right:10%;bottom:27%;transform:scale(1.1)}
+.shadow{position:absolute;z-index:2;bottom:20%;left:50%;width:310px;height:35px;border-radius:50%;background:#35594655;transform:translateX(-50%);filter:blur(5px);animation:shadow 2.5s ease-in-out infinite}
+@keyframes shadow{50%{transform:translateX(-50%) scale(.88);opacity:.65}}
+.rider{position:absolute;z-index:3;left:50%;bottom:21%;width:300px;height:330px;transform:translateX(-50%);animation:float 2.5s ease-in-out infinite}
+@keyframes float{0%,100%{translate:0 0}50%{translate:0 -12px}}
+.board{position:absolute;bottom:3px;left:21px;width:258px;height:31px;border-radius:18px 18px 22px 22px;background:linear-gradient(#54d8e0 0 24%,#1c7186 25% 100%);box-shadow:0 8px 0 #14576a,0 0 27px #4deaff9c;transform:rotate(-2deg)}
+.board:before,.board:after{content:"";position:absolute;top:26px;width:26px;height:9px;border-radius:50%;background:#263e49}
+.board:before{left:34px}.board:after{right:34px}
+.board .light{position:absolute;left:50%;top:8px;width:40px;height:5px;border-radius:6px;background:#c9ffff;box-shadow:0 0 12px #d4ffff;transform:translateX(-50%)}
+.leg{position:absolute;bottom:29px;width:37px;height:83px;border-radius:18px 18px 12px 12px;background:#78513a;transform-origin:top center}
+.leg.left{left:94px;transform:rotate(8deg)}.leg.right{left:166px;transform:rotate(-8deg)}
+.foot{position:absolute;bottom:-1px;width:50px;height:19px;border-radius:14px 20px 8px 8px;background:#65432f}
+.leg.left .foot{left:-10px}.leg.right .foot{left:-2px}
+.body{
+ position:absolute;left:44px;top:107px;width:212px;height:137px;border-radius:48% 48% 40% 42%;
+ background:radial-gradient(ellipse at 35% 30%,#bd8c60,#966344 70%,#744c36);
+ box-shadow:inset 0 -10px 0 #805539
+}
+.body:after{content:"";position:absolute;right:15px;top:46px;width:47px;height:40px;border-radius:50%;background:#a97751}
+.neck{position:absolute;left:69px;top:81px;width:91px;height:95px;border-radius:40% 50% 35% 40%;background:#a97751;transform:rotate(12deg)}
+.head{position:absolute;left:63px;top:32px;width:145px;height:104px;border-radius:49% 51% 48% 46%;background:radial-gradient(ellipse at 40% 35%,#c28e63,#966344 78%);transform:rotate(-4deg);z-index:2}
+.muzzle{position:absolute;right:-13px;top:39px;width:75px;height:47px;border-radius:48% 53% 50% 43%;background:#b98057}
+.nose{position:absolute;right:-4px;top:43px;width:22px;height:15px;border-radius:45% 55% 50% 50%;background:#342b27}
+.eye{position:absolute;top:35px;right:31px;width:8px;height:9px;border-radius:50%;background:#241d19;box-shadow:1px 1px 0 #f7d5a0}
+.ear{position:absolute;top:-8px;left:25px;width:24px;height:29px;border-radius:50% 50% 42% 45%;background:#855738;transform:rotate(-25deg)}
+.ear:after{content:"";position:absolute;inset:6px;border-radius:50%;background:#c28e63}
+.ear.two{left:91px;top:-5px;transform:rotate(20deg)}
+.cheek{position:absolute;right:29px;top:61px;width:22px;height:13px;border-radius:50%;background:#d49a78;opacity:.75}
+.arm{position:absolute;z-index:3;left:209px;top:141px;width:30px;height:76px;border-radius:18px;background:#986746;transform:rotate(-18deg);transform-origin:top center}
+.arm:after{content:"";position:absolute;bottom:-4px;left:-5px;width:36px;height:25px;border-radius:50%;background:#b17b53}
+.tail{position:absolute;left:36px;top:204px;width:28px;height:23px;border-radius:50%;background:#8d5e40;transform:rotate(-20deg)}
+.spark{position:absolute;z-index:4;color:#fff2b0;font-size:21px;animation:twinkle 1.4s ease-in-out infinite}
+.s1{left:17%;top:54%}.s2{right:16%;top:66%;animation-delay:.6s}.s3{right:29%;top:37%;animation-delay:.9s}
+@keyframes twinkle{50%{opacity:.3;transform:scale(.7) rotate(25deg)}}
+.grass{position:absolute;bottom:14%;left:0;width:100%;height:30px;opacity:.7;background:repeating-linear-gradient(100deg,transparent 0 18px,#548762 19px 21px,transparent 22px 37px)}
+.caption{position:absolute;top:7%;left:7%;font-size:clamp(18px,3vw,27px);font-weight:800;letter-spacing:.03em;color:#527d70;text-shadow:0 2px #ffffff88}
+.caption small{display:block;font-size:12px;font-weight:600;letter-spacing:.18em;margin-top:5px;color:#739389}
+@media(max-height:520px){.rider{scale:.76;transform:translateX(-50%);transform-origin:bottom center}.shadow{bottom:15%}}
+</style>
+</head>
+<body>
+<div class="scene" aria-label="A capybara joyfully rides a glowing hoverboard through a sunny meadow">
+  <div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div>
+  <div class="caption">CAPY CRUISE<small>MEADOW MODE · ON</small></div>
+  <div class="hill left"></div><div class="hill right"></div><div class="ground"></div><div class="path"></div>
+  <div class="plant p1"></div><div class="plant p2"></div><div class="grass"></div>
+  <div class="spark s1">✦</div><div class="spark s2">✧</div><div class="spark s3">✦</div>
+  <div class="shadow"></div>
+  <div class="rider">
+    <div class="tail"></div>
+    <div class="leg left"><div class="foot"></div></div><div class="leg right"><div class="foot"></div></div>
+    <div class="body"></div><div class="neck"></div>
+    <div class="head"><div class="ear"></div><div class="ear two"></div><div class="muzzle"></div><div class="nose"></div><div class="eye"></div><div class="cheek"></div></div>
+    <div class="arm"></div>
+    <div class="board"><div class="light"></div></div>
+  </div>
+</div>
+</body>
+</html>
