@@ -8,3 +8,8 @@ playwright-report/
 .env
 .env.*
 *.pem
+
+.DS_Store
+.agents/
+skills-lock.json
+runner.sh
