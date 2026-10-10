@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "run_id": "pi-01a125eb-9195-72d6-8736-a14e2a47f69a",
+  "published_at": "2026-10-10T13:10:38Z",
+  "visible": true,
+  "preview_allowed": true,
+  "preview_disabled_reason": null,
+  "observations": [
+    "Self-contained HTML with inline CSS, SVG, and JavaScript animation.",
+    "No external network APIs, iframes, forms, or media elements detected."
+  ],
+  "series_publication_complete": true,
+  "series_incomplete_reason": null,
+  "thumbnail": {
+    "path": "thumbnails/pi-01a125eb-9195-72d6-8736-a14e2a47f69a.png",
+    "viewport": {
+      "width": 640,
+      "height": 480
+    },
+    "capture_delay_ms": 1000,
+    "browser_version": "156.0.8078.4",
+    "preview_policy_version": "restricted-html-v1"
+  }
+}
