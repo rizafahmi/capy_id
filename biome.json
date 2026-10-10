@@ -6,7 +6,9 @@
       "src/**",
       "tests/**",
       "playwright.config.ts",
-      "!tests/fixtures/**"
+      "astro.config.mjs",
+      "!src/astro/**/*.astro",
+      "!tests/fixtures"
     ]
   },
   "formatter": {

@@ -1,0 +1,18 @@
+---
+import type { MetadataPair } from "../../../scripts/presentation.ts";
+
+interface Props {
+  pairs: MetadataPair[];
+  className?: string;
+}
+const { pairs, className = "" } = Astro.props;
+---
+
+<dl class={`metadata${className ? ` ${className}` : ""}`}>
+  {pairs.map(([label, value]) => (
+    <div>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </div>
+  ))}
+</dl>

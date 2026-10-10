@@ -1,5 +1,47 @@
 # Capyboard implementation
 
+## Astro migration
+
+Migrate one page type per verified slice. Start with run detail. Preserve visible output,
+vanilla browser controls, original evidence bytes, preview isolation, response headers,
+and safe build replacement. Gallery, challenge, comparison, and not-found pages stay
+on the existing renderer until their own slices.
+
+### First-slice checklist
+
+- [x] Pin the behavior contract first. Existing build and browser acceptance tests cover run inspection. Capture desktop and mobile screenshots before moving the templates.
+- [x] Name the structure the code is missing per principle-model-the-domain. Use typed RunPage records containing the validated Entry, discriminated Preview, optional correction, and fixture label.
+- [x] Name the target shape. Astro owns page markup and static run routes. Existing tooling owns content validation, artifact copying, previews, headers, and staging. Architect and how delegation skipped because subagents are not authorized. Direct source tracing is complete.
+- [x] Subtract before you add. Delete the legacy detail template and its detail-only helpers when Astro replaces them.
+- [x] Move in small behavior-preserving steps, each keeping the pin green. Migrate only run detail. Mechanical delegation skipped because subagents are not authorized.
+- [x] Prove behavior is unchanged on the real artifact, not "it compiles". Run static checks, build tests, three-engine browser tests, and before/after screenshot comparison.
+- [x] Confirm the change is worth keeping. Inspect component boundaries and remove unnecessary adapters or duplicate domain rules.
+- [x] Rebase into small ordered commits. Commits, rebasing, and opening a PR skipped because they are not authorized. Suggest the first-slice commit after verification.
+
+### Throughput checkpoint
+
+- Blocking first steps. Establish passing baseline checks and capture run-detail screenshots before changing rendering.
+- Independent workstreams. n/a: one page slice and no approved delegation.
+- Shared mutable state. Pass build data to an isolated Astro child process. Keep each build inside its own staging directory. Do not use parent-process environment mutation or shared generated content.
+- Smallest safe decomposition. One run-detail migration with real static output, then a verification boundary before another page.
+
+### First-slice handoff
+
+Run detail is migrated in `src/astro/pages/runs/[id].astro`. The legacy detail,
+artifact, and preview templates are removed. Shared measurement formatting lives
+in `scripts/presentation.ts`. The other pages and preview deployment remain unchanged.
+
+Formatting, lint, both type checkers, all 54 tooling tests, and all 111 browser tests
+pass. Six Chromium screenshots at 360, 768, and 1366 pixels in light and dark mode
+match the baseline pixel-for-pixel. Production generation and validation of the
+nine-attempt real collection pass. Evidence is in `.audit/astro-check.txt`,
+`.audit/astro-e2e.txt`, and `.audit/astro-visual-parity.json`.
+
+The development server still builds once at startup. No hot reloading, production
+deployment, independent review, commit, push, or PR is included in this slice.
+Next slice: gallery. Suggested commit, not executed:
+`git commit -m "refactor: migrate run detail rendering to Astro"`.
+
 ## Workflow
 
 - [x] Read the Principles section of the **poteto-mode** skill.

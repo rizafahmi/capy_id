@@ -1,0 +1,226 @@
+---
+import type { RunPage } from "../../../../scripts/run-pages.ts";
+import {
+  measurementRows,
+  type MetadataPair,
+} from "../../../../scripts/presentation.ts";
+import { previewPolicyVersion } from "../../../../scripts/security.ts";
+import Artifact from "../../components/Artifact.astro";
+import Metadata from "../../components/Metadata.astro";
+import Preview from "../../components/Preview.astro";
+import Shell from "../../layouts/Shell.astro";
+
+declare const __CAPYBOARD_RUN_PAGES__: RunPage[];
+type Props = RunPage;
+
+export function getStaticPaths() {
+  return __CAPYBOARD_RUN_PAGES__.map((page) => ({
+    params: { id: page.entry.run.id },
+    props: page,
+  }));
+}
+
+const { entry, preview, correction, fixtures } = Astro.props;
+const { run, curation, transcript } = entry;
+const [time, input, cached, output, total] = measurementRows(run);
+const context: MetadataPair[] = [
+  ["Harness", run.generation.harness?.name ?? "Unknown"],
+  ["Version", run.generation.harness?.version ?? "Unknown"],
+  ["Effort", run.generation.harness?.effort ?? "Unknown"],
+];
+const provenance: MetadataPair[] = [
+  ["Run ID", run.id],
+  ["Provider", run.provider],
+  ["Model identifier", run.model.identifier],
+  ["Identifier kind", run.model.identifier_kind],
+  ["Generated", run.generated_at ?? "Unknown date"],
+  ["Published", curation.published_at ?? "Unknown date"],
+  ["Generation mode", run.generation.mode],
+  ["Interface", run.generation.interface],
+  ["Tools used", run.generation.tools_used],
+  ["Challenge", run.challenge_id],
+  ["Series", run.series_id],
+  ["Attempt", String(run.attempt_number)],
+];
+const timingNote =
+  run.generation.metrics?.time?.kind === "model"
+    ? "Model time excludes tool execution and agent startup."
+    : run.generation.metrics?.time?.kind === "elapsed"
+      ? "Elapsed time covers the recorded attempt."
+      : "Timing was not recorded.";
+---
+
+<Shell title={run.model.display_name} fixtures={fixtures} section="run">
+  <a class="back-link" href="/">
+    ← All attempts
+  </a>
+  <header class="run-heading run-overview">
+    <p class="eyebrow">
+      {run.provider} · {run.generation.mode}
+    </p>
+    <h1>{run.model.display_name}</h1>
+    <Metadata pairs={context} className="run-context" />
+    {correction && (
+      <p class="notice">
+        Generation metadata corrected. Harness{" "}
+        {correction.run.generation.harness?.name ?? "Unknown"}{" "}
+        {correction.run.generation.harness?.version ?? ""}. Effort{" "}
+        {correction.run.generation.harness?.effort ?? "Unknown"}.{" "}
+        <a href={`/runs/${correction.run.id}/`}>View corrected run</a>.
+      </p>
+    )}
+  </header>
+  <div class="run-layout">
+    <aside class="conditions run-summary" aria-labelledby="run-summary-title">
+      <h2 id="run-summary-title">Run summary</h2>
+      <Metadata
+        pairs={[total, time]}
+        className={`run-highlights${total[1] === "Unknown" ? " measurements-unknown" : ""}`}
+      />
+      <h3>Token breakdown</h3>
+      <Metadata pairs={[input, cached, output]} className="token-breakdown" />
+      <p class="metric-note">Cached tokens are cache reads. {timingNote}</p>
+    </aside>
+    <section class="run-output" aria-labelledby="run-output-title">
+      <h2 class="section-label" id="run-output-title">
+        Rendered output
+      </h2>
+      <Preview entry={entry} preview={preview} />
+      <details class="preview-policy">
+        <summary>Preview safety and restrictions</summary>
+        <p>
+          Restricted preview policy {previewPolicyVersion}. A blank result is
+          not an automatic pass or failure. Restrictions may affect the output.
+        </p>
+        <p>
+          Generated scripts can consume CPU or navigate their own frame. Curator
+          review is required. Stop cannot reliably recover a blocked browser.
+        </p>
+      </details>
+    </section>
+  </div>
+  <section class="evidence-section">
+    <div class="collection-heading">
+      <h2>Inspect the evidence</h2>
+      <a href={`/challenge/#${run.challenge_id}`}>Challenge and protocol ↗</a>
+    </div>
+    <p class="notice">
+      {curation.series_publication_complete
+        ? "The curator reports this collected series is fully published."
+        : `Publication is incomplete. ${curation.series_incomplete_reason ?? "No further reason was recorded."}`}
+    </p>
+    <details class="evidence" id="run-instructions">
+      <summary>Exact user instructions</summary>
+      <div class="evidence-body">
+        {transcript.turns
+          .filter((turn) => turn.role === "user")
+          .map((turn, index) => (
+            <>
+              <h3>User turn {index + 1}</h3>
+              <pre tabindex="0"><code>{turn.content}</code></pre>
+            </>
+          ))}
+        <button
+          type="button"
+          data-copy-url={`/evidence/${run.instructions.prompt_path}`}
+          data-sha256={run.instructions.prompt_sha256}
+          hidden
+        >
+          Copy prompt
+        </button>
+        <a href={`/evidence/${run.instructions.transcript_path}`}>
+          Full recorded transcript
+        </a>
+      </div>
+    </details>
+    {transcript.turns.some((turn) => turn.role === "system") && (
+      <details class="evidence">
+        <summary>Recorded system instruction</summary>
+        <div class="evidence-body">
+          {transcript.turns
+            .filter((turn) => turn.role === "system")
+            .map((turn) => <pre tabindex="0"><code>{turn.content}</code></pre>)}
+        </div>
+      </details>
+    )}
+    <details class="evidence run-provenance" id="run-provenance">
+      <summary>Run provenance</summary>
+      <div class="evidence-body">
+        <Metadata pairs={provenance} />
+        {run.model.identifier_kind === "display-only" && (
+          <p class="notice">
+            Display-only identifier. An exact model identifier was not recorded.
+          </p>
+        )}
+        {run.supersedes_run_id && (
+          <p class="notice">
+            Corrects{" "}
+            <a href={`/runs/${run.supersedes_run_id}/`}>
+              {run.supersedes_run_id}
+            </a>
+            . {run.correction_reason}
+          </p>
+        )}
+        <a href={`/evidence/runs/${run.id}/run.json`}>
+          Open recorded run metadata
+        </a>
+      </div>
+    </details>
+    <details class="evidence">
+      <summary>Curation observations and capture conditions</summary>
+      <div class="evidence-body">
+        <ul>
+          {curation.observations.map((observation) => (
+            <li>{observation}</li>
+          ))}
+        </ul>
+        <pre tabindex="0">{JSON.stringify(curation.thumbnail, null, 2)}</pre>
+        <p>
+          These are observations, not scores. Null capture metadata means
+          unknown.
+        </p>
+      </div>
+    </details>
+    <Artifact
+      kind="response"
+      path={run.artifacts.response.path}
+      checksum={run.artifacts.response.sha256}
+      highlights={`/assets/highlights/${run.id}-response.json`}
+    />
+    {run.artifacts.html ? (
+      <Artifact
+        kind="html"
+        path={run.artifacts.html.path}
+        checksum={run.artifacts.html.sha256}
+        highlights={`/assets/highlights/${run.id}-html.json`}
+      />
+    ) : (
+      <p class="notice">
+        No runnable HTML returned. The original response is preserved above.
+      </p>
+    )}
+    <div class="download-actions">
+      {run.artifacts.html && (
+        <button
+          type="button"
+          data-download-url={`/evidence/${run.artifacts.html.path}`}
+          data-sha256={run.artifacts.html.sha256}
+          data-filename={`${run.id}.html`}
+          hidden
+        >
+          Download HTML
+        </button>
+      )}
+      <button
+        type="button"
+        data-download-url={`/evidence/${run.artifacts.response.path}`}
+        data-sha256={run.artifacts.response.sha256}
+        data-filename={`${run.id}-response.txt`}
+        hidden
+      >
+        Download original response
+      </button>
+    </div>
+    <p id="artifact-status" role="status"></p>
+  </section>
+</Shell>

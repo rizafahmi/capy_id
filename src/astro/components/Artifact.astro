@@ -1,0 +1,58 @@
+---
+interface Props {
+  kind: "html" | "response";
+  path: string;
+  checksum: string;
+  highlights: string;
+}
+const { kind, path, checksum, highlights } = Astro.props;
+const isHtml = kind === "html";
+const title = isHtml ? "Extracted HTML" : "Original response";
+const url = `/evidence/${path}`;
+---
+
+<details
+  class="evidence"
+  data-evidence-url={url}
+  data-sha256={checksum}
+  data-highlight-url={highlights}
+>
+  <summary>{title}</summary>
+  <div class="evidence-body">
+    <div class="code-toolbar">
+      <span class="code-language">
+        {isHtml ? "HTML · CSS · JavaScript" : "Markdown / text"}
+      </span>
+      <div class="code-actions">
+        {isHtml && (
+          <button
+            type="button"
+            class="code-action"
+            data-format
+            aria-pressed="true"
+            hidden
+          >
+            Formatted
+          </button>
+        )}
+        <button
+          type="button"
+          class="code-action"
+          data-wrap
+          aria-pressed="true"
+          hidden
+        >
+          Wrap lines
+        </button>
+        <button type="button" class="code-action" data-copy-url={url} hidden>
+          Copy {isHtml ? "original HTML" : "response"}
+        </button>
+        <a href={url}>Open preserved text</a>
+      </div>
+    </div>
+    <p class="evidence-status" role="status">
+      Expand to retrieve the preserved artifact.
+    </p>
+    <pre class="code-view" tabindex="0" aria-label={title}><code></code></pre>
+  </div>
+</details>

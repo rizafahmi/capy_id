@@ -7,9 +7,9 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "lint": "biome check scripts src tests playwright.config.ts",
-    "format": "biome format --write scripts src tests playwright.config.ts",
+    "typecheck": "tsc --noEmit && astro check --tsconfig tsconfig.astro.json",
+    "lint": "biome check scripts src tests playwright.config.ts astro.config.mjs && prettier --plugin prettier-plugin-astro --check \"src/astro/**/*.astro\"",
+    "format": "biome format --write scripts src tests playwright.config.ts astro.config.mjs && prettier --plugin prettier-plugin-astro --write \"src/astro/**/*.astro\"",
     "test": "node --test tests/*.test.ts",
     "validate": "node scripts/cli.ts validate",
     "import": "node scripts/cli.ts import",
@@ -22,11 +22,14 @@
     "check": "npm run typecheck && npm run lint && npm test"
   },
   "devDependencies": {
+    "@astrojs/check": "0.9.10",
     "@axe-core/playwright": "^4.13.0",
     "@biomejs/biome": "^2.3.0",
     "@playwright/test": "^1.56.0",
     "@types/node": "^24.0.0",
+    "astro": "7.3.8",
     "prettier": "^3.9.10",
+    "prettier-plugin-astro": "1.1.1",
     "shiki": "^4.5.0",
     "typescript": "^5.9.0",
     "zod": "^4.1.0"

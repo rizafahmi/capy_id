@@ -159,6 +159,119 @@ test("run pages and challenge evidence exist without a SPA fallback", async (t) 
   );
   assert.match(await readFile(join(out, "gallery/404.html"), "utf8"), /Run not found/);
 });
+test("run detail escapes content and keeps scripts external under the existing CSP", async (t) => {
+  const { content, out } = await buildFixture(t);
+  const injected = '<script>alert("untrusted")</script>';
+  const run = await importRun({
+    root: content,
+    metadata: {
+      ...fixtureMetadata("fixture-escaping"),
+      model: { display_name: injected, identifier: "escaping", identifier_kind: "snapshot" },
+      generation: { mode: "revised", interface: "other", tools_used: "no" },
+    },
+    response: Buffer.from("No HTML returned."),
+    transcript: {
+      schema_version: 1,
+      turns: [
+        {
+          role: "user",
+          content: await readFile(
+            join(content, "challenges/capybara-hoverboard-v1/prompt.txt"),
+            "utf8",
+          ),
+        },
+        { role: "user", content: injected },
+      ],
+    },
+  });
+  const path = join(content, `curation/${run.id}.json`);
+  const curation = curationSchema.parse(JSON.parse(await readFile(path, "utf8")));
+  await writeFile(
+    path,
+    jsonBytes({
+      ...curation,
+      visible: true,
+      published_at: "2026-10-10T00:00:00Z",
+      observations: [injected],
+    }),
+  );
+  await buildSite({
+    root: content,
+    out,
+    galleryOrigin: "http://127.0.0.1:4173",
+    previewOrigin: "http://127.0.0.1:4174",
+    development: true,
+  });
+  const html = await readFile(join(out, `gallery/runs/${run.id}/index.html`), "utf8");
+  assert.doesNotMatch(html, /<script>alert|<style|style=|astro-island/);
+  assert.equal((html.match(/<script\b/g) ?? []).length, 1);
+  assert.match(html, /<script type="module" src="\/assets\/app.js"><\/script>/);
+  assert.match(html, /&lt;script&gt;alert\(/);
+  assert.match(html, /<title>&lt;script&gt;/);
+  assert.match(html, /<h1>&lt;script&gt;/);
+  assert.match(html, /<li>&lt;script&gt;/);
+  assert.match(html, /<code>&lt;script&gt;/);
+});
+
+test("rebuilding removes withheld run routes without publishing build inputs", async (t) => {
+  const { content, out } = await buildFixture(t);
+  const path = join(content, "curation/fixture-animation.json");
+  const curation = curationSchema.parse(JSON.parse(await readFile(path, "utf8")));
+  await writeFile(
+    path,
+    jsonBytes({
+      ...curation,
+      visible: false,
+      series_publication_complete: false,
+      series_incomplete_reason: "Withheld for rebuild test.",
+    }),
+  );
+  await buildSite({
+    root: content,
+    out,
+    galleryOrigin: "http://127.0.0.1:4173",
+    previewOrigin: "http://127.0.0.1:4174",
+    development: true,
+  });
+  for (const path of [
+    "gallery/runs/fixture-animation/index.html",
+    "preview/runs/fixture-animation/index.html",
+    "gallery/run-pages.json",
+  ]) {
+    await assert.rejects(readFile(join(out, path)), { code: "ENOENT" });
+  }
+  assert.match(
+    await readFile(join(out, "gallery/runs/fixture-unknown/index.html"), "utf8"),
+    /<h1>unknown<\/h1>/,
+  );
+});
+
+test("concurrent builds keep their run-page data and preview origins separate", async (t) => {
+  const first = await buildFixture(t);
+  const second = await buildFixture(t);
+  const builds = [
+    { ...first, previewOrigin: "http://127.0.0.1:4174" },
+    { ...second, previewOrigin: "http://127.0.0.1:5174" },
+  ];
+  await Promise.all(
+    builds.map(({ content, out, previewOrigin }) =>
+      buildSite({
+        root: content,
+        out,
+        galleryOrigin: "http://127.0.0.1:4173",
+        previewOrigin,
+        development: true,
+      }),
+    ),
+  );
+  for (const { out, previewOrigin } of builds) {
+    const html = await readFile(join(out, "gallery/runs/fixture-animation/index.html"), "utf8");
+    assert.ok(html.includes(`data-preview-url="${previewOrigin}/runs/fixture-animation/"`));
+    assert.ok(html.includes(`href="${previewOrigin}/runs/fixture-animation/"`));
+    await assert.rejects(readFile(join(out, ".astro/run-pages.json")), { code: "ENOENT" });
+  }
+});
+
 test("detail hierarchy puts total tokens first and defers dates and identifiers to provenance", async (t) => {
   const { out } = await buildFixture(t);
   const html = await readFile(join(out, "gallery/runs/fixture-animation/index.html"), "utf8");

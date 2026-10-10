@@ -311,7 +311,7 @@ test("gallery selects exactly two runs and comparison reconstructs the URL", asy
   await expect(page.locator("iframe")).toHaveCount(0);
   await expect(
     page.getByRole("link", { name: "Open preview in new tab", exact: true }),
-  ).toHaveCount(1);
+  ).toHaveCount(2);
   await expect(
     page.getByText("Generation conditions differ or are incomplete.", { exact: true }),
   ).toBeVisible();

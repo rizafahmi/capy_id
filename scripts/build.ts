@@ -2,7 +2,9 @@ import { cp, lstat, mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node
 import { dirname, join, resolve, sep } from "node:path";
 import { readArtifact, utf8, validateContent } from "./content.ts";
 import { prepareCodeView } from "./highlight.ts";
-import type { Collection, Entry, Ledger, Preview, Run } from "./schema.ts";
+import { type MeasurementRows, type MetadataPair, measurementRows } from "./presentation.ts";
+import { buildRunPages, type RunPage } from "./run-pages.ts";
+import type { Collection, Entry, Ledger, Preview } from "./schema.ts";
 import { headerFile, previewPolicyVersion } from "./security.ts";
 
 export const escapeHtml = (value: unknown): string =>
@@ -12,18 +14,9 @@ export const escapeHtml = (value: unknown): string =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
-type MetadataPair = [label: string, value: string];
-type MeasurementRows = [
-  time: MetadataPair,
-  input: MetadataPair,
-  cached: MetadataPair,
-  output: MetadataPair,
-  total: MetadataPair,
-];
 type PublishedEntry = Entry & { preview: Preview; measurementRows: MeasurementRows };
 const e = escapeHtml;
 const evidenceUrl = (path: string) => `/evidence/${path}`;
-const dateLabel = (value: string | null) => value ?? "Unknown date";
 const inspirationLink =
   '<a href="https://simonwillison.net/tags/pelican-riding-a-bicycle/">Simon Willison\'s pelican-riding-a-bicycle experiments</a>';
 const screenshot = (entry: Entry) =>
@@ -33,26 +26,6 @@ const screenshot = (entry: Entry) =>
 
 function page(title: string, body: string, fixtures: boolean, section: string): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="A curated, inspectable gallery of model responses to one creative coding challenge. Not a model leaderboard."><title>${e(title)} · Capyboard</title><link rel="icon" href="/assets/favicon.png" type="image/png"><link rel="preload" href="/assets/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/site.css"><script type="module" src="/assets/app.js"></script></head><body data-page="${e(section)}"><a class="skip" href="#main">Skip to content</a><header class="site-header"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">cb</span>capyboard<span class="brand-tag">/ experiments</span></a><nav aria-label="Main navigation"><a href="/" ${section === "gallery" ? 'aria-current="page"' : ""}>Gallery</a><a href="/challenge/" ${section === "challenge" ? 'aria-current="page"' : ""}>The challenge <span aria-hidden="true">↗</span></a></nav></header>${fixtures ? '<div class="development-banner" role="note">Development fixtures. These are test examples, not genuine model experiments.</div>' : ""}<main id="main">${body}</main><footer class="site-footer"><span>Showcase first. Inspect everything.</span><a href="/challenge/#limits">Interpretation and limitations</a></footer><div id="global-status" class="sr-only" role="status"></div></body></html>`;
-}
-export function previewMarkup(entry: Entry, preview: Preview): string {
-  return `<section class="preview" data-preview-id="${e(entry.run.id)}" ${preview.kind === "ready" ? `data-preview-url="${e(preview.url)}"` : ""}><div class="preview-controls">${preview.kind === "ready" ? `<button type="button" data-start hidden>Run preview</button><button type="button" data-stop hidden>Stop</button><button type="button" data-restart hidden>Restart</button><a class="button preview-open" href="${e(preview.url)}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">Open preview in new tab</a><noscript><p>JavaScript is required to start a restricted preview. Evidence remains available below.</p></noscript>` : `<p class="notice">${e(preview.reason)}</p>`}<span class="viewport-label" data-viewport></span></div><p class="preview-status" role="status">${preview.kind === "ready" ? "Preview is stopped. Starting it executes generated code." : "Evidence remains available."}</p><div class="preview-stage">${screenshot(entry)}</div></section>`;
-}
-function measurementRows(run: Run): MeasurementRows {
-  const metrics = run.generation.metrics;
-  const time = metrics?.time;
-  const numbers = new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 });
-  const count = (value: number | null | undefined) =>
-    value == null ? "Unknown" : numbers.format(value);
-  return [
-    [
-      time ? (time.kind === "model" ? "Model time" : "Elapsed time") : "Time",
-      time ? `${numbers.format(time.duration_ms / 1000)} s` : "Unknown",
-    ],
-    ["Input tokens", count(metrics?.tokens.input)],
-    ["Cached tokens", count(metrics?.tokens.cached)],
-    ["Output tokens", count(metrics?.tokens.output)],
-    ["Total tokens", count(metrics?.tokens.total)],
-  ];
 }
 function card(entry: PublishedEntry, comparable: boolean): string {
   const run = entry.run;
@@ -82,87 +55,6 @@ function metadata(pairs: MetadataPair[], className = ""): string {
   return `<dl class="metadata${className ? ` ${e(className)}` : ""}">${pairs.map(([key, value]) => `<div><dt>${e(key)}</dt><dd>${e(value)}</dd></div>`).join("")}</dl>`;
 }
 const highlightUrl = (id: string, kind: string) => `/assets/highlights/${id}-${kind}.json`;
-function artifactSection(
-  title: string,
-  path: string,
-  checksum: string,
-  highlights: string,
-): string {
-  const isHtml = title === "Extracted HTML";
-  return `<details class="evidence" data-evidence-url="${e(evidenceUrl(path))}" data-sha256="${e(checksum)}" data-highlight-url="${e(highlights)}"><summary>${e(title)}</summary><div class="evidence-body"><div class="code-toolbar"><span class="code-language">${isHtml ? "HTML · CSS · JavaScript" : "Markdown / text"}</span><div class="code-actions">${isHtml ? '<button type="button" class="code-action" data-format aria-pressed="true" hidden>Formatted</button>' : ""}<button type="button" class="code-action" data-wrap aria-pressed="true" hidden>Wrap lines</button><button type="button" class="code-action" data-copy-url="${e(evidenceUrl(path))}" hidden>Copy ${isHtml ? "original HTML" : "response"}</button><a href="${e(evidenceUrl(path))}">Open preserved text</a></div></div><p class="evidence-status" role="status">Expand to retrieve the preserved artifact.</p><pre class="code-view" tabindex="0" aria-label="${e(title)}"><code></code></pre></div></details>`;
-}
-function detail(entry: Entry, preview: Preview, correction?: Entry): string {
-  const { run, curation, transcript } = entry;
-  const [time, input, cached, output, total] = measurementRows(run);
-  const context: MetadataPair[] = [
-    ["Harness", run.generation.harness?.name ?? "Unknown"],
-    ["Version", run.generation.harness?.version ?? "Unknown"],
-    ["Effort", run.generation.harness?.effort ?? "Unknown"],
-  ];
-  const provenance: MetadataPair[] = [
-    ["Run ID", run.id],
-    ["Provider", run.provider],
-    ["Model identifier", run.model.identifier],
-    ["Identifier kind", run.model.identifier_kind],
-    ["Generated", dateLabel(run.generated_at)],
-    ["Published", dateLabel(curation.published_at)],
-    ["Generation mode", run.generation.mode],
-    ["Interface", run.generation.interface],
-    ["Tools used", run.generation.tools_used],
-    ["Challenge", run.challenge_id],
-    ["Series", run.series_id],
-    ["Attempt", String(run.attempt_number)],
-  ];
-  const timingNote =
-    run.generation.metrics?.time?.kind === "model"
-      ? "Model time excludes tool execution and agent startup."
-      : run.generation.metrics?.time?.kind === "elapsed"
-        ? "Elapsed time covers the recorded attempt."
-        : "Timing was not recorded.";
-  return `<a class="back-link" href="/">← All attempts</a>
-  <header class="run-heading run-overview">
-    <p class="eyebrow">${e(run.provider)} · ${e(run.generation.mode)}</p>
-    <h1>${e(run.model.display_name)}</h1>
-    ${metadata(context, "run-context")}
-    ${correction ? `<p class="notice">Generation metadata corrected. Harness ${e(correction.run.generation.harness?.name ?? "Unknown")} ${e(correction.run.generation.harness?.version ?? "")}. Effort ${e(correction.run.generation.harness?.effort ?? "Unknown")}. <a href="/runs/${e(correction.run.id)}/">View corrected run</a>.</p>` : ""}
-  </header>
-  <div class="run-layout">
-    <aside class="conditions run-summary" aria-labelledby="run-summary-title">
-      <h2 id="run-summary-title">Run summary</h2>
-      ${metadata([total, time], `run-highlights${total[1] === "Unknown" ? " measurements-unknown" : ""}`)}
-      <h3>Token breakdown</h3>
-      ${metadata([input, cached, output], "token-breakdown")}
-      <p class="metric-note">Cached tokens are cache reads. ${e(timingNote)}</p>
-    </aside>
-    <section class="run-output" aria-labelledby="run-output-title">
-      <h2 class="section-label" id="run-output-title">Rendered output</h2>
-      ${previewMarkup(entry, preview)}
-      <details class="preview-policy"><summary>Preview safety and restrictions</summary>
-        <p>Restricted preview policy ${previewPolicyVersion}. A blank result is not an automatic pass or failure. Restrictions may affect the output.</p>
-        <p>Generated scripts can consume CPU or navigate their own frame. Curator review is required. Stop cannot reliably recover a blocked browser.</p>
-      </details>
-    </section>
-  </div>
-  <section class="evidence-section">
-  <div class="collection-heading"><h2>Inspect the evidence</h2><a href="/challenge/#${e(run.challenge_id)}">Challenge and protocol ↗</a></div>
-  <p class="notice">${curation.series_publication_complete ? "The curator reports this collected series is fully published." : `Publication is incomplete. ${e(curation.series_incomplete_reason ?? "No further reason was recorded.")}`}</p>
-  <details class="evidence" id="run-instructions"><summary>Exact user instructions</summary><div class="evidence-body">${transcript.turns
-    .filter((turn) => turn.role === "user")
-    .map(
-      (turn, index) =>
-        `<h3>User turn ${index + 1}</h3><pre tabindex="0"><code>${e(turn.content)}</code></pre>`,
-    )
-    .join(
-      "",
-    )}<button type="button" data-copy-url="${e(evidenceUrl(run.instructions.prompt_path))}" data-sha256="${e(run.instructions.prompt_sha256)}" hidden>Copy prompt</button><a href="${e(evidenceUrl(run.instructions.transcript_path))}">Full recorded transcript</a></div></details>${
-    transcript.turns.some((turn) => turn.role === "system")
-      ? `<details class="evidence"><summary>Recorded system instruction</summary><div class="evidence-body">${transcript.turns
-          .filter((turn) => turn.role === "system")
-          .map((turn) => `<pre tabindex="0"><code>${e(turn.content)}</code></pre>`)
-          .join("")}</div></details>`
-      : ""
-  }<details class="evidence run-provenance" id="run-provenance"><summary>Run provenance</summary><div class="evidence-body">${metadata(provenance)}${run.model.identifier_kind === "display-only" ? '<p class="notice">Display-only identifier. An exact model identifier was not recorded.</p>' : ""}${run.supersedes_run_id ? `<p class="notice">Corrects <a href="/runs/${e(run.supersedes_run_id)}/">${e(run.supersedes_run_id)}</a>. ${e(run.correction_reason)}</p>` : ""}<a href="${e(evidenceUrl(`runs/${run.id}/run.json`))}">Open recorded run metadata</a></div></details><details class="evidence"><summary>Curation observations and capture conditions</summary><div class="evidence-body"><ul>${curation.observations.map((observation) => `<li>${e(observation)}</li>`).join("")}</ul><pre tabindex="0">${e(JSON.stringify(curation.thumbnail, null, 2))}</pre><p>These are observations, not scores. Null capture metadata means unknown.</p></div></details>${artifactSection("Original response", run.artifacts.response.path, run.artifacts.response.sha256, highlightUrl(run.id, "response"))}${run.artifacts.html ? artifactSection("Extracted HTML", run.artifacts.html.path, run.artifacts.html.sha256, highlightUrl(run.id, "html")) : '<p class="notice">No runnable HTML returned. The original response is preserved above.</p>'}<div class="download-actions">${run.artifacts.html ? `<button type="button" data-download-url="${e(evidenceUrl(run.artifacts.html.path))}" data-sha256="${e(run.artifacts.html.sha256)}" data-filename="${e(run.id)}.html" hidden>Download HTML</button>` : ""}<button type="button" data-download-url="${e(evidenceUrl(run.artifacts.response.path))}" data-sha256="${e(run.artifacts.response.sha256)}" data-filename="${e(run.id)}-response.txt" hidden>Download original response</button></div><p id="artifact-status" role="status"></p></section>`;
-}
 function challengePage(collection: Collection): string {
   return `<header class="run-heading"><p class="eyebrow">Instructions and interpretation</p><h1>The challenge</h1><p class="hero-description">One deliberately narrow task. Every experiment keeps its instructions and generation history.</p></header>${[...collection.challenges.values()].map((challenge) => `<section id="${e(challenge.id)}"><h2>${e(challenge.title)}</h2><p class="eyebrow">${e(challenge.id)}</p><pre tabindex="0"><code>${e(collection.prompts.get(challenge.id))}</code></pre><button type="button" data-copy-url="${e(evidenceUrl(challenge.prompt_path))}" data-sha256="${e(challenge.prompt_sha256)}" hidden>Copy prompt</button><p class="checksum">SHA-256 ${e(challenge.prompt_sha256)}</p></section>`).join("")}<section class="prose"><h2 id="inspiration">From pelicans to capybaras</h2><p>${inspirationLink} inspired this challenge. Our version asks models to animate a capybara on a hoverboard in a single HTML file.</p><h2>Collection protocol</h2><ol><li>Start a fresh conversation or request with no previous user conversation.</li><li>Send the fixed prompt exactly once. Record known system instructions separately.</li><li>Do not edit, retry, or repair a canonical one-shot output.</li><li>Record provider, identifier, interface, timestamp, exposed settings, and known tool use. Leave unknown conditions unknown.</li><li>Save the full response and extracted HTML before publication.</li><li>Keep additional attempts as separate records in the same series. Publish all collected attempts or disclose incomplete publication.</li></ol><p>Revised and tool-assisted examples require prominent labels and their full user-turn transcript. A changed instruction creates a new challenge version.</p><h2 id="limits">What this gallery cannot tell you</h2><ul><li>One task cannot establish overall model quality.</li><li>Individual runs can vary.</li><li>Model aliases and chat products can change.</li><li>Publication may not represent all possible attempts.</li><li>Preview restrictions may affect behavior.</li></ul><h2>Preview policy ${previewPolicyVersion}</h2><p>Derived previews are byte-for-byte copies of extracted UTF-8 HTML. They are served on a separate origin under an enforced HTTP Content Security Policy and an iframe sandbox. Originals remain downloadable plain text on the gallery origin.</p><p>Inline scripts and styles can run. External resources, fetch requests, nested frames, forms, popups, and top navigation are restricted. No frame messages are trusted.</p><p>Sandboxing is not absolute network or CPU isolation. Scripts may navigate their own frame or block a browser. Curator-reviewed execution is opt-in, and suspect outputs remain evidence with execution disabled.</p><p>SHA-256 protects recorded integrity. It does not prove authorship or scientific validity.</p></section><p id="artifact-status" role="status"></p>`;
 }
@@ -258,6 +150,7 @@ export async function buildSite(options: {
     for (const entry of entries)
       if (entry.run.supersedes_run_id) corrections.set(entry.run.supersedes_run_id, entry);
     const views: PublishedEntry[] = [];
+    const runPages: RunPage[] = [];
     for (const entry of entries) {
       const { run, curation } = entry;
       let preview: Preview = {
@@ -301,15 +194,7 @@ export async function buildSite(options: {
         preview,
         measurementRows: measurementRows(run),
       });
-      await put(
-        `gallery/runs/${run.id}/index.html`,
-        page(
-          run.model.display_name,
-          detail(entry, preview, corrections.get(run.id)),
-          fixtures,
-          "run",
-        ),
-      );
+      runPages.push({ entry, preview, correction: corrections.get(run.id) ?? null, fixtures });
       for (const path of [
         run.artifacts.response.path,
         run.artifacts.html?.path,
@@ -324,6 +209,7 @@ export async function buildSite(options: {
           await readArtifact(content.root, curation.thumbnail.path),
         );
     }
+    await buildRunPages({ pages: runPages, staging });
     for (const challenge of content.challenges.values())
       await put(
         `gallery/evidence/${challenge.prompt_path}`,

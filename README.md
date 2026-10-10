@@ -6,7 +6,9 @@ leaderboard.
 
 The public app uses HTML, CSS, and vanilla JavaScript. Node.js 24 and strict
 TypeScript handle import, validation, static generation, and screenshot capture.
-There is no runtime backend or model API integration.
+Astro generates run-detail pages. The remaining pages use the existing renderer
+while migration proceeds one page type at a time. There is no runtime backend or
+model API integration.
 
 ## Run locally
 
@@ -41,6 +43,11 @@ The script only stops a matching process it recorded. It does not adopt or kill
 an existing foreground or unmanaged server. Stop the background server before
 running browser tests. A crashed command may leave `.dev/lock`; remove that
 empty directory only after confirming no lifecycle command is still running.
+
+Use these commands rather than standalone `astro dev` or `astro build`. They run
+content validation and maintain both origins. This first migration slice keeps
+the build-on-start development server. Restart it after template or content edits.
+Astro hot reloading is not wired into the two-origin server yet.
 
 ## Verify
 
@@ -77,9 +84,11 @@ the generated response headers. Merely uploading HTML is not enough.
 
 - `scripts/schema.ts` defines the content model and validation types.
 - `scripts/content.ts` imports evidence and verifies historical integrity.
-- `scripts/build.ts` generates real gallery, challenge, run, and comparison
-  routes.
-- `src/` contains the shared shell CSS and browser controls.
+- `scripts/build.ts` validates and stages both deployments, copies evidence, and
+  generates the pages not yet migrated to Astro.
+- `scripts/run-pages.ts` builds Astro run-detail routes inside the staging directory.
+- `src/astro/` contains Astro pages, layouts, and components.
+- `src/site.css` and `src/app.js` contain shared styles and vanilla browser controls.
 - `content/` contains immutable evidence and separate mutable curation records.
 - `tests/` contains content, build, and browser acceptance tests.
 - `schemas/` contains generated JSON schemas. Regenerate with

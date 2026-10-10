@@ -1,0 +1,72 @@
+---
+import type { Entry, Preview } from "../../../scripts/schema.ts";
+
+interface Props {
+  entry: Entry;
+  preview: Preview;
+}
+const { entry, preview } = Astro.props;
+---
+
+<section
+  class="preview"
+  data-preview-id={entry.run.id}
+  data-preview-url={preview.kind === "ready" ? preview.url : undefined}
+>
+  <div class="preview-controls">
+    {preview.kind === "ready" ? (
+      <>
+        <button type="button" data-start hidden>
+          Run preview
+        </button>
+        <button type="button" data-stop hidden>
+          Stop
+        </button>
+        <button type="button" data-restart hidden>
+          Restart
+        </button>
+        <a
+          class="button preview-open"
+          href={preview.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          referrerpolicy="no-referrer"
+        >
+          Open preview in new tab
+        </a>
+        <noscript>
+          <p>
+            JavaScript is required to start a restricted preview. Evidence
+            remains available below.
+          </p>
+        </noscript>
+      </>
+    ) : (
+      <p class="notice">{preview.reason}</p>
+    )}
+    <span class="viewport-label" data-viewport></span>
+  </div>
+  <p class="preview-status" role="status">
+    {preview.kind === "ready"
+      ? "Preview is stopped. Starting it executes generated code."
+      : "Evidence remains available."}
+  </p>
+  <div class="preview-stage">
+    {entry.curation.thumbnail ? (
+      <img
+        src={`/${entry.curation.thumbnail.path}`}
+        width="640"
+        height="480"
+        loading="lazy"
+        alt={`Screenshot of ${entry.run.model.display_name} output`}
+      />
+    ) : (
+      <div class="placeholder" role="img" aria-label="Screenshot not captured">
+        <span class="placeholder-mark" aria-hidden="true">
+          ?
+        </span>
+        <span aria-hidden="true">Screenshot not captured</span>
+      </div>
+    )}
+  </div>
+</section>
