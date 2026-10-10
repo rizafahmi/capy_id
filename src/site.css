@@ -649,9 +649,23 @@
   .card-body {
     padding: 1.25rem;
   }
-  .card h3 {
+  .card-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.65rem;
     margin-bottom: 0.5rem;
+  }
+  .card h3 {
+    min-width: 0;
+    margin: 0;
     font-size: 1.45rem;
+    overflow-wrap: anywhere;
+  }
+  .card-effort {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.75rem;
   }
   .card :where(h3) a {
     text-decoration: none;
@@ -666,9 +680,6 @@
     gap: 0.75rem;
     margin-block: 1rem;
     font-variant-numeric: tabular-nums;
-  }
-  .card .card-measurements > div {
-    display: block;
   }
   .card-measurements dt {
     margin-bottom: 0.35rem;
@@ -846,6 +857,9 @@
     display: grid;
     grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
     gap: 0.6rem;
+  }
+  .card-measurements > div {
+    display: block;
   }
   .metadata dt {
     color: var(--muted);

@@ -99,7 +99,11 @@ test("gallery defers harness details to inspection and comparison without sampli
   const card = page.locator("[data-card='fixture-animation']");
   await expect(card.getByText("Harness", { exact: true })).toHaveCount(0);
   await expect(card.getByText("Version", { exact: true })).toHaveCount(0);
-  await expect(card.getByText("Effort", { exact: true })).toHaveCount(0);
+  await expect(card.locator(".card-effort")).toHaveText("Low effort");
+  await expect(card.locator(".card-effort")).toBeVisible();
+  await expect(page.locator("[data-card='fixture-unknown'] .card-effort")).toHaveText(
+    "Effort unknown",
+  );
   await card.getByRole("link", { name: "Inspect attempt from animation", exact: true }).click();
   await expect(page).toHaveURL(/\/runs\/fixture-animation\//);
   await expect(
@@ -128,6 +132,33 @@ test("gallery defers harness details to inspection and comparison without sampli
   await expect(page.locator("#condition-notices")).toContainText("Effort: low versus Unknown");
   await expect(page.locator("main")).not.toContainText("temperature");
   await expect(page.locator("main")).not.toContainText("top_p");
+});
+
+test("gallery effort stays readable without JavaScript on narrow and wide screens", async ({
+  browser,
+}, testInfo) => {
+  const baseURL = testInfo.project.use.baseURL;
+  if (!baseURL) throw new Error("Gallery tests require a base URL");
+  const context = await browser.newContext({ javaScriptEnabled: false, baseURL });
+  try {
+    const page = await context.newPage();
+    for (const width of [375, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/");
+      await expect(page.locator("[data-card='fixture-animation'] .card-effort")).toHaveText(
+        "Low effort",
+      );
+      await expect(page.locator("[data-card='fixture-animation'] .card-effort")).toBeVisible();
+      await expect(page.locator("[data-card='fixture-unknown'] .card-effort")).toHaveText(
+        "Effort unknown",
+      );
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+    }
+  } finally {
+    await context.close();
+  }
 });
 
 test("time and token measurements are readable in gallery, detail and comparison", async ({

@@ -67,6 +67,8 @@ test("gallery is static, contains all attempts, and contains no experiment execu
   assert.doesNotMatch(html, /<iframe|Deliberately broken development fixture/);
   assert.match(html, /Development fixtures/);
   assert.match(html, /fixture-no-html/);
+  assert.match(html, /class="card-effort">Low effort<\/p>/);
+  assert.match(html, /class="card-effort">Effort unknown<\/p>/);
 });
 test("small collections omit filtering and comparison and give one attempt a full row", async (t) => {
   const { content, out } = await buildFixture(t);
@@ -209,6 +211,7 @@ test("run conditions expose harness and effort without sampling controls", async
   const html = await readFile(join(out, "gallery/runs/fixture-pi/index.html"), "utf8");
   const gallery = await readFile(join(out, "gallery/index.html"), "utf8");
   assert.match(gallery, /<dl class="metadata card-measurements">/);
+  assert.match(gallery, /class="card-effort">Low effort<\/p>/);
   assert.match(gallery, /<div class="card-meta"><p class="eyebrow">Pi<\/p>/);
   assert.doesNotMatch(gallery, /<div class="card-meta"><p class="eyebrow">openai-codex<\/p>/);
   assert.doesNotMatch(gallery, /<dt>Harness<\/dt>|<dt>Version<\/dt>|<dt>Effort<\/dt>/);
@@ -286,6 +289,11 @@ test("elapsed zero and missing historical measurements render without invented v
   assert.match(zero, /<dt>Elapsed time<\/dt><dd>0 s<\/dd>/);
   for (const label of ["Input tokens", "Cached tokens", "Output tokens", "Total tokens"])
     assert.match(zero, new RegExp(`<dt>${label}</dt><dd>0</dd>`));
+  const gallery = await readFile(join(out, "gallery/index.html"), "utf8");
+  assert.match(
+    gallery,
+    /data-card="fixture-legacy"[\s\S]*?class="card-effort">Effort unknown<\/p>/,
+  );
   const legacy = await readFile(join(out, "gallery/runs/fixture-legacy/index.html"), "utf8");
   for (const label of ["Time", "Input tokens", "Cached tokens", "Output tokens", "Total tokens"])
     assert.match(legacy, new RegExp(`<dt>${label}</dt><dd>Unknown</dd>`));
