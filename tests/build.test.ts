@@ -185,6 +185,8 @@ test("run conditions expose harness and effort without sampling controls", async
   const html = await readFile(join(out, "gallery/runs/fixture-pi/index.html"), "utf8");
   const gallery = await readFile(join(out, "gallery/index.html"), "utf8");
   assert.match(gallery, /<dl class="metadata card-measurements">/);
+  assert.match(gallery, /<div class="card-meta"><p class="eyebrow">Pi<\/p>/);
+  assert.doesNotMatch(gallery, /<div class="card-meta"><p class="eyebrow">openai-codex<\/p>/);
   assert.doesNotMatch(gallery, /<dt>Harness<\/dt>|<dt>Version<\/dt>|<dt>Effort<\/dt>/);
   assert.match(html, /<dt>Harness<\/dt><dd>Pi<\/dd>/);
   assert.match(html, /<dt>Version<\/dt><dd>1\.1\.0<\/dd>/);

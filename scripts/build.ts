@@ -55,6 +55,7 @@ function measurementRows(run: Run): MeasurementRows {
 }
 function card(entry: PublishedEntry, comparable: boolean): string {
   const run = entry.run;
+  const harness = run.generation.harness?.name ?? "Unknown harness";
   const [time, , , , total] = entry.measurementRows;
   const generated = run.generated_at
     ? `<time datetime="${e(run.generated_at)}">${e(new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(run.generated_at)))}</time>`
@@ -64,7 +65,7 @@ function card(entry: PublishedEntry, comparable: boolean): string {
     : entry.preview.kind === "unavailable"
       ? "Live preview unavailable"
       : "Opt-in live preview";
-  return `<article class="card" data-card="${e(run.id)}" data-provider="${e(run.provider)}" data-name="${e(run.model.display_name)}" data-identifier="${e(run.model.identifier)}" data-date="${e(run.generated_at ?? "")}"><a class="card-image" href="/runs/${e(run.id)}/"><span class="sr-only">Inspect ${e(run.model.display_name)}</span>${screenshot(entry)}</a><div class="card-body"><div class="card-meta"><p class="eyebrow">${e(run.provider)}</p><span class="mode-badge">${e(run.generation.mode)}</span></div><h3><a href="/runs/${e(run.id)}/">${e(run.model.display_name)}</a></h3><p class="card-date">${generated}</p>${metadata([time, total], "card-measurements")}<p class="card-state">${e(state)}</p><div class="card-bottom"><a class="text-link inspect-link" href="/runs/${e(run.id)}/">Inspect attempt<span class="sr-only"> from ${e(run.model.display_name)}</span> <span aria-hidden="true">↗</span></a>${comparable ? `<label class="selection" hidden><input type="checkbox" value="${e(run.id)}" data-select> Compare</label>` : ""}</div></div></article>`;
+  return `<article class="card" data-card="${e(run.id)}" data-provider="${e(run.provider)}" data-name="${e(run.model.display_name)}" data-identifier="${e(run.model.identifier)}" data-date="${e(run.generated_at ?? "")}"><a class="card-image" href="/runs/${e(run.id)}/"><span class="sr-only">Inspect ${e(run.model.display_name)}</span>${screenshot(entry)}</a><div class="card-body"><div class="card-meta"><p class="eyebrow">${e(harness)}</p><span class="mode-badge">${e(run.generation.mode)}</span></div><h3><a href="/runs/${e(run.id)}/">${e(run.model.display_name)}</a></h3><p class="card-date">${generated}</p>${metadata([time, total], "card-measurements")}<p class="card-state">${e(state)}</p><div class="card-bottom"><a class="text-link inspect-link" href="/runs/${e(run.id)}/">Inspect attempt<span class="sr-only"> from ${e(run.model.display_name)}</span> <span aria-hidden="true">↗</span></a>${comparable ? `<label class="selection" hidden><input type="checkbox" value="${e(run.id)}" data-select> Compare</label>` : ""}</div></div></article>`;
 }
 function gallery(entries: PublishedEntry[]): string {
   const providers = [...new Set(entries.map((entry) => entry.run.provider))].sort();
