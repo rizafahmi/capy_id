@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "id": "pi-01a12606-d525-75a0-a529-3941c6b3563c",
+  "challenge_id": "capybara-hoverboard-v1",
+  "series_id": "pi-series-01a12606-d525-75a0-a529-3941c6b3563c",
+  "attempt_number": 1,
+  "provider": "google-vertex",
+  "model": {
+    "display_name": "gemini-3.8-flash",
+    "identifier": "gemini-3.8-flash",
+    "identifier_kind": "unknown"
+  },
+  "generated_at": "2026-10-10T13:35:44.422Z",
+  "generation": {
+    "mode": "tool-assisted",
+    "interface": "coding-agent",
+    "tools_used": "yes",
+    "harness": {
+      "name": "Pi",
+      "version": "1.1.0",
+      "effort": "low"
+    },
+    "metrics": {
+      "time": {
+        "kind": "model",
+        "duration_ms": 317707
+      },
+      "tokens": {
+        "input": 93244,
+        "cached": 211269,
+        "output": 39515,
+        "total": 344028
+      }
+    }
+  },
+  "instructions": {
+    "prompt_path": "challenges/capybara-hoverboard-v1/prompt.txt",
+    "prompt_sha256": "e6b955ce7c23afabd2adf2115467e7b6c213ac2cab2a7596886ca71ad827fe1c",
+    "transcript_path": "runs/pi-01a12606-d525-75a0-a529-3941c6b3563c/transcript.json"
+  },
+  "artifacts": {
+    "response": {
+      "path": "runs/pi-01a12606-d525-75a0-a529-3941c6b3563c/response.txt",
+      "sha256": "c527faad9d966d2c4e6b89efef17dcfb5caf26ba59a1cc46c1b8d6436fe00152",
+      "size_bytes": 38266
+    },
+    "html": {
+      "path": "runs/pi-01a12606-d525-75a0-a529-3941c6b3563c/output.html.txt",
+      "sha256": "c527faad9d966d2c4e6b89efef17dcfb5caf26ba59a1cc46c1b8d6436fe00152",
+      "size_bytes": 38266,
+      "extraction": {
+        "start_byte": 0,
+        "end_byte_exclusive": 38266
+      }
+    }
+  }
+}
