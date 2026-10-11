@@ -9,7 +9,7 @@ import { animationHtml, fixtureMetadata } from "../../scripts/fixtures.ts";
 import { curationSchema } from "../../scripts/schema.ts";
 import { serveStatic } from "../../scripts/server.ts";
 
-test("gallery metadata remains text in the browser and filters by its original values", async ({
+test("gallery and comparison keep hostile-looking metadata as text and preserve values", async ({
   page,
 }) => {
   const root = await mkdtemp(join(tmpdir(), "capyboard-gallery-escaping-"));
@@ -79,10 +79,28 @@ test("gallery metadata remains text in the browser and filters by its original v
       await page.getByLabel("Search models").fill(injected);
       await expect(page.locator("[data-card]:visible")).toHaveCount(1);
       await expect(card).toBeVisible();
-    } finally {
-      await new Promise<void>((resolve, reject) =>
-        server.close((error) => (error ? reject(error) : resolve())),
+      await page.goto(
+        `http://127.0.0.1:${address.port}/compare/?left=fixture-gallery-escaping&right=fixture-other`,
       );
+      await expect(page.locator(".compare-panel")).toHaveCount(2);
+      for (const side of ["Left", "Right"]) {
+        const select = page.getByRole("combobox", { name: `${side} run`, exact: true });
+        await expect(
+          select.getByRole("option", {
+            name: `${injected} · fixture-gallery-escaping`,
+            exact: true,
+          }),
+        ).toHaveAttribute("value", "fixture-gallery-escaping");
+      }
+      await expect(page.locator(".compare-panel h2").first()).toHaveText(injected);
+      await expect(page.locator(".compare-panel .eyebrow").first()).toHaveText(injected);
+      await expect(page.locator("img, iframe")).toHaveCount(0);
+      await expect(page.locator("html")).not.toHaveAttribute("data-injected");
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        server.close((error) => (error ? reject(error) : resolve()));
+        server.closeAllConnections();
+      });
     }
   } finally {
     await rm(root, { recursive: true, force: true });

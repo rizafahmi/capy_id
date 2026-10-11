@@ -1,7 +1,8 @@
 # Agent instructions
 
-This web app is examplerary, state of the art web galery and eval system. Make
-sure this project meet the baseline of modern web standards.
+This web app is examplerary, state of the art web galery and eval system. The
+end goal is to make this project as an examplerary project for doing personal
+eval. Make sure this project meet the baseline of modern web standards.
 
 ## Tech Stack
 

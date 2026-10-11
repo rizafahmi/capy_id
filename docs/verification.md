@@ -191,6 +191,61 @@ Hot reloading, remote CI, deployed HTTPS verification, and independent review
 remain unverified. No commit, push, or PR was performed. The pre-existing
 `AGENTS.md` edit was left untouched.
 
+## Astro comparison migration
+
+`src/astro/pages/compare.astro` replaces the comparison string renderer. Native
+selector names, required choices, GET action, status hooks, and preview controls
+are unchanged. Browser JavaScript, CSS, catalogue generation, and preview headers
+are unchanged. The not-found page retains its existing renderer.
+
+- Formatting, lint, both type checkers, and all 56 tooling tests pass. Template
+  checks and browser builds also pass concurrently.
+- All 126 browser tests pass across Chromium, Firefox, and WebKit without retries.
+  Added coverage verifies direct refresh, shared choices, browser history,
+  preview unloading after selection changes, accessible labels, and native GET
+  submission with JavaScript disabled.
+- Hostile-looking model and provider labels remain text in selectors and panels.
+  Tests verify original option values and the absence of injected images.
+- Build checks verify withheld choices disappear, empty collections retain only
+  placeholders, and superseded and replacement runs remain selectable.
+- All 50 compared Chromium screenshots have zero changed pixels. Twenty-seven
+  cover comparison, including selected, empty, and no-JavaScript states. Twenty-three
+  protect gallery, challenge, and run detail. Real captures use the same two runs
+  before and after migration and never execute their previews.
+- Validation of nine real attempts, local production generation with separate
+  HTTPS origins, and dependency audit pass. There are zero known vulnerabilities.
+  The 100-run gallery shell remains 17,604 gzip bytes.
+
+The initial characterization run exposed test-harness failures before production
+changes. Firefox reported loaded fonts with JavaScript disabled, but waiting on
+`document.fonts.ready` hung. The test now polls synchronous font status in every
+engine. No-JavaScript pixel captures use Chromium. All engines still exercise
+native selectors, submission, and fallback navigation.
+
+The temporary metadata-test server also waited for browser connections after all
+assertions passed. Cleanup now closes connections owned by that server after
+initiating shutdown. The baseline and post-migration suites pass with the same
+assertions and without increased timeouts or retries.
+
+Logs are in `.audit/astro-comparison-check.txt`, `.audit/astro-comparison-e2e.txt`,
+`.audit/astro-comparison-validation.txt`, `.audit/astro-comparison-production-build.txt`,
+and `.audit/astro-comparison-audit.txt`. Baseline failures and the font probe are in
+`.audit/astro-comparison-baseline/`. `.audit/astro-comparison-visual-parity.json`
+records image comparisons. Real screenshots are in `.audit/astro-comparison-real/`.
+`.audit/capture-comparison.mjs` and `.audit/compare-comparison.mjs` repeat the local
+captures and pixel comparison with a managed server and saved baseline.
+
+Direct code review found no new comments or suppressions. Delegated design and
+review were not authorized. The active LSP probe reported no errors but one file
+was inconclusive. Full compiler checks pass independently. Existing Zod hints
+remain unrelated. Without JavaScript, the form submits selected IDs and explains
+that comparison panels and previews require JavaScript. Individual evidence pages
+remain readable. This slice preserves that fallback rather than adding server-side
+comparison selection.
+
+Hot reloading, remote CI, deployed HTTPS verification, and independent review
+remain unverified. No commit, push, or PR was performed.
+
 ## Reproduce
 
 ```sh

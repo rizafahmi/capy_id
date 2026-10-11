@@ -128,7 +128,7 @@ test("gallery is static, contains all attempts, and contains no experiment execu
   assert.match(html, /class="card-effort">Low effort<\/p>/);
   assert.match(html, /class="card-effort">Effort unknown<\/p>/);
 });
-test("gallery renders untrusted labels as text and keeps scripts external", async (t) => {
+test("gallery and comparison escape untrusted labels and keep scripts external", async (t) => {
   const { content, out } = await buildFixture(t);
   const injected = '<img src=x onerror="alert(1)">';
   const run = await importRun({
@@ -166,6 +166,15 @@ test("gallery renders untrusted labels as text and keeps scripts external", asyn
   assert.match(html, /<h3><a[^>]*>&lt;img src=x onerror=/);
   assert.match(html, /<option>&lt;img src=x onerror=/);
   assert.match(html, /<p class="eyebrow">&lt;img src=x onerror=/);
+  const comparison = await readFile(join(out, "gallery/compare/index.html"), "utf8");
+  assert.equal(
+    (comparison.match(/<option value="fixture-gallery-escaping">&lt;img src=x onerror=/g) ?? [])
+      .length,
+    2,
+  );
+  assert.doesNotMatch(comparison, /<img|<iframe|<style|astro-island/);
+  assert.equal((comparison.match(/<script\b/g) ?? []).length, 1);
+  assert.match(comparison, /<script type="module" src="\/assets\/app.js"><\/script>/);
 });
 
 test("small collections omit filtering and comparison and give one attempt a full row", async (t) => {
@@ -200,6 +209,9 @@ test("small collections omit filtering and comparison and give one attempt a ful
   assert.match(html, /<h3><a[^>]*>animation<\/a><\/h3>/);
   assert.match(html, /<time datetime="2026-10-08T12:00:00Z">Oct 8, 2026<\/time>/);
   assert.match(html, /Inspect attempt/);
+  const comparison = await readFile(join(out, "gallery/compare/index.html"), "utf8");
+  assert.equal((comparison.match(/<option value="fixture-animation">/g) ?? []).length, 2);
+  assert.doesNotMatch(comparison, /<option value="fixture-(unknown|broken|disabled|no-html)">/);
   const path = join(content, "curation/fixture-animation.json");
   const curation = curationSchema.parse(JSON.parse(await readFile(path, "utf8")));
   await writeFile(
@@ -215,6 +227,9 @@ test("small collections omit filtering and comparison and give one attempt a ful
   const empty = await readFile(join(out, "gallery/index.html"), "utf8");
   assert.match(empty, /No experiments published yet/);
   assert.doesNotMatch(empty, /class="filters"|data-select|comparison-tray/);
+  const emptyComparison = await readFile(join(out, "gallery/compare/index.html"), "utf8");
+  assert.equal((emptyComparison.match(/<option value="">Select a run<\/option>/g) ?? []).length, 2);
+  assert.equal((emptyComparison.match(/<option\b/g) ?? []).length, 2);
 });
 
 test("build emits lazy Shiki ranges tied to preserved artifacts without a browser highlighter", async (t) => {
@@ -567,6 +582,9 @@ test("a provenance correction preserves the old route and replaces its gallery c
   const oldPage = await readFile(join(out, "gallery/runs/fixture-animation/index.html"), "utf8");
   assert.match(oldPage, /href="\/runs\/fixture-animation-provenance\/"/);
   assert.match(oldPage, /View corrected run/);
+  const comparison = await readFile(join(out, "gallery/compare/index.html"), "utf8");
+  for (const id of ["fixture-animation", "fixture-animation-provenance"])
+    assert.equal((comparison.match(new RegExp(`<option value="${id}">`, "g")) ?? []).length, 2);
   assert.deepEqual(await readFile(oldPath), oldBytes);
 });
 

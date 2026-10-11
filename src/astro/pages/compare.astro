@@ -1,0 +1,52 @@
+---
+import type { AstroPages } from "../../../scripts/astro-pages.ts";
+import Shell from "../layouts/Shell.astro";
+
+declare const __CAPYBOARD_ASTRO_PAGES__: AstroPages;
+const { runs, fixtures } = __CAPYBOARD_ASTRO_PAGES__.comparison;
+---
+
+<Shell title="Compare" fixtures={fixtures} section="compare">
+  <a class="back-link" href="/">
+    ← All attempts
+  </a>
+  <header class="run-heading">
+    <p class="eyebrow">Two attempts, one shared viewport</p>
+    <h1>Compare outputs</h1>
+    <p class="hero-description">
+      Inspect the differences. No scores, no automatic winners.
+    </p>
+  </header>
+  <form id="compare-form" action="/compare/" method="get">
+    <div class="compare-selectors">
+      {["left", "right"].map((side) => (
+        <label>
+          {side === "left" ? "Left run" : "Right run"}
+          <select name={side} required>
+            <option value="">Select a run</option>
+            {runs.map((run) => (
+              <option
+                value={run.id}
+              >{`${run.model.display_name} · ${run.id}`}</option>
+            ))}
+          </select>
+        </label>
+      ))}
+      <button type="submit">Compare</button>
+    </div>
+  </form>
+  <noscript>
+    <p>
+      Comparison controls and previews require JavaScript. Open the individual
+      run pages to inspect their evidence.
+    </p>
+  </noscript>
+  <p id="compare-status" role="status">
+    Choose two distinct runs.
+  </p>
+  <div id="condition-notices"></div>
+  <button type="button" id="run-both" hidden>
+    Run both
+  </button>
+  <div id="compare-panels" class="compare-panels"></div>
+</Shell>

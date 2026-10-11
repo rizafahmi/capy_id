@@ -24,9 +24,6 @@ function page(title: string, body: string, fixtures: boolean, section: string): 
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="A curated, inspectable gallery of model responses to one creative coding challenge. Not a model leaderboard."><title>${e(title)} · Capyboard</title><link rel="icon" href="/assets/favicon.png" type="image/png"><link rel="preload" href="/assets/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/site.css"><script type="module" src="/assets/app.js"></script></head><body data-page="${e(section)}"><a class="skip" href="#main">Skip to content</a><header class="site-header"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">cb</span>capyboard<span class="brand-tag">/ experiments</span></a><nav aria-label="Main navigation"><a href="/" ${section === "gallery" ? 'aria-current="page"' : ""}>Gallery</a><a href="/challenge/" ${section === "challenge" ? 'aria-current="page"' : ""}>The challenge <span aria-hidden="true">↗</span></a></nav></header>${fixtures ? '<div class="development-banner" role="note">Development fixtures. These are test examples, not genuine model experiments.</div>' : ""}<main id="main">${body}</main><footer class="site-footer"><span>Showcase first. Inspect everything.</span><a href="/challenge/#limits">Interpretation and limitations</a></footer><div id="global-status" class="sr-only" role="status"></div></body></html>`;
 }
 const highlightUrl = (id: string, kind: string) => `/assets/highlights/${id}-${kind}.json`;
-function comparePage(entries: Entry[]): string {
-  return `<a class="back-link" href="/">← All attempts</a><header class="run-heading"><p class="eyebrow">Two attempts, one shared viewport</p><h1>Compare outputs</h1><p class="hero-description">Inspect the differences. No scores, no automatic winners.</p></header><form id="compare-form" action="/compare/" method="get"><div class="compare-selectors">${["left", "right"].map((side) => `<label>${side === "left" ? "Left" : "Right"} run<select name="${side}" required><option value="">Select a run</option>${entries.map((entry) => `<option value="${e(entry.run.id)}">${e(entry.run.model.display_name)} · ${e(entry.run.id)}</option>`).join("")}</select></label>`).join("")}<button type="submit">Compare</button></div></form><noscript><p>Comparison controls and previews require JavaScript. Open the individual run pages to inspect their evidence.</p></noscript><p id="compare-status" role="status">Choose two distinct runs.</p><div id="condition-notices"></div><button type="button" id="run-both" hidden>Run both</button><div id="compare-panels" class="compare-panels"></div>`;
-}
 function origin(value: string, development: boolean): string {
   let url: URL;
   try {
@@ -185,14 +182,14 @@ export async function buildSite(options: {
       pages: {
         gallery: { entries: views.filter((entry) => !corrections.has(entry.run.id)), fixtures },
         challenge: { challenges, fixtures },
+        comparison: {
+          runs: entries.map(({ run }) => ({ id: run.id, model: run.model })),
+          fixtures,
+        },
         runs: runPages,
       },
       staging,
     });
-    await put(
-      "gallery/compare/index.html",
-      page("Compare", comparePage(entries), fixtures, "compare"),
-    );
     await put(
       "gallery/404.html",
       page(

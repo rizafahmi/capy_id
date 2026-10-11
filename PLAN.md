@@ -4,8 +4,8 @@
 
 Migrate one page type per verified slice. Start with run detail. Preserve visible output,
 vanilla browser controls, original evidence bytes, preview isolation, response headers,
-and safe build replacement. Run detail, gallery, and challenge are migrated.
-Comparison and not-found pages stay on the existing renderer until their own slices.
+and safe build replacement. Run detail, gallery, challenge, and comparison are
+migrated. The not-found page stays on the existing renderer until its own slice.
 
 ### First-slice checklist
 
@@ -123,6 +123,54 @@ Your existing `AGENTS.md` edit is untouched.
 
 Next slice: comparison. Suggested commit, not executed:
 `git commit -m "refactor: migrate challenge rendering to Astro"`.
+
+### Comparison-slice checklist
+
+- [x] Pin the behavior contract first. Characterize selector labels, publication choices, GET submission, shared URLs, no-JavaScript fallback, and screenshots before moving markup. How delegation skipped because subagents are not authorized; direct tracing covers the static form and browser catalogue.
+- [x] Name the structure the code is missing per principle-model-the-domain. Comparison input holds validated run IDs and model labels plus the fixture flag. Browser catalogue and preview state remain unchanged.
+- [x] Name the target shape. Astro renders /compare/ in the existing staged build. Existing tooling owns publication ordering, evidence, catalogue, headers, and staging. Architect exploration skipped because subagents are not authorized.
+- [x] Subtract before you add. Remove the comparison HTML-string renderer when its caller migrates. Keep the not-found renderer until its own slice.
+- [x] Move in small behavior-preserving steps, each keeping the pin green. Preserve form hooks, native labels, condition notices, URL behavior, and preview controls. Mechanical delegation skipped because subagents are not authorized.
+- [x] Prove behavior is unchanged on the real artifact, not "it compiles". Verify all browser engines, malicious-looking model text, withheld choices, native GET submission, and pixel parity.
+- [x] Confirm the change is worth keeping. Review the narrow typed input and readable page for duplicate state and unnecessary component layers.
+- [x] Rebase into small ordered commits. Commits, rebasing, and opening a PR skipped because they are not authorized. Suggest the comparison-slice commit after verification.
+
+### Comparison throughput checkpoint
+
+- Blocking first steps. Characterization and screenshots precede the renderer replacement.
+- Independent workstreams. n/a: one page slice and no approved delegation.
+- Shared mutable state. Keep isolated Astro workspaces and caches. Browser fixtures use separate content roots and ephemeral servers.
+- Smallest safe decomposition. Migrate only comparison, then run verification before changing not-found pages.
+
+### Comparison-slice handoff
+
+`src/astro/pages/compare.astro` replaces the comparison string renderer. Its typed
+input contains run IDs and model metadata for native selectors. Superseded runs
+remain selectable, and withheld runs disappear. Browser catalogue generation,
+comparison panels, preview state, client JavaScript, CSS, and headers are unchanged.
+No new dependency or component layer was added.
+
+Formatting, lint, both type checkers, 56 tooling tests, and 126 browser tests pass.
+All 50 compared Chromium screenshots match pixel-for-pixel. Twenty-seven cover
+comparison's selected, empty, and no-JavaScript states. Twenty-three protect
+existing gallery, challenge, and run detail. Native GET submission, history,
+malicious-looking labels, and preview unloading pass in all three engines.
+
+Baseline characterization exposed a Firefox no-JavaScript font-promise hang and
+an owned temporary server's connection-cleanup wait. Tests now poll synchronous
+font status and close owned connections during shutdown. No-JavaScript parity
+screenshots use Chromium; functional tests still cover all engines. No timeout
+increase, retry, application workaround, or inline suppression was added.
+
+Production generation, validation of nine real attempts, and dependency audit
+pass. Evidence is in `.audit/astro-comparison-check.txt`,
+`.audit/astro-comparison-e2e.txt`, and `.audit/astro-comparison-visual-parity.json`.
+The active LSP probe reported no errors but could not confirm one file. Full
+compiler checks pass independently. Hot reloading, remote CI, deployed HTTPS
+verification, independent review, and commits remain outside this slice.
+
+Next slice: not-found. Suggested commit, not executed:
+`git commit -m "refactor: migrate comparison rendering to Astro"`.
 
 ## Workflow
 

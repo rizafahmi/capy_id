@@ -35,6 +35,7 @@ export default defineConfig({
         : JSON.stringify({
             gallery: { entries: [], fixtures: false },
             challenge: { challenges: [], fixtures: false },
+            comparison: { runs: [], fixtures: false },
             runs: [],
           }),
     },
