@@ -493,6 +493,32 @@ async function enableComparison() {
   }
   left.addEventListener("focus", () => void getCatalogue(), { once: true });
   right.addEventListener("focus", () => void getCatalogue(), { once: true });
+  const provenanceDetails = document.querySelector("#compare-provenance");
+  const generation = document.querySelector("#compare-generation");
+  let currentComparison = null;
+  const renderProvenance = () => {
+    if (!provenanceDetails?.open || !currentComparison || generation.hasChildNodes()) return;
+    const [a, b] = currentComparison;
+    const provenance = [
+      ["Run ID", (entry) => entry.run.id],
+      ["Provider", (entry) => entry.run.provider],
+      ["Model identifier", (entry) => entry.run.model.identifier],
+      ["Generated", (entry) => entry.run.generated_at ?? "Unknown"],
+      ["Harness", (entry) => entry.run.generation.harness?.name ?? "Unknown"],
+      ["Harness version", (entry) => entry.run.generation.harness?.version ?? "Unknown"],
+      ["Generation mode", (entry) => entry.run.generation.mode],
+      ["Interface", (entry) => entry.run.generation.interface],
+      ["Tools used", (entry) => entry.run.generation.tools_used],
+      ["Challenge", (entry) => entry.run.challenge_id],
+    ];
+    generation.append(
+      comparisonTable(
+        "Generation details and provenance",
+        provenance.map(([label, value]) => [label, value(a), value(b)]),
+      ),
+    );
+  };
+  provenanceDetails?.addEventListener("toggle", renderProvenance);
   const render = async () => {
     for (const controller of previews.values()) controller.stop();
     previews.clear();
@@ -506,9 +532,8 @@ async function enableComparison() {
     results.hidden = true;
     const metrics = document.querySelector("#compare-metrics");
     metrics.replaceChildren();
-    const generation = document.querySelector("#compare-generation");
+    currentComparison = null;
     generation.replaceChildren();
-    document.querySelector("#compare-provenance").open = false;
     const notices = document.querySelector("#condition-notices");
     notices.replaceChildren();
     both.hidden = true;
@@ -633,24 +658,8 @@ async function enableComparison() {
       else rows.push([label, value, "Not recorded"], [rightLabel, "Not recorded", rightValue]);
     }
     metrics.append(comparisonTable("Recorded metrics", rows));
-    const provenance = [
-      ["Run ID", (entry) => entry.run.id],
-      ["Provider", (entry) => entry.run.provider],
-      ["Model identifier", (entry) => entry.run.model.identifier],
-      ["Generated", (entry) => entry.run.generated_at ?? "Unknown"],
-      ["Harness", (entry) => entry.run.generation.harness?.name ?? "Unknown"],
-      ["Harness version", (entry) => entry.run.generation.harness?.version ?? "Unknown"],
-      ["Generation mode", (entry) => entry.run.generation.mode],
-      ["Interface", (entry) => entry.run.generation.interface],
-      ["Tools used", (entry) => entry.run.generation.tools_used],
-      ["Challenge", (entry) => entry.run.challenge_id],
-    ];
-    generation.append(
-      comparisonTable(
-        "Generation details and provenance",
-        provenance.map(([label, value]) => [label, value(a), value(b)]),
-      ),
-    );
+    currentComparison = [a, b];
+    if (provenanceDetails?.open) renderProvenance();
     results.hidden = false;
     resizePreviews();
     both.hidden = false;

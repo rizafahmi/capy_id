@@ -540,6 +540,7 @@
     font-size: 0.85rem;
   }
   .compare-measurements {
+    contain: layout style;
     margin-top: 2rem;
     padding-top: 1.5rem;
     border-top: 1px solid var(--line);
@@ -585,6 +586,7 @@
     font-weight: 650;
   }
   .compare-provenance {
+    contain: layout style;
     border-block: 1px solid var(--line);
     margin-top: 1.5rem;
   }
