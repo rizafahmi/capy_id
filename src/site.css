@@ -242,6 +242,7 @@
     margin-inline: auto;
   }
   .site-header {
+    contain: layout style;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -310,6 +311,7 @@
     font-size: 0.85rem;
   }
   .hero-visual {
+    contain: layout paint;
     margin: 0;
   }
   .hero-photo img {
@@ -621,6 +623,7 @@
     }
   }
   .site-footer {
+    contain: layout style;
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
