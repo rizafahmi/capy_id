@@ -26,6 +26,15 @@ const { title, fixtures, section } = Astro.props;
       type="font/woff2"
       crossorigin
     />
+    {section === "compare" && (
+      <link
+        rel="preload"
+        href="/assets/runs.json"
+        as="fetch"
+        type="application/json"
+        crossorigin
+      />
+    )}
     <link rel="stylesheet" href="/assets/site.css" />
     <script is:inline type="module" src="/assets/app.js"></script>
   </head>
