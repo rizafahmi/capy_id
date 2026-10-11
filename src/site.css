@@ -988,6 +988,7 @@
     outline: 1px solid var(--line);
     border-radius: var(--radius-control);
     background: var(--raised);
+    contain: layout paint;
   }
   .preview-stage img {
     width: 100%;
