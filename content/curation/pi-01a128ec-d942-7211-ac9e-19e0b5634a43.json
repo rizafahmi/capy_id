@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "run_id": "pi-01a128ec-d942-7211-ac9e-19e0b5634a43",
+  "published_at": "2026-10-11T03:26:14Z",
+  "visible": true,
+  "preview_allowed": true,
+  "preview_disabled_reason": null,
+  "observations": [],
+  "series_publication_complete": true,
+  "series_incomplete_reason": null,
+  "thumbnail": {
+    "path": "thumbnails/pi-01a128ec-d942-7211-ac9e-19e0b5634a43.png",
+    "viewport": {
+      "width": 640,
+      "height": 480
+    },
+    "capture_delay_ms": 1000,
+    "browser_version": "156.0.8078.4",
+    "preview_policy_version": "restricted-html-v1"
+  }
+}
