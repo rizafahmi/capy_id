@@ -26,6 +26,7 @@ const mime: Record<string, string> = {
   ".txt": "text/plain; charset=utf-8",
   ".png": "image/png",
   ".webp": "image/webp",
+  ".woff2": "font/woff2",
 };
 export async function staticHandler(root: string) {
   const base = resolve(root);

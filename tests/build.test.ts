@@ -40,6 +40,10 @@ test("redesign ships local imagery and fonts without widening preview permission
   ])
     assert.ok((await readFile(join(out, "gallery/assets", file))).length > 0);
   assert.match(await readFile(join(out, "gallery/_headers"), "utf8"), /font-src 'self'/);
+  assert.match(
+    await readFile(join(out, "gallery/_headers"), "utf8"),
+    /\/assets\/\*\n\s+Cache-Control: public, max-age=31536000, immutable/,
+  );
   assert.match(await readFile(join(out, "preview/_headers"), "utf8"), /font-src 'none'/);
 });
 

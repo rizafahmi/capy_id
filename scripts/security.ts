@@ -21,9 +21,18 @@ export function responseHeaders(
 }
 export function headerFile(kind: "gallery" | "preview", previewOrigin: string): string {
   const headers = responseHeaders(kind, previewOrigin);
-  return `/*\n${Object.entries(headers)
+  const common = `/*\n${Object.entries(headers)
     .map(([name, value]) => `  ${name}: ${value}`)
-    .join(
-      "\n",
-    )}\n${kind === "gallery" ? "/evidence/*\n  Content-Type: text/plain; charset=utf-8\n  Content-Disposition: inline\n" : ""}`;
+    .join("\n")}\n`;
+  if (kind === "preview") return common;
+  return `${common}/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+/thumbnails/*
+  Cache-Control: public, max-age=31536000, immutable
+/assets/runs.json
+  Cache-Control: public, max-age=0, must-revalidate
+/evidence/*
+  Content-Type: text/plain; charset=utf-8
+  Content-Disposition: inline
+`;
 }
