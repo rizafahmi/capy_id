@@ -201,6 +201,16 @@ function enableGallery() {
   filters.closest(".gallery-controls").hidden = false;
   const cards = [...document.querySelectorAll("[data-card]")];
   const grid = document.querySelector(".gallery-grid");
+  const cardItems = cards.map((card) => ({
+    card,
+    id: card.dataset.card,
+    name: card.dataset.name,
+    timestamp: card.dataset.date ? Date.parse(card.dataset.date) : -Infinity,
+    searchable: [card.dataset.name, card.dataset.identifier, card.dataset.provider].map((value) =>
+      (value ?? "").toLowerCase(),
+    ),
+    provider: card.dataset.provider,
+  }));
   const selected = new Map();
   const tray = document.querySelector(".comparison-tray");
   const collator = new Intl.Collator("en", { sensitivity: "base" });
@@ -212,29 +222,25 @@ function enableGallery() {
   const update = () => {
     const query = search.value.toLowerCase().trim();
     let count = 0;
-    cards.sort((a, b) => {
+    cardItems.sort((a, b) => {
       const primary =
-        sort.value === "name"
-          ? collator.compare(a.dataset.name, b.dataset.name)
-          : (b.dataset.date ? Date.parse(b.dataset.date) : -Infinity) -
-            (a.dataset.date ? Date.parse(a.dataset.date) : -Infinity);
-      return primary || a.dataset.card.localeCompare(b.dataset.card, "en");
+        sort.value === "name" ? collator.compare(a.name, b.name) : b.timestamp - a.timestamp;
+      return primary || a.id.localeCompare(b.id, "en");
     });
-    for (const card of cards) {
-      card.hidden = !(
-        (!provider.value || card.dataset.provider === provider.value) &&
-        [card.dataset.name, card.dataset.identifier, card.dataset.provider].some((value) =>
-          value.toLowerCase().includes(query),
-        )
+    for (const item of cardItems) {
+      const hidden = !(
+        (!provider.value || item.provider === provider.value) &&
+        (!query || item.searchable.some((value) => value.includes(query)))
       );
-      if (!card.hidden) count++;
-      grid.append(card);
+      if (item.card.hidden !== hidden) item.card.hidden = hidden;
+      if (!hidden) count++;
     }
+    grid.append(...cardItems.map((item) => item.card));
     const filtered = query !== "" || provider.value !== "";
     filters.querySelector("[type='reset']").hidden = !filtered && sort.value === "newest";
     const status = document.querySelector("#results-status");
     status.hidden = !filtered;
-    status.textContent = `${count} of ${cards.length} attempts`;
+    status.textContent = `${count} of ${cardItems.length} attempts`;
     document.querySelector("#empty-state").hidden = count !== 0;
   };
   const updateSelection = () => {
