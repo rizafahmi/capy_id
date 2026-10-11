@@ -175,7 +175,13 @@ export async function buildSite(options: {
       gallery: { entries: views.filter((entry) => !corrections.has(entry.run.id)), fixtures },
       challenge: { challenges, fixtures },
       comparison: {
-        runs: entries.map(({ run }) => ({ id: run.id, model: run.model })),
+        runs: entries.map(({ run }) => ({
+          id: run.id,
+          model: run.model,
+          generation: run.generation,
+          attempt_number: run.attempt_number,
+          generated_at: run.generated_at,
+        })),
         fixtures,
       },
       notFound: { fixtures },

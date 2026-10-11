@@ -136,8 +136,8 @@ test("gallery defers harness details to inspection and comparison without sampli
   });
   await page.goto("/compare/?left=fixture-animation&right=fixture-unknown");
   await expect(page.locator(".compare-panel")).toHaveCount(2);
-  await expect(page.locator(".compare-panel").first().locator("dl")).toContainText("low");
-  await expect(page.locator(".compare-panel").last().locator("dl")).toContainText("Unknown");
+  await expect(page.locator(".compare-panel").first()).toContainText("Low effort");
+  await expect(page.locator(".compare-panel").last()).toContainText("Effort unknown");
   await expect(page.locator("#condition-notices")).toContainText("Effort: low versus Unknown");
   await expect(page.locator("main")).not.toContainText("temperature");
   await expect(page.locator("main")).not.toContainText("top_p");
@@ -184,10 +184,6 @@ test("time and token measurements are readable in gallery, detail and comparison
   for (const [url, selector] of [
     ["/", "[data-card='fixture-animation'] .metadata"],
     ["/runs/fixture-animation/", ".metadata"],
-    [
-      "/compare/?left=fixture-animation&right=fixture-unknown",
-      ".compare-panel:first-child .metadata",
-    ],
   ] satisfies [string, string][]) {
     await page.goto(url);
     const metadata = page.locator(selector);
@@ -203,13 +199,21 @@ test("time and token measurements are readable in gallery, detail and comparison
     }
     await expect(page.locator("iframe")).toHaveCount(0);
   }
-  const unknown = page.locator(".compare-panel").last().locator(".metadata");
-  for (const label of ["Time", "Input tokens", "Cached tokens", "Output tokens", "Total tokens"]) {
-    const row = unknown
-      .locator("div")
-      .filter({ has: page.locator("dt", { hasText: new RegExp(`^${label}$`) }) });
-    await expect(row.locator("dd")).toHaveText("Unknown");
+  await page.goto("/compare/?left=fixture-animation&right=fixture-unknown");
+  const metrics = page.getByRole("table", { name: "Recorded metrics" });
+  for (const [label, value] of expected) {
+    const row = metrics.getByRole("row").filter({
+      has: page.getByRole("rowheader", { name: label, exact: true }),
+    });
+    await expect(row.getByRole("cell").first()).toHaveText(value);
   }
+  for (const label of ["Time", "Input tokens", "Cached tokens", "Output tokens", "Total tokens"]) {
+    const row = metrics.getByRole("row").filter({
+      has: page.getByRole("rowheader", { name: label, exact: true }),
+    });
+    await expect(row.getByRole("cell").last()).toHaveText("Unknown");
+  }
+  await expect(page.locator("iframe")).toHaveCount(0);
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
     const staticPage = await context.newPage();

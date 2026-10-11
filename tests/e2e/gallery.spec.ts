@@ -85,15 +85,25 @@ test("gallery and comparison keep hostile-looking metadata as text and preserve 
       await expect(page.locator(".compare-panel")).toHaveCount(2);
       for (const side of ["Left", "Right"]) {
         const select = page.getByRole("combobox", { name: `${side} run`, exact: true });
-        await expect(
-          select.getByRole("option", {
-            name: `${injected} · fixture-gallery-escaping`,
-            exact: true,
-          }),
-        ).toHaveAttribute("value", "fixture-gallery-escaping");
+        const option = select.locator('option[value="fixture-gallery-escaping"]');
+        await expect(option).toContainText(injected);
+        await expect(option).toContainText("unknown effort");
       }
       await expect(page.locator(".compare-panel h2").first()).toHaveText(injected);
-      await expect(page.locator(".compare-panel .eyebrow").first()).toHaveText(injected);
+      const stages = await page
+        .locator(".compare-panel .preview-stage")
+        .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().top));
+      expect(stages).toHaveLength(2);
+      expect(stages[0]).toBe(stages[1]);
+      await page.locator("#compare-provenance summary").click();
+      const provenance = page.getByRole("table", { name: "Generation details and provenance" });
+      for (const label of ["Provider", "Model identifier", "Harness"]) {
+        const row = provenance.getByRole("row").filter({
+          has: page.getByRole("rowheader", { name: label, exact: true }),
+        });
+        await expect(row.getByRole("cell").first()).toHaveText(injected);
+        await expect(row).toHaveClass("comparison-difference");
+      }
       await expect(page.locator("img, iframe")).toHaveCount(0);
       await expect(page.locator("html")).not.toHaveAttribute("data-injected");
     } finally {

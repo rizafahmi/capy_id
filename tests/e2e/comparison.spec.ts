@@ -62,6 +62,73 @@ test("comparison restores shared choices and keeps preview state through history
   expect(errors).toEqual([]);
 });
 
+test("comparison prioritizes aligned outputs before metrics and expandable provenance", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/compare/?left=fixture-animation&right=fixture-unknown");
+  await expect(page.locator(".compare-panel")).toHaveCount(2);
+  await page.evaluate(() => document.fonts.ready);
+  const stages = await page.locator(".compare-panel .preview-stage").evaluateAll((nodes) =>
+    nodes.map((node) => {
+      const rect = node.getBoundingClientRect();
+      return { top: rect.top, width: rect.width, height: rect.height };
+    }),
+  );
+  expect(stages).toHaveLength(2);
+  const [leftStage, rightStage] = stages;
+  if (!leftStage || !rightStage) throw new Error("Both output stages must be present.");
+  expect(leftStage.top).toBeLessThan(520);
+  expect(leftStage.top).toBe(rightStage.top);
+  expect(leftStage.width).toBe(rightStage.width);
+  expect(leftStage.height).toBe(rightStage.height);
+  await expect(page.locator(".compare-panel").first()).toContainText("Left attempt");
+  await expect(page.locator(".compare-panel").last()).toContainText("Right attempt");
+  await expect(page.locator(".compare-panel").first()).toContainText("Low effort");
+  await expect(page.locator(".compare-panel").last()).toContainText("Effort unknown");
+  const metrics = page.getByRole("table", { name: "Recorded metrics" });
+  await expect(metrics).toBeVisible();
+  await expect(metrics.getByRole("columnheader")).toHaveText([
+    "Measurement",
+    "Left attempt",
+    "Right attempt",
+  ]);
+  await expect(metrics.getByRole("rowheader")).toHaveText([
+    "Effort",
+    "Model time",
+    "Time",
+    "Input tokens",
+    "Cached tokens",
+    "Output tokens",
+    "Total tokens",
+  ]);
+  await expect(
+    metrics.getByRole("row", { name: "Model time 17.222 s Not recorded", exact: true }),
+  ).toBeVisible();
+  await expect(
+    metrics.getByRole("row", { name: "Time Not recorded Unknown", exact: true }),
+  ).toBeVisible();
+  await expect(metrics.locator(".comparison-difference")).toHaveCount(0);
+  const metricsTop = await metrics.evaluate((node) => node.getBoundingClientRect().top);
+  expect(metricsTop).toBeGreaterThan(leftStage.top + leftStage.height);
+  const provenance = page.locator("#compare-provenance");
+  await expect(provenance).not.toHaveAttribute("open", "");
+  await expect(provenance.getByRole("table")).toBeHidden();
+  const summary = provenance.locator("summary");
+  await summary.focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    provenance.getByRole("table", { name: "Generation details and provenance" }),
+  ).toBeVisible();
+  await expect(provenance).toContainText("fixture-animation");
+  await expect(provenance).toContainText("fixture-unknown");
+  await page
+    .getByRole("combobox", { name: "Right run", exact: true })
+    .selectOption("fixture-animation");
+  await expect(page.locator("#compare-results")).toBeHidden();
+  await expect(page.locator(".compare-panel")).toHaveCount(0);
+});
+
 test("comparison has labeled required selectors and a native GET fallback without JavaScript", async ({
   browser,
 }, info) => {

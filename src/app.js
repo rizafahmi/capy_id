@@ -378,7 +378,10 @@ function comparePreview(entry) {
   } else stage.append(element("div", "Screenshot not captured", "placeholder"));
   const controls = element("div", undefined, "preview-controls");
   if (entry.preview.kind === "ready") {
-    const openPreview = element("a", "Open preview in new tab", "button preview-open");
+    const openPreview = element("a", "Open preview in new tab", "preview-open");
+    const arrow = element("span", " ↗");
+    arrow.setAttribute("aria-hidden", "true");
+    openPreview.append(arrow);
     openPreview.href = entry.preview.url;
     openPreview.target = "_blank";
     openPreview.rel = "noopener noreferrer";
@@ -404,6 +407,30 @@ function comparePreview(entry) {
   node.append(stage, controls, status);
   return node;
 }
+function comparisonTable(caption, rows) {
+  const table = element("table", undefined, "compare-table");
+  table.append(element("caption", caption, "sr-only"));
+  const head = element("thead");
+  const headings = element("tr");
+  for (const label of ["Measurement", "Left attempt", "Right attempt"]) {
+    const cell = element("th", label);
+    cell.scope = "col";
+    headings.append(cell);
+  }
+  head.append(headings);
+  const body = element("tbody");
+  for (const [label, left, right] of rows) {
+    const different =
+      left !== right && ![left, right].some((value) => ["Unknown", "Not recorded"].includes(value));
+    const row = element("tr", undefined, different ? "comparison-difference" : undefined);
+    const heading = element("th", label);
+    heading.scope = "row";
+    row.append(heading, element("td", left), element("td", right));
+    body.append(row);
+  }
+  table.append(head, body);
+  return table;
+}
 async function enableComparison() {
   const form = document.querySelector("#compare-form");
   if (!form) return;
@@ -426,6 +453,13 @@ async function enableComparison() {
     previews.clear();
     const panels = document.querySelector("#compare-panels");
     panels.replaceChildren();
+    const results = document.querySelector("#compare-results");
+    results.hidden = true;
+    const metrics = document.querySelector("#compare-metrics");
+    metrics.replaceChildren();
+    const generation = document.querySelector("#compare-generation");
+    generation.replaceChildren();
+    document.querySelector("#compare-provenance").open = false;
     const notices = document.querySelector("#condition-notices");
     notices.replaceChildren();
     both.hidden = true;
@@ -470,52 +504,91 @@ async function enableComparison() {
     );
     if (differences.length || incomplete) {
       const notice = element("div", undefined, "notice");
-      notice.append(element("p", "Generation conditions differ or are incomplete."));
+      const message = element("p");
+      message.append(element("span", "Generation conditions differ or are incomplete."));
+      if (differences.length)
+        message.append(element("span", ` ${differences.join(" · ")}.`, "compare-differences"));
       if (incomplete)
-        notice.append(
-          element(
-            "p",
-            "Some generation dates or agent conditions are unknown. Review each run's provenance.",
-          ),
-        );
-      if (differences.length) {
-        const list = element("ul");
-        for (const difference of differences) list.append(element("li", difference));
-        notice.append(list);
-      }
+        message.append(" Some dates or agent conditions are unknown. Review provenance.");
+      notice.append(message);
       notices.append(notice);
     }
-    for (const entry of [a, b]) {
+    for (const [index, entry] of [a, b].entries()) {
       const panel = element("article", undefined, "compare-panel");
-      panel.append(
-        element("p", entry.run.provider, "eyebrow"),
-        element("h2", entry.run.model.display_name),
+      const header = element("header", undefined, "compare-attempt");
+      const title = element("h2", entry.run.model.display_name);
+      title.id = `compare-attempt-${index}`;
+      panel.setAttribute("aria-labelledby", title.id);
+      const effort = entry.run.generation.harness?.effort;
+      const effortLabel = effort
+        ? `${effort.charAt(0).toUpperCase()}${effort.slice(1)} effort`
+        : "Effort unknown";
+      const identity = element("p", undefined, "compare-identity");
+      identity.append(element("strong", effortLabel));
+      if (entry.run.generated_at) {
+        const date = new Intl.DateTimeFormat("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hourCycle: "h23",
+          timeZone: "UTC",
+        }).format(new Date(entry.run.generated_at));
+        const time = element("time", `${date} UTC`);
+        time.dateTime = entry.run.generated_at;
+        identity.append(time);
+      } else identity.append(element("span", "Unknown date"));
+      const name = element("div", undefined, "compare-attempt-name");
+      name.append(
+        element(
+          "p",
+          `${index === 0 ? "Left" : "Right"} attempt · #${entry.run.attempt_number}`,
+          "eyebrow",
+        ),
+        title,
       );
-      const conditions = element(
-        "p",
-        `${entry.run.generation.mode} · ${entry.run.generation.interface} · ${entry.run.challenge_id}`,
-        "muted",
-      );
-      const provenance = element("dl", undefined, "metadata");
-      for (const [label, value] of [
-        ["Harness", entry.run.generation.harness?.name ?? "Unknown"],
-        ["Harness version", entry.run.generation.harness?.version ?? "Unknown"],
-        ["Effort", entry.run.generation.harness?.effort ?? "Unknown"],
-        ...entry.measurementRows,
-      ]) {
-        const row = element("div");
-        row.append(element("dt", label), element("dd", value));
-        provenance.append(row);
-      }
-      panel.append(conditions, provenance);
+      header.append(name, identity);
       const preview = comparePreview(entry);
-      panel.append(preview);
-      const link = element("a", "Inspect full evidence ↗");
+      const link = element("a", "Inspect full evidence ↗", "compare-evidence");
       link.href = `/runs/${entry.run.id}/`;
-      panel.append(link);
+      panel.append(header, preview, link);
       panels.append(panel);
       setupPreview(preview);
     }
+    const rows = [
+      [
+        "Effort",
+        a.run.generation.harness?.effort ?? "Unknown",
+        b.run.generation.harness?.effort ?? "Unknown",
+      ],
+    ];
+    for (const [index, [label, value]] of a.measurementRows.entries()) {
+      const [rightLabel, rightValue] = b.measurementRows[index];
+      if (label === rightLabel) rows.push([label, value, rightValue]);
+      else rows.push([label, value, "Not recorded"], [rightLabel, "Not recorded", rightValue]);
+    }
+    metrics.append(comparisonTable("Recorded metrics", rows));
+    const provenance = [
+      ["Run ID", (entry) => entry.run.id],
+      ["Provider", (entry) => entry.run.provider],
+      ["Model identifier", (entry) => entry.run.model.identifier],
+      ["Generated", (entry) => entry.run.generated_at ?? "Unknown"],
+      ["Harness", (entry) => entry.run.generation.harness?.name ?? "Unknown"],
+      ["Harness version", (entry) => entry.run.generation.harness?.version ?? "Unknown"],
+      ["Generation mode", (entry) => entry.run.generation.mode],
+      ["Interface", (entry) => entry.run.generation.interface],
+      ["Tools used", (entry) => entry.run.generation.tools_used],
+      ["Challenge", (entry) => entry.run.challenge_id],
+    ];
+    generation.append(
+      comparisonTable(
+        "Generation details and provenance",
+        provenance.map(([label, value]) => [label, value(a), value(b)]),
+      ),
+    );
+    results.hidden = false;
     resizePreviews();
     both.hidden = false;
     both.disabled = ![a, b].some((entry) => entry.preview.kind === "ready");

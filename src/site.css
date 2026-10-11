@@ -430,18 +430,185 @@
     align-items: end;
     gap: 1rem;
   }
+  body[data-page="compare"] .back-link {
+    margin-top: 0.75rem;
+  }
+  .compare-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    padding-block: 0.65rem 0.75rem;
+  }
+  .compare-heading h1 {
+    margin-bottom: 0;
+    font-size: clamp(2rem, 3vw, 2.6rem);
+  }
+  .compare-heading p {
+    margin-bottom: 0;
+  }
+  .compare-notices .notice {
+    margin-top: 0.65rem;
+    padding-block: 0.65rem;
+  }
+  .compare-notices p {
+    margin-bottom: 0;
+    line-height: 1.5;
+  }
+  .compare-differences {
+    font-weight: 650;
+  }
+  .compare-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.65rem 1rem;
+    margin-block: 0.25rem;
+  }
+  .compare-toolbar p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
   .compare-panels {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.5rem;
-    margin-top: 1.5rem;
+    gap: 0 1.5rem;
   }
   .compare-panel {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 3;
     min-width: 0;
-    padding: 1.25rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-panel);
-    background: var(--surface);
+  }
+  .compare-attempt {
+    padding-block: 0 0.65rem;
+  }
+  .compare-attempt-name {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    margin-bottom: 0.4rem;
+  }
+  .compare-attempt .eyebrow {
+    margin-bottom: 0;
+  }
+  .compare-attempt h2 {
+    margin-bottom: 0;
+    overflow-wrap: anywhere;
+  }
+  .compare-identity {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.85rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+  .compare-identity strong {
+    color: var(--text);
+    font-weight: 650;
+  }
+  .compare-panel .preview-controls {
+    margin-top: 0.65rem;
+  }
+  .compare-panel .preview-open {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 0.85rem;
+  }
+  .compare-panel .viewport-label {
+    margin: 0;
+    margin-left: auto;
+  }
+  .compare-panel .preview-status {
+    margin: 0;
+  }
+  .compare-evidence {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 0.85rem;
+  }
+  .compare-measurements {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+  .compare-measurements h2 {
+    margin-bottom: 0.5rem;
+  }
+  .compare-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    margin-block: 1rem;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .compare-table th,
+  .compare-table td {
+    width: 38%;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+  .compare-table th:first-child {
+    width: 24%;
+    padding-left: 0;
+  }
+  .compare-table th {
+    font-weight: 550;
+    color: var(--muted);
+  }
+  .compare-table thead th {
+    font-size: 0.75rem;
+  }
+  .compare-table .comparison-difference {
+    background: var(--accent-soft);
+  }
+  .compare-table .comparison-difference th:first-child {
+    padding-left: 0.75rem;
+  }
+  .compare-table .comparison-difference td {
+    font-weight: 650;
+  }
+  .compare-provenance {
+    border-block: 1px solid var(--line);
+    margin-top: 1.5rem;
+  }
+  .compare-provenance summary {
+    min-height: 48px;
+    padding-block: 0.85rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .compare-provenance summary:hover {
+    color: var(--accent-ink);
+  }
+  @media (max-width: 767px) {
+    .compare-panel + .compare-panel {
+      margin-top: 1.5rem;
+    }
+    .compare-table {
+      font-size: 0.75rem;
+    }
+    .compare-table th,
+    .compare-table td {
+      width: 35%;
+      padding: 0.65rem 0.5rem;
+    }
+    .compare-table th:first-child {
+      width: 30%;
+    }
   }
   .site-footer {
     display: flex;

@@ -18,7 +18,10 @@ export type RunPage = {
 
 export type ChallengePrompt = Challenge & { prompt: string };
 type ChallengePage = { challenges: ChallengePrompt[]; fixtures: boolean };
-type ComparisonPage = { runs: Pick<Run, "id" | "model">[]; fixtures: boolean };
+type ComparisonPage = {
+  runs: Pick<Run, "id" | "model" | "generation" | "attempt_number" | "generated_at">[];
+  fixtures: boolean;
+};
 
 export type AstroPages = {
   gallery: GalleryPage;
