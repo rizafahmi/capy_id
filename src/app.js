@@ -38,9 +38,8 @@ function artifactStatus(button, message) {
     globalStatus;
   if (status) status.textContent = message;
 }
-function highlightedCode(source, tokens) {
+function validateTokens(source, tokens) {
   if (!Array.isArray(tokens)) throw new Error("Invalid highlighting ranges.");
-  const fragment = document.createDocumentFragment();
   let offset = 0;
   for (const token of tokens) {
     if (
@@ -55,6 +54,14 @@ function highlightedCode(source, tokens) {
       !/^#[\da-f]{6}$/i.test(token.dark)
     )
       throw new Error("Invalid highlighting ranges.");
+    offset = token.offset + token.length;
+  }
+}
+function highlightedCode(source, tokens) {
+  validateTokens(source, tokens);
+  const fragment = document.createDocumentFragment();
+  let offset = 0;
+  for (const token of tokens) {
     if (token.offset > offset)
       fragment.append(document.createTextNode(source.slice(offset, token.offset)));
     const span = element(
@@ -75,15 +82,25 @@ async function highlightCode(details, code, source) {
   const data = await response.json();
   if (data.sha256 !== details.dataset.sha256)
     throw new Error("Highlighting does not match this artifact.");
-  const original = highlightedCode(source, data.tokens);
-  const formatted =
-    typeof data.formatted?.source === "string"
-      ? highlightedCode(data.formatted.source, data.formatted.tokens)
-      : null;
+  validateTokens(source, data.tokens);
+  const hasFormatted = typeof data.formatted?.source === "string";
+  if (hasFormatted) validateTokens(data.formatted.source, data.formatted.tokens);
+  let original = null;
+  let formatted = null;
+  const getOriginal = () => {
+    if (!original) original = highlightedCode(source, data.tokens);
+    return original;
+  };
+  const getFormatted = () => {
+    if (!formatted && hasFormatted)
+      formatted = highlightedCode(data.formatted.source, data.formatted.tokens);
+    return formatted;
+  };
   const button = details.querySelector("[data-format]");
   const status = details.querySelector(".evidence-status");
   const show = (isFormatted) => {
-    code.replaceChildren((isFormatted ? formatted : original).cloneNode(true));
+    const fragment = isFormatted ? getFormatted() : getOriginal();
+    code.replaceChildren(fragment ? fragment.cloneNode(true) : document.createTextNode(source));
     code.parentElement.scrollTop = 0;
     code.parentElement.scrollLeft = 0;
     status.textContent = isFormatted
@@ -91,8 +108,8 @@ async function highlightCode(details, code, source) {
       : "Preserved artifact loaded. SHA-256 verified.";
     button?.setAttribute("aria-pressed", String(isFormatted));
   };
-  show(formatted !== null);
-  if (formatted && button) {
+  show(hasFormatted);
+  if (hasFormatted && button) {
     button.hidden = false;
     button.addEventListener("click", () => show(button.getAttribute("aria-pressed") !== "true"));
   } else if (button) {
