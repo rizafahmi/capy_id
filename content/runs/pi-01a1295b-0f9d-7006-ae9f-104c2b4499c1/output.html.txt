@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cyber-Chill // Animated Capybara on Hoverboard</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #05030d;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #fff;
+    }
+
+    #app-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      cursor: grab;
+    }
+
+    #app-container:active {
+      cursor: grabbing;
+    }
+
+    canvas.scene-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      pointer-events: none;
+    }
+
+    #bg-canvas {
+      z-index: 1;
+    }
+
+    #fg-canvas {
+      z-index: 5;
+    }
+
+    /* Character 3D Scene Layer */
+    #character-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      pointer-events: none;
+      perspective: 1200px;
+    }
+
+    #character-root {
+      position: absolute;
+      width: 480px;
+      height: 360px;
+      margin-left: -240px;
+      margin-top: -180px;
+      transform-origin: 50% 68%;
+      transform-style: preserve-3d;
+      will-change: transform;
+      filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.45));
+    }
+
+    #capy-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      display: block;
+    }
+
+    /* SVG Keyframes */
+    @keyframes flamePulseFast {
+      0%, 100% { transform: scaleX(1) scaleY(1); opacity: 0.95; }
+      50% { transform: scaleX(1.18) scaleY(0.92); opacity: 1; }
+    }
+
+    @keyframes flamePulseCore {
+      0%, 100% { transform: scaleX(0.9) scaleY(0.95); opacity: 0.85; }
+      50% { transform: scaleX(1.25) scaleY(1.05); opacity: 1; }
+    }
+
+    @keyframes deckNeonGlow {
+      0%, 100% { filter: drop-shadow(0 0 4px #00f5ff) drop-shadow(0 0 8px rgba(0, 245, 255, 0.6)); }
+      50% { filter: drop-shadow(0 0 6px #00ffaa) drop-shadow(0 0 14px rgba(0, 255, 170, 0.8)); }
+    }
+
+    @keyframes repulsorPulseRing {
+      0% { transform: scale(0.85); opacity: 0.9; }
+      50% { transform: scale(1.15); opacity: 0.5; }
+      100% { transform: scale(0.85); opacity: 0.9; }
+    }
+
+    @keyframes visorGleam {
+      0%, 75% { transform: translateX(-80px) skewX(-20deg); opacity: 0; }
+      85% { opacity: 0.8; }
+      100% { transform: translateX(120px) skewX(-20deg); opacity: 0; }
+    }
+
+    .flame-anim-1 {
+      transform-origin: 68px 348px;
+      animation: flamePulseFast 0.08s infinite alternate ease-in-out;
+    }
+
+    .flame-anim-2 {
+      transform-origin: 68px 348px;
+      animation: flamePulseCore 0.05s infinite alternate ease-in-out;
+    }
+
+    .deck-glow {
+      animation: deckNeonGlow 2.5s infinite ease-in-out;
+    }
+
+    .visor-sheen {
+      animation: visorGleam 4s infinite ease-in-out;
+    }
+
+    /* HUD Layer */
+    #hud {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px;
+    }
+
+    .hud-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .cyber-panel {
+      background: rgba(14, 11, 28, 0.65);
+      border: 1px solid rgba(0, 245, 255, 0.3);
+      border-radius: 12px;
+      padding: 12px 18px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 12px rgba(0, 245, 255, 0.08);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .brand-title {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: #00f5ff;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px rgba(0, 245, 255, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .brand-title::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #00ffaa;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #00ffaa;
+      animation: blinkDot 1.2s infinite;
+    }
+
+    @keyframes blinkDot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .chill-meter-wrap {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .chill-meter-track {
+      width: 160px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .chill-meter-fill {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #ff007f, #00f5ff, #00ffaa);
+      background-size: 200% 100%;
+      animation: gradientFlow 3s linear infinite;
+      border-radius: 3px;
+      box-shadow: 0 0 10px rgba(0, 245, 255, 0.8);
+    }
+
+    @keyframes gradientFlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
+    .chill-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #b0a4d4;
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    .hud-stats {
+      display: flex;
+      gap: 12px;
+    }
+
+    .stat-box {
+      text-align: right;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #9f92c7;
+      text-transform: uppercase;
+    }
+
+    .stat-val-group {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+
+    .stat-num {
+      font-size: 24px;
+      font-weight: 900;
+      font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+      color: #fff;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    .stat-unit {
+      font-size: 11px;
+      font-weight: 700;
+      color: #00f5ff;
+    }
+
+    /* Trick Alert Floating Banner */
+    #trick-announcer {
+      position: absolute;
+      top: 22%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      pointer-events: none;
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease;
+      text-align: center;
+      z-index: 20;
+    }
+
+    #trick-announcer.active {
+      transform: translate(-50%, -50%) scale(1.05);
+      opacity: 1;
+    }
+
+    .trick-text {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: #fff;
+      text-shadow: 0 0 12px #ff007f, 0 0 25px #00f5ff;
+      background: linear-gradient(135deg, #ffffff, #ffe066, #ff007f);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .trick-sub {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #00ffaa;
+      text-shadow: 0 0 8px rgba(0, 255, 170, 0.6);
+      margin-top: 4px;
+    }
+
+    /* HUD Bottom Controls */
+    .hud-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+    }
+
+    .controls-hint {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.8px;
+      color: rgba(220, 215, 245, 0.85);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .key-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: ui-monospace, monospace;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      pointer-events: auto;
+    }
+
+    .cyber-btn {
+      background: rgba(18, 14, 38, 0.8);
+      border: 1px solid rgba(0, 245, 255, 0.4);
+      color: #00f5ff;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      outline: none;
+    }
+
+    .cyber-btn:hover {
+      background: rgba(0, 245, 255, 0.15);
+      border-color: #00f5ff;
+      box-shadow: 0 0 15px rgba(0, 245, 255, 0.4);
+      transform: translateY(-2px);
+      color: #fff;
+    }
+
+    .cyber-btn:active, .cyber-btn.active {
+      transform: translateY(1px);
+      background: rgba(0, 245, 255, 0.35);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.8);
+      color: #fff;
+    }
+
+    .btn-turbo {
+      border-color: rgba(255, 0, 127, 0.5);
+      color: #ff007f;
+    }
+
+    .btn-turbo:hover {
+      background: rgba(255, 0, 127, 0.2);
+      border-color: #ff007f;
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.5);
+      color: #fff;
+    }
+
+    .btn-turbo:active, .btn-turbo.active {
+      background: rgba(255, 0, 127, 0.4);
+      box-shadow: 0 0 25px #ff007f;
+      color: #fff;
+    }
+
+    @media (max-width: 768px) {
+      .controls-hint { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      #hud { padding: 12px; }
+      .cyber-panel { padding: 8px 12px; border-radius: 8px; }
+      .brand-title { font-size: 11px; letter-spacing: 1px; }
+      .chill-meter-track { width: 110px; height: 5px; }
+      .chill-label { font-size: 8px; }
+      .stat-num { font-size: 18px; }
+      .stat-label { font-size: 8px; }
+      .stat-unit { font-size: 9px; }
+      .hud-stats { gap: 8px; }
+      .cyber-btn { padding: 8px 12px; font-size: 11px; border-radius: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app-container">
+    <canvas id="bg-canvas" class="scene-canvas"></canvas>
+    
+    <div id="character-layer">
+      <div id="character-root">
+        <svg id="capy-svg" viewBox="0 0 580 440" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Fur Gradients -->
+            <linearGradient id="fur-body" x1="0%" y1="0%" x2="100%" y2="85%">
+              <stop offset="0%" stop-color="#b67f4c" />
+              <stop offset="45%" stop-color="#8c5828" />
+              <stop offset="100%" stop-color="#553213" />
+            </linearGradient>
+
+            <linearGradient id="fur-muzzle" x1="0%" y1="0%" x2="100%" y2="50%">
+              <stop offset="0%" stop-color="#73421d" />
+              <stop offset="60%" stop-color="#4a270f" />
+              <stop offset="100%" stop-color="#2a1205" />
+            </linearGradient>
+
+            <linearGradient id="fur-chest" x1="20%" y1="0%" x2="80%" y2="100%">
+              <stop offset="0%" stop-color="#c8935e" />
+              <stop offset="100%" stop-color="#8c5828" />
+            </linearGradient>
+
+            <!-- Yuzu Citrus Gradient -->
+            <radialGradient id="yuzu-grad" cx="35%" cy="30%" r="70%">
+              <stop offset="0%" stop-color="#fff275" />
+              <stop offset="40%" stop-color="#ffb703" />
+              <stop offset="90%" stop-color="#fb8500" />
+              <stop offset="100%" stop-color="#d45b00" />
+            </radialGradient>
+
+            <linearGradient id="leaf-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#70e000" />
+              <stop offset="100%" stop-color="#1b4918" />
+            </linearGradient>
+
+            <!-- Cyber Visor Gradient -->
+            <linearGradient id="visor-glass" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ff007f" />
+              <stop offset="45%" stop-color="#a855f7" />
+              <stop offset="85%" stop-color="#00f5ff" />
+              <stop offset="100%" stop-color="#ffffff" />
+            </linearGradient>
+
+            <!-- Board Deck Gradient -->
+            <linearGradient id="board-deck" x1="0%" y1="0%" x2="100%" y2="50%">
+              <stop offset="0%" stop-color="#141824" />
+              <stop offset="50%" stop-color="#242b3d" />
+              <stop offset="100%" stop-color="#11141c" />
+            </linearGradient>
+
+            <linearGradient id="neon-cyan-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#00f5ff" />
+              <stop offset="50%" stop-color="#00ffaa" />
+              <stop offset="100%" stop-color="#00f5ff" />
+            </linearGradient>
+
+            <linearGradient id="thruster-cone" x1="100%" y1="50%" x2="0%" y2="50%">
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="25%" stop-color="#00f5ff" />
+              <stop offset="65%" stop-color="#ff00aa" />
+              <stop offset="100%" stop-color="transparent" />
+            </linearGradient>
+
+            <filter id="glow-cyan" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="3.5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+
+            <filter id="glow-bright" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="6" result="blur1" />
+              <feGaussianBlur stdDeviation="2" result="blur2" />
+              <feMerge>
+                <feMergeNode in="blur1" />
+                <feMergeNode in="blur2" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+
+            <radialGradient id="repulsor-beam" cx="50%" cy="0%" r="100%">
+              <stop offset="0%" stop-color="rgba(0, 245, 255, 0.85)" />
+              <stop offset="45%" stop-color="rgba(0, 245, 255, 0.3)" />
+              <stop offset="100%" stop-color="rgba(0, 245, 255, 0.0)" />
+            </radialGradient>
+          </defs>
+
+          <!-- REAR THRUSTER JET EXHAUST -->
+          <g id="thruster-flames">
+            <polygon class="flame-anim-1" points="68,348 2,341 12,348 2,355" fill="url(#thruster-cone)" filter="url(#glow-bright)" />
+            <polygon class="flame-anim-2" points="68,348 26,345 32,348 26,351" fill="#ffffff" filter="url(#glow-cyan)" />
+          </g>
+
+          <!-- REPULSOR DOWNWARD LIGHT CONES -->
+          <polygon points="135,372 185,372 205,422 115,422" fill="url(#repulsor-beam)" />
+          <polygon points="395,372 445,372 465,422 375,422" fill="url(#repulsor-beam)" />
+
+          <!-- HOVERBOARD UNDERSIDE & EMITTERS -->
+          <path d="M 75 352 Q 280 375 515 344 L 505 358 Q 280 388 80 365 Z" fill="#0d1017" />
+          
+          <!-- Rear Repulsor Pod -->
+          <g id="repulsor-rear">
+            <ellipse cx="160" cy="370" rx="28" ry="8" fill="#151b26" stroke="#00f5ff" stroke-width="1.5" />
+            <ellipse cx="160" cy="370" rx="20" ry="5.5" fill="#003544" />
+            <ellipse cx="160" cy="370" rx="12" ry="3.5" fill="#00f5ff" filter="url(#glow-cyan)" />
+            <ellipse cx="160" cy="370" rx="6" ry="1.8" fill="#ffffff" />
+          </g>
+
+          <!-- Front Repulsor Pod -->
+          <g id="repulsor-front">
+            <ellipse cx="420" cy="370" rx="28" ry="8" fill="#151b26" stroke="#00f5ff" stroke-width="1.5" />
+            <ellipse cx="420" cy="370" rx="20" ry="5.5" fill="#003544" />
+            <ellipse cx="420" cy="370" rx="12" ry="3.5" fill="#00f5ff" filter="url(#glow-cyan)" />
+            <ellipse cx="420" cy="370" rx="6" ry="1.8" fill="#ffffff" />
+          </g>
+
+          <!-- HOVERBOARD MAIN DECK -->
+          <g id="board-deck-group">
+            <path d="M 68 338 C 110 348 200 354 300 354 C 410 354 485 346 525 332 C 532 329 535 334 528 338 C 490 355 410 364 300 364 C 190 364 105 355 62 344 C 57 342 61 336 68 338 Z" fill="url(#board-deck)" stroke="#2b3245" stroke-width="1.2" />
+            <path class="deck-glow" d="M 70 340 C 112 349 201 355 300 355 C 409 355 482 347 520 334" fill="none" stroke="url(#neon-cyan-grad)" stroke-width="2.5" filter="url(#glow-cyan)" stroke-linecap="round" />
+            <path d="M 85 339 C 140 347 220 351 300 351 C 380 351 450 346 495 337 C 475 342 410 347 300 347 C 190 347 125 342 85 339 Z" fill="#0c0e14" />
+            
+            <line x1="180" y1="346" x2="230" y2="346" stroke="#ff007f" stroke-width="1.5" filter="url(#glow-cyan)" />
+            <line x1="370" y1="346" x2="430" y2="346" stroke="#00f5ff" stroke-width="1.5" filter="url(#glow-cyan)" />
+            <circle cx="230" cy="346" r="2" fill="#ff007f" />
+            <circle cx="370" cy="346" r="2" fill="#00f5ff" />
+
+            <polygon points="522,333 530,331 526,336" fill="#00f5ff" filter="url(#glow-bright)" />
+            <ellipse cx="68" cy="346" rx="4" ry="7" fill="#1f2430" stroke="#ff5500" stroke-width="1.2" />
+          </g>
+
+          <!-- CAPYBARA CHARACTER MODEL -->
+          <g id="capybara-character">
+            
+            <!-- BACK HIND LEG & PAW -->
+            <g id="rear-leg">
+              <path d="M 125 210 C 95 240 85 285 105 320 C 112 332 125 342 142 346 L 175 346 C 182 338 180 326 172 316 C 160 300 155 270 165 240 Z" fill="#663c19" />
+              <path d="M 135 340 L 130 348 C 130 350 134 351 138 350 L 145 347 L 152 350 C 155 351 159 350 160 348 L 165 346 L 173 349 C 176 350 180 349 180 346 L 176 340 Z" fill="#4a2a11" />
+              <line x1="133" y1="350" x2="135" y2="352" stroke="#221105" stroke-width="1.8" stroke-linecap="round" />
+              <line x1="154" y1="350" x2="156" y2="352" stroke="#221105" stroke-width="1.8" stroke-linecap="round" />
+              <line x1="175" y1="349" x2="177" y2="351" stroke="#221105" stroke-width="1.8" stroke-linecap="round" />
+            </g>
+
+            <!-- MAIN TORSO -->
+            <g id="main-torso">
+              <path d="M 120 180 C 90 215 80 260 100 305 C 115 325 140 335 175 330 C 210 325 260 315 305 305 C 340 298 365 270 375 240 C 388 200 365 170 325 158 C 275 142 220 145 170 155 C 145 160 130 170 120 180 Z" fill="url(#fur-body)" />
+              <path d="M 270 152 C 310 155 345 175 365 205 C 380 230 370 265 345 285 C 315 295 275 270 260 240 C 250 210 255 175 270 152 Z" fill="url(#fur-chest)" opacity="0.9" />
+              <path d="M 140 325 C 190 328 250 318 295 305 C 280 320 230 330 170 332 Z" fill="#3b200b" opacity="0.6" />
+              <path d="M 105 200 C 88 235 82 270 96 302" fill="none" stroke="#ff00aa" stroke-width="3" opacity="0.4" filter="url(#glow-cyan)" stroke-linecap="round" />
+              <path d="M 160 331 C 210 332 260 322 300 307" fill="none" stroke="#00f5ff" stroke-width="2.5" opacity="0.4" filter="url(#glow-cyan)" stroke-linecap="round" />
+            </g>
+
+            <!-- FRONT LEG & PAW -->
+            <g id="front-leg">
+              <path d="M 335 245 C 342 275 352 305 362 328 C 365 336 370 342 380 344 L 415 344 C 420 338 418 330 410 320 C 398 300 388 270 375 235 Z" fill="#73421d" />
+              <path d="M 372 340 L 368 347 C 367 350 371 351 375 350 L 384 346 L 392 350 C 395 351 399 350 401 347 L 407 345 L 415 348 C 418 349 422 348 421 345 L 416 339 Z" fill="#4a270f" />
+              <line x1="371" y1="349" x2="372" y2="352" stroke="#221105" stroke-width="1.8" stroke-linecap="round" />
+              <line x1="394" y1="349" x2="395" y2="352" stroke="#221105" stroke-width="1.8" stroke-linecap="round" />
+              <line x1="416" y1="347" x2="418" y2="350" stroke="#221105" stroke-width="1.8" stroke-linecap="round" />
+              <path d="M 370 347 L 418 347" stroke="#00f5ff" stroke-width="1.5" opacity="0.5" filter="url(#glow-cyan)" />
+            </g>
+
+            <!-- FRONT RIGHT ARM / PAW (Cool chill pose) -->
+            <g id="casual-arm">
+              <path d="M 320 195 C 345 205 365 220 370 235 C 372 245 365 252 355 252 C 340 252 330 240 318 225 Z" fill="#8c5828" />
+              <path d="M 365 235 C 380 238 395 242 405 240 C 412 238 415 232 410 228 C 400 222 385 220 370 225 Z" fill="#5a3213" />
+              <circle cx="406" cy="236" r="4.5" fill="#42220b" />
+            </g>
+
+            <!-- CAPYBARA HEAD & SNOUT -->
+            <g id="capybara-head">
+              <path d="M 270 148 C 275 125 290 102 320 98 C 350 96 375 100 405 110 C 435 120 465 132 485 148 C 498 158 502 170 498 185 C 492 202 475 212 450 216 C 415 220 380 215 350 205 C 320 195 290 180 270 148 Z" fill="url(#fur-body)" />
+              <path d="M 305 100 C 335 98 370 102 400 110 L 398 118 C 368 110 335 107 305 108 Z" fill="#7a481e" />
+              
+              <!-- Boxy Muzzle -->
+              <path d="M 400 110 C 432 122 462 135 480 148 C 496 160 500 172 496 186 C 490 200 475 208 450 212 C 425 216 410 205 405 190 C 395 160 395 135 400 110 Z" fill="url(#fur-muzzle)" />
+              
+              <!-- Nostril -->
+              <ellipse cx="488" cy="162" rx="4.5" ry="3" transform="rotate(-15 488 162)" fill="#1c0b02" />
+              <path d="M 485 165 C 488 168 493 166 494 163" stroke="#331405" stroke-width="1.2" fill="none" />
+
+              <!-- Serene Smile -->
+              <path d="M 496 186 C 485 192 465 194 445 192 C 438 191 435 186 438 183" fill="none" stroke="#220e03" stroke-width="2.5" stroke-linecap="round" />
+
+              <!-- Muzzle Whisker Dots -->
+              <circle cx="468" cy="172" r="1.3" fill="#251004" />
+              <circle cx="476" cy="175" r="1.3" fill="#251004" />
+              <circle cx="484" cy="174" r="1.3" fill="#251004" />
+              <circle cx="472" cy="180" r="1.3" fill="#251004" />
+              <circle cx="480" cy="182" r="1.3" fill="#251004" />
+
+              <!-- Whiskers -->
+              <path d="M 478 174 C 495 174 515 178 525 182" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1" />
+              <path d="M 480 180 C 498 183 518 190 528 198" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1" />
+              <path d="M 474 182 C 490 188 508 200 518 212" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1" />
+
+              <!-- Brow -->
+              <path d="M 365 115 C 385 116 405 122 418 130" fill="none" stroke="#5a3111" stroke-width="3" stroke-linecap="round" />
+              
+              <!-- Serene Eye Behind Visor -->
+              <ellipse cx="388" cy="132" rx="7" ry="4" transform="rotate(-5 388 132)" fill="#1c0b02" />
+              <path d="M 383 131 Q 388 128 394 131" stroke="#ffaa44" stroke-width="1.2" fill="none" />
+            </g>
+
+            <!-- CYBER VISOR -->
+            <g id="cyber-visor">
+              <path d="M 358 120 L 435 134 C 445 136 450 144 446 154 L 438 166 C 434 172 426 174 418 171 L 362 148 C 354 145 350 138 352 130 Z" fill="#12131c" stroke="#252a40" stroke-width="2" />
+              <path d="M 362 124 L 432 137 C 440 138 444 144 441 152 L 434 162 C 431 166 425 168 419 165 L 366 144 C 360 142 357 136 358 130 Z" fill="url(#visor-glass)" opacity="0.92" />
+              
+              <line x1="362" y1="137" x2="437" y2="150" stroke="#ffffff" stroke-width="1.8" opacity="0.8" />
+              <line x1="365" y1="141" x2="432" y2="154" stroke="#ff00a0" stroke-width="1.2" opacity="0.7" />
+              <line x1="368" y1="145" x2="424" y2="157" stroke="#00f5ff" stroke-width="1" opacity="0.6" />
+
+              <!-- Gleam overlay -->
+              <polygon class="visor-sheen" points="375,126 390,129 380,146 368,143" fill="#ffffff" opacity="0.6" />
+            </g>
+
+            <!-- CAPYBARA EAR (Twitchable) -->
+            <g id="capy-ear">
+              <path d="M 292 108 C 285 88 295 72 312 75 C 322 77 326 90 322 106 Z" fill="#663c19" />
+              <path d="M 297 104 C 292 90 298 80 310 82 C 316 84 318 94 315 104 Z" fill="#a05d4d" />
+              <path d="M 302 98 C 300 90 304 84 310 86" fill="none" stroke="#d49283" stroke-width="1.5" stroke-linecap="round" />
+            </g>
+
+            <!-- THE YUZU ORANGE ON HEAD (Physics spring) -->
+            <g id="yuzu-citrus">
+              <ellipse cx="346" cy="98" rx="16" ry="4" fill="#3a1e08" opacity="0.5" />
+              <ellipse cx="345" cy="80" rx="20" ry="18" fill="url(#yuzu-grad)" />
+              <circle cx="340" cy="74" r="1" fill="#e07000" opacity="0.6" />
+              <circle cx="352" cy="78" r="1.2" fill="#e07000" opacity="0.6" />
+              <circle cx="346" cy="86" r="1.1" fill="#e07000" opacity="0.6" />
+              <circle cx="336" cy="82" r="0.9" fill="#e07000" opacity="0.6" />
+              <ellipse cx="338" cy="73" rx="6" ry="4" transform="rotate(-20 338 73)" fill="#ffffff" opacity="0.55" />
+              
+              <ellipse cx="345" cy="64" rx="4" ry="1.5" fill="#a05000" />
+              <path d="M 345 64 C 344 57 341 53 338 48" fill="none" stroke="#5c3818" stroke-width="2.5" stroke-linecap="round" />
+              <path d="M 343 58 C 352 52 365 52 375 58 C 365 67 352 66 343 58 Z" fill="url(#leaf-grad)" />
+              <path d="M 344 58 C 354 57 365 58 373 58" fill="none" stroke="#a3f768" stroke-width="1" />
+            </g>
+
+            <!-- NEON WIND SCARF -->
+            <g id="neon-scarf">
+              <path d="M 320 182 C 340 195 365 208 385 202 C 375 218 340 220 315 205 Z" fill="#ff0066" filter="url(#glow-cyan)" />
+              <path id="scarf-ribbon-1" d="M 320 190 Q 250 170 180 190 T 50 175 L 55 192 Q 180 205 250 188 T 322 205 Z" fill="#ff0077" opacity="0.95" />
+              <path id="scarf-ribbon-2" d="M 315 202 Q 240 215 170 200 T 40 218 L 46 232 Q 170 215 240 228 T 318 214 Z" fill="#d9005f" opacity="0.88" />
+            </g>
+
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <canvas id="fg-canvas" class="scene-canvas"></canvas>
+
+    <!-- HUD OVERLAY -->
+    <div id="hud">
+      <div class="hud-top">
+        <div class="cyber-panel">
+          <div class="brand-title">CAPY-DECK // X-900</div>
+          <div class="chill-meter-wrap">
+            <div class="chill-meter-track">
+              <div class="chill-meter-fill"></div>
+            </div>
+            <div class="chill-label">
+              <span>ZEN LEVEL</span>
+              <span>100% MAXIMUM CHILL</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cyber-panel hud-stats">
+          <div class="stat-box">
+            <div class="stat-label">SPEED</div>
+            <div class="stat-val-group">
+              <span class="stat-num" id="speed-indicator">284</span>
+              <span class="stat-unit">KM/H</span>
+            </div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">CHILL PTS</div>
+            <div class="stat-val-group">
+              <span class="stat-num" id="score-indicator">04200</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trick Alert -->
+      <div id="trick-announcer">
+        <div class="trick-text" id="trick-text">✦ 360 YUZU FLIP! ✦</div>
+        <div class="trick-sub" id="trick-sub">+650 CHILL POINTS</div>
+      </div>
+
+      <div class="hud-bottom">
+        <div class="cyber-panel controls-hint">
+          <span><span class="key-badge">WASD</span> or <span class="key-badge">MOUSE</span> Glide</span>
+          <span>•</span>
+          <span><span class="key-badge">SPACE</span> Kickflip Trick</span>
+          <span>•</span>
+          <span><span class="key-badge">SHIFT</span> Turbo Boost</span>
+        </div>
+
+        <div class="action-buttons">
+          <button class="cyber-btn" id="btn-trick">✦ TRICK</button>
+          <button class="cyber-btn btn-turbo" id="btn-turbo">⚡ BOOST</button>
+          <button class="cyber-btn" id="btn-auto">☯ AUTO</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // CANVAS & CONTEXT SETUP
+      const bgCanvas = document.getElementById('bg-canvas');
+      const bgCtx = bgCanvas.getContext('2d');
+      const fgCanvas = document.getElementById('fg-canvas');
+      const fgCtx = fgCanvas.getContext('2d');
+
+      const charRoot = document.getElementById('character-root');
+      const scarfRibbon1 = document.getElementById('scarf-ribbon-1');
+      const scarfRibbon2 = document.getElementById('scarf-ribbon-2');
+      const capyEar = document.getElementById('capy-ear');
+      const yuzuCitrus = document.getElementById('yuzu-citrus');
+      const speedInd = document.getElementById('speed-indicator');
+      const scoreInd = document.getElementById('score-indicator');
+      const trickAnnouncer = document.getElementById('trick-announcer');
+      const trickText = document.getElementById('trick-text');
+      const trickSub = document.getElementById('trick-sub');
+      const btnTrick = document.getElementById('btn-trick');
+      const btnTurbo = document.getElementById('btn-turbo');
+      const btnAuto = document.getElementById('btn-auto');
+
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+      let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      function resize() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        bgCanvas.width = Math.floor(width * dpr);
+        bgCanvas.height = Math.floor(height * dpr);
+        bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        fgCanvas.width = Math.floor(width * dpr);
+        fgCanvas.height = Math.floor(height * dpr);
+        fgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      // SIMULATION & PHYSICS STATE
+      const state = {
+        x: width * 0.45,
+        y: height * 0.58,
+        targetX: width * 0.45,
+        targetY: height * 0.58,
+        vx: 0,
+        vy: 0,
+        pitch: 0,
+        roll: 0,
+        yaw: 0,
+        scale: 1,
+        baseSpeed: 280,
+        currentSpeed: 280,
+        targetSpeed: 280,
+        isTurbo: false,
+        isAutoCruise: true,
+        autoAngle: 0,
+        // Trick
+        isTricking: false,
+        trickProgress: 0,
+        trickDuration: 0.65,
+        trickStyle: 0, // 0: 360 flip, 1: barrel roll, 2: pop shove-it
+        trickJumpH: 0,
+        chillScore: 4200,
+        // Yuzu physics
+        yuzuRot: 0,
+        yuzuRotV: 0,
+        yuzuBounce: 0,
+        // Ear twitch
+        nextEarTwitch: 3.0,
+        earTwitchTimer: 0,
+        earAngle: 0,
+        // Scarf
+        scarfTime: 0,
+        // Environment
+        distance: 0,
+        skylineOffset: 0,
+        mountainOffset: 0,
+        time: 0
+      };
+
+      // TRICK TITLES
+      const TRICK_NAMES = [
+        { name: "✦ 360 YUZU FLIP! ✦", pts: 650 },
+        { name: "✦ BARA BARREL ROLL! ✦", pts: 800 },
+        { name: "✦ MAXIMUM ZEN POP! ✦", pts: 1000 },
+        { name: "✦ SOLARPUNK OLLIE! ✦", pts: 500 },
+        { name: "✦ 540 CITRUS SPIN! ✦", pts: 950 },
+        { name: "✦ HYDRO-CHILL GLIDE! ✦", pts: 700 }
+      ];
+
+      // STARS GENERATION
+      const STARS = [];
+      for (let i = 0; i < 90; i++) {
+        STARS.push({
+          x: Math.random(),
+          y: Math.random() * 0.6,
+          r: Math.random() * 1.5 + 0.5,
+          alpha: Math.random() * 0.8 + 0.2,
+          speed: Math.random() * 2 + 1
+        });
+      }
+
+      // SKYLINE GENERATION
+      const BUILDINGS = [];
+      const skylineBlockCount = 28;
+      for (let i = 0; i < skylineBlockCount; i++) {
+        BUILDINGS.push({
+          w: 40 + Math.random() * 60,
+          h: 60 + Math.random() * 140,
+          hasAntenna: Math.random() > 0.6,
+          antennaH: 15 + Math.random() * 25,
+          color: (i % 2 === 0) ? '#180d2e' : '#120924',
+          windows: []
+        });
+      }
+      // Populate windows
+      BUILDINGS.forEach(b => {
+        const rows = Math.floor(b.h / 16);
+        const cols = Math.floor(b.w / 12);
+        for (let r = 2; r < rows - 1; r++) {
+          for (let c = 1; c < cols - 1; c++) {
+            if (Math.random() > 0.45) {
+              b.windows.push({
+                x: c * 12 + 2,
+                y: r * 16 + 2,
+                color: Math.random() > 0.3 ? '#00f5ff' : '#ff00aa',
+                alpha: Math.random() * 0.7 + 0.3
+              });
+            }
+          }
+        }
+      });
+      const totalSkylineWidth = BUILDINGS.reduce((sum, b) => sum + b.w + 12, 0);
+
+      // PARTICLE SYSTEMS
+      const thrusterParticles = [];
+      const ambientSparks = [];
+      const speedLines = [];
+      const trickBursts = [];
+
+      function createThrusterSpark(x, y, isTurbo) {
+        const count = isTurbo ? 4 : 2;
+        for (let i = 0; i < count; i++) {
+          thrusterParticles.push({
+            x: x + (Math.random() - 0.5) * 8,
+            y: y + (Math.random() - 0.5) * 8,
+            vx: -350 - Math.random() * 250 - (isTurbo ? 400 : 0),
+            vy: (Math.random() - 0.5) * 60,
+            r: Math.random() * (isTurbo ? 7 : 4.5) + 2,
+            life: 1.0,
+            decay: Math.random() * 2.5 + 2.0,
+            colorType: Math.random()
+          });
+        }
+      }
+
+      function createSpeedLine() {
+        speedLines.push({
+          x: width + 20,
+          y: Math.random() * height * 0.9,
+          len: Math.random() * (state.isTurbo ? 220 : 120) + 60,
+          speed: (state.isTurbo ? 1600 : 850) + Math.random() * 400,
+          alpha: Math.random() * 0.5 + 0.2,
+          color: Math.random() > 0.5 ? '#00f5ff' : '#ffffff'
+        });
+      }
+
+      function spawnTrickBurst(x, y) {
+        for (let i = 0; i < 45; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const spd = Math.random() * 380 + 100;
+          trickBursts.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * spd,
+            vy: Math.sin(angle) * spd - 60,
+            r: Math.random() * 5 + 3,
+            rot: Math.random() * Math.PI * 2,
+            rotV: (Math.random() - 0.5) * 12,
+            life: 1.0,
+            decay: Math.random() * 1.5 + 0.8,
+            color: ['#00f5ff', '#ff007f', '#ffe066', '#00ffaa', '#ffffff'][Math.floor(Math.random() * 5)]
+          });
+        }
+      }
+
+      // TRIGGER A TRICK
+      function triggerTrick() {
+        if (state.isTricking) return;
+        state.isTricking = true;
+        state.trickProgress = 0;
+        state.trickStyle = Math.floor(Math.random() * 3);
+
+        const trick = TRICK_NAMES[Math.floor(Math.random() * TRICK_NAMES.length)];
+        state.chillScore += trick.pts;
+        scoreInd.textContent = state.chillScore.toString().padStart(5, '0');
+
+        trickText.textContent = trick.name;
+        trickSub.textContent = `+${trick.pts} CHILL POINTS`;
+        trickAnnouncer.classList.add('active');
+        clearTimeout(state.announcerTimeout);
+        state.announcerTimeout = setTimeout(() => {
+          trickAnnouncer.classList.remove('active');
+        }, 1400);
+
+        spawnTrickBurst(state.x, state.y - 40);
+        btnTrick.classList.add('active');
+        setTimeout(() => btnTrick.classList.remove('active'), 300);
+      }
+
+      btnTrick.addEventListener('click', triggerTrick);
+
+      // TURBO BOOST TOGGLE
+      function setTurbo(val) {
+        state.isTurbo = val;
+        state.targetSpeed = val ? 480 : 280;
+        btnTurbo.classList.toggle('active', val);
+      }
+
+      btnTurbo.addEventListener('mousedown', () => setTurbo(true));
+      window.addEventListener('mouseup', () => {
+        if (state.isTurbo && !keys['ShiftLeft'] && !keys['ShiftRight']) setTurbo(false);
+      });
+      btnTurbo.addEventListener('touchstart', (e) => { e.preventDefault(); setTurbo(true); });
+      btnTurbo.addEventListener('touchend', (e) => { e.preventDefault(); setTurbo(false); });
+
+      btnAuto.addEventListener('click', () => {
+        state.isAutoCruise = !state.isAutoCruise;
+        btnAuto.style.borderColor = state.isAutoCruise ? '#00f5ff' : 'rgba(255,255,255,0.2)';
+        btnAuto.style.color = state.isAutoCruise ? '#00f5ff' : 'rgba(255,255,255,0.5)';
+      });
+
+      // INPUT LISTENERS
+      const keys = {};
+      window.addEventListener('keydown', (e) => {
+        keys[e.code] = true;
+        state.isAutoCruise = false;
+        if (e.code === 'Space') {
+          e.preventDefault();
+          triggerTrick();
+        }
+        if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+          setTurbo(true);
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        keys[e.code] = false;
+        if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+          setTurbo(false);
+        }
+      });
+
+      // Pointer steering
+      let pointerDown = false;
+      const appContainer = document.getElementById('app-container');
+
+      function onPointerMove(e) {
+        state.isAutoCruise = false;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        state.targetX = Math.max(100, Math.min(width - 100, clientX));
+        state.targetY = Math.max(height * 0.25, Math.min(height * 0.88, clientY));
+      }
+
+      appContainer.addEventListener('mousemove', (e) => {
+        onPointerMove(e);
+      });
+
+      appContainer.addEventListener('mousedown', (e) => {
+        if (e.target.closest('#hud')) return;
+        pointerDown = true;
+        onPointerMove(e);
+      });
+
+      window.addEventListener('mouseup', () => { pointerDown = false; });
+
+      appContainer.addEventListener('touchmove', (e) => {
+        if (e.target.closest('#hud')) return;
+        onPointerMove(e);
+      }, { passive: true });
+
+      appContainer.addEventListener('touchstart', (e) => {
+        if (e.target.closest('#hud')) return;
+        onPointerMove(e);
+      }, { passive: true });
+
+      // DYNAMIC SCARF PATH GENERATOR
+      function updateScarf(time, speedRatio) {
+        const freq = 10 * speedRatio;
+        const amp = 10 * (state.isTurbo ? 1.4 : 1.0);
+
+        // Ribbon 1 (Top)
+        const s1x = 320, s1y = 190;
+        const p1x = 240, p1y = 176 + Math.sin(time * freq) * amp;
+        const p2x = 160, p2y = 190 + Math.sin(time * freq + 1.8) * (amp * 1.3);
+        const p3x = 50,  p3y = 178 + Math.sin(time * freq + 3.6) * (amp * 1.6);
+        const w1 = 14;
+        const path1 = `M ${s1x} ${s1y - w1/2} Q ${p1x} ${p1y - w1/2} ${p2x} ${p2y - w1/2} T ${p3x} ${p3y - 2} L ${p3x} ${p3y + 2} Q ${p2x} ${p2y + w1/2} ${p1x} ${p1y + w1/2} T ${s1x} ${s1y + w1/2} Z`;
+        scarfRibbon1.setAttribute('d', path1);
+
+        // Ribbon 2 (Bottom)
+        const s2x = 315, s2y = 202;
+        const q1x = 230, q1y = 212 + Math.cos(time * freq + 0.8) * amp;
+        const q2x = 150, q2y = 202 + Math.cos(time * freq + 2.4) * (amp * 1.3);
+        const q3x = 40,  q3y = 218 + Math.cos(time * freq + 4.2) * (amp * 1.6);
+        const w2 = 12;
+        const path2 = `M ${s2x} ${s2y - w2/2} Q ${q1x} ${q2y - w2/2} ${q2x} ${q2y - w2/2} T ${q3x} ${q3y - 2} L ${q3x} ${q3y + 2} Q ${q2x} ${q2y + w2/2} ${q1x} ${q1y + w2/2} T ${s2x} ${s2y + w2/2} Z`;
+        scarfRibbon2.setAttribute('d', path2);
+      }
+
+      // MAIN ANIMATION LOOP
+      let lastTime = performance.now();
+
+      function animate(now) {
+        const dt = Math.max(0.001, Math.min((now - lastTime) / 1000, 0.1));
+        lastTime = now;
+        state.time += dt;
+
+        // 1. AUTO CRUISE BEHAVIOR
+        if (state.isAutoCruise) {
+          state.autoAngle += dt * 0.85;
+          const cx = width * 0.5;
+          const cy = height * 0.58;
+          state.targetX = cx + Math.sin(state.autoAngle) * (width * 0.28);
+          state.targetY = cy + Math.sin(state.autoAngle * 2) * (height * 0.12);
+
+          // Periodic auto tricks for scenic enjoyment
+          if (Math.sin(state.autoAngle * 1.5) > 0.985 && !state.isTricking) {
+            triggerTrick();
+          }
+        }
+
+        // 2. KEYBOARD STEERING
+        const keySpeed = 380 * dt;
+        if (keys['KeyA'] || keys['ArrowLeft'])  { state.targetX -= keySpeed; }
+        if (keys['KeyD'] || keys['ArrowRight']) { state.targetX += keySpeed; }
+        if (keys['KeyW'] || keys['ArrowUp'])    { state.targetY -= keySpeed; }
+        if (keys['KeyS'] || keys['ArrowDown'])  { state.targetY += keySpeed; }
+
+        state.targetX = Math.max(120, Math.min(width - 120, state.targetX));
+        state.targetY = Math.max(height * 0.25, Math.min(height * 0.88, state.targetY));
+
+        // 3. SMOOTH CHARACTER MOVEMENT
+        const followSpeed = 6.0;
+        state.vx = (state.targetX - state.x) * followSpeed;
+        state.vy = (state.targetY - state.y) * followSpeed;
+        state.x += state.vx * dt;
+        state.y += state.vy * dt;
+
+        // Hover float harmonic oscillation
+        const hoverFloat = Math.sin(state.time * 3.2) * 10 + Math.sin(state.time * 6.5) * 3;
+        const currentY = state.y + hoverFloat;
+
+        // Banking tilt
+        const targetRoll = (state.vx / 350) * 14 + Math.sin(state.time * 2.3) * 2;
+        const targetPitch = (state.vy / 300) * 8 - (state.isTurbo ? 10 : 0) + Math.cos(state.time * 2.7) * 2;
+        state.roll += (targetRoll - state.roll) * 8 * dt;
+        state.pitch += (targetPitch - state.pitch) * 8 * dt;
+
+        // Speed interpolation
+        state.currentSpeed += (state.targetSpeed - state.currentSpeed) * 4 * dt;
+        speedInd.textContent = Math.round(state.currentSpeed);
+
+        const speedRatio = state.currentSpeed / state.baseSpeed;
+        state.distance += state.currentSpeed * 2.5 * dt;
+
+        // 4. TRICK JUMP & ROTATION CALCULATION
+        let trickTransform = '';
+        if (state.isTricking) {
+          state.trickProgress += dt / state.trickDuration;
+          if (state.trickProgress >= 1.0) {
+            state.isTricking = false;
+            state.trickProgress = 0;
+            state.trickJumpH = 0;
+          } else {
+            // Jump parabolic arc
+            state.trickJumpH = Math.sin(state.trickProgress * Math.PI) * 110;
+            const p = state.trickProgress;
+            if (state.trickStyle === 0) {
+              // 360 Kickflip
+              trickTransform = ` rotateX(${p * 360}deg)`;
+            } else if (state.trickStyle === 1) {
+              // Barrel roll
+              trickTransform = ` rotateZ(${-p * 360}deg)`;
+            } else {
+              // Pop spin
+              trickTransform = ` rotateY(${p * 360}deg)`;
+            }
+          }
+        }
+
+        // Responsive character scaling for phones/tablets
+        const charScale = Math.min(1.0, Math.max(0.68, width / 750));
+
+        // Apply 3D CSS Transform to character container
+        const totalY = currentY - state.trickJumpH;
+        charRoot.style.transform = `translate3d(${state.x}px, ${totalY}px, 0px) scale(${charScale}) rotateZ(${state.roll}deg) rotateX(${state.pitch}deg)${trickTransform}`;
+
+        // 5. YUZU FRUIT SPRING DYNAMICS
+        const targetYuzuAngle = -(state.roll * 0.6) - (state.vx * 0.02);
+        state.yuzuRotV += (targetYuzuAngle - state.yuzuRot) * 22 * dt;
+        state.yuzuRotV *= 0.82;
+        state.yuzuRot += state.yuzuRotV * dt * 25;
+        const yuzuInertiaBounce = state.isTricking ? -Math.sin(state.trickProgress * Math.PI) * 15 : 0;
+        yuzuCitrus.setAttribute('transform', `rotate(${state.yuzuRot.toFixed(2)} 345 98) translate(0, ${yuzuInertiaBounce.toFixed(2)})`);
+
+        // 6. EAR TWITCH SCHEDULER
+        if (state.time > state.nextEarTwitch) {
+          state.earTwitchTimer += dt * 8;
+          state.earAngle = Math.sin(state.earTwitchTimer * Math.PI * 4) * 14 * Math.max(0, 1 - state.earTwitchTimer);
+          if (state.earTwitchTimer >= 1.0) {
+            state.earTwitchTimer = 0;
+            state.earAngle = 0;
+            state.nextEarTwitch = state.time + 3.0 + Math.random() * 4.0;
+          }
+          capyEar.setAttribute('transform', `rotate(${state.earAngle.toFixed(1)} 300 105)`);
+        }
+
+        // 7. SCARF WAVING
+        updateScarf(state.time, speedRatio);
+
+        // 8. THRUSTER PARTICLES SPAWNING
+        // Approximate the world coordinates of the rear thruster nozzle
+        const rad = (state.roll * Math.PI) / 180;
+        const nozzleOffsetX = -190;
+        const nozzleOffsetY = 40;
+        const flameWorldX = state.x + Math.cos(rad) * nozzleOffsetX - Math.sin(rad) * nozzleOffsetY;
+        const flameWorldY = totalY + Math.sin(rad) * nozzleOffsetX + Math.cos(rad) * nozzleOffsetY;
+        createThrusterSpark(flameWorldX, flameWorldY, state.isTurbo);
+
+        // 9. SPEED LINES
+        if (Math.random() < (state.isTurbo ? 0.75 : 0.35)) {
+          createSpeedLine();
+        }
+
+        // ==========================================
+        // RENDER BACKGROUND CANVAS
+        // ==========================================
+        bgCtx.clearRect(0, 0, width, height);
+        const horizonY = height * 0.58;
+
+        // A. Synthwave Twilight Sky Gradient
+        const skyGrad = bgCtx.createLinearGradient(0, 0, 0, horizonY);
+        skyGrad.addColorStop(0.0, '#060312');
+        skyGrad.addColorStop(0.35, '#1e0836');
+        skyGrad.addColorStop(0.68, '#581159');
+        skyGrad.addColorStop(0.88, '#e62f6b');
+        skyGrad.addColorStop(1.0, '#ffa83b');
+        bgCtx.fillStyle = skyGrad;
+        bgCtx.fillRect(0, 0, width, horizonY);
+
+        // B. Stars
+        bgCtx.save();
+        for (let i = 0; i < STARS.length; i++) {
+          const s = STARS[i];
+          const starX = (s.x * width);
+          const starY = (s.y * horizonY);
+          const flicker = Math.sin(state.time * s.speed + i) * 0.3 + 0.7;
+          bgCtx.fillStyle = `rgba(255, 255, 255, ${s.alpha * flicker})`;
+          bgCtx.beginPath();
+          bgCtx.arc(starX, starY, s.r, 0, Math.PI * 2);
+          bgCtx.fill();
+        }
+        bgCtx.restore();
+
+        // C. Giant Synthwave Sun
+        const sunRadius = Math.min(width, height) * 0.22;
+        const sunX = width * 0.5;
+        const sunY = horizonY - 15;
+
+        bgCtx.save();
+        bgCtx.beginPath();
+        bgCtx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+        bgCtx.clip();
+
+        const sunGrad = bgCtx.createLinearGradient(0, sunY - sunRadius, 0, sunY + sunRadius);
+        sunGrad.addColorStop(0.0, '#fff677');
+        sunGrad.addColorStop(0.4, '#ff3b75');
+        sunGrad.addColorStop(1.0, '#7928ca');
+        bgCtx.fillStyle = sunGrad;
+        bgCtx.fillRect(sunX - sunRadius, sunY - sunRadius, sunRadius * 2, sunRadius * 2);
+
+        // Synthwave Horizontal Dark Slices
+        const sliceCount = 14;
+        for (let i = 0; i < sliceCount; i++) {
+          const sliceNorm = i / sliceCount;
+          const sliceY = (sunY - sunRadius * 0.1) + sliceNorm * (sunRadius * 1.1);
+          const sliceH = Math.pow(sliceNorm, 1.8) * 9 + 2;
+          bgCtx.fillStyle = '#0e041d';
+          bgCtx.fillRect(sunX - sunRadius - 10, sliceY, sunRadius * 2 + 20, sliceH);
+        }
+        bgCtx.restore();
+
+        // Sun Corona Glow
+        const corona = bgCtx.createRadialGradient(sunX, sunY, sunRadius * 0.8, sunX, sunY, sunRadius * 1.4);
+        corona.addColorStop(0.0, 'rgba(255, 59, 117, 0.35)');
+        corona.addColorStop(1.0, 'rgba(255, 59, 117, 0.0)');
+        bgCtx.fillStyle = corona;
+        bgCtx.beginPath();
+        bgCtx.arc(sunX, sunY, sunRadius * 1.4, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        // D. Distant Mountain Silhouettes (Parallax)
+        state.mountainOffset = (state.mountainOffset + state.currentSpeed * 0.05 * dt) % (width * 1.5);
+        bgCtx.save();
+        bgCtx.fillStyle = '#17092c';
+        bgCtx.strokeStyle = '#ff00aa';
+        bgCtx.lineWidth = 1.5;
+        bgCtx.beginPath();
+        bgCtx.moveTo(0, horizonY);
+        const mSteps = 20;
+        for (let i = 0; i <= mSteps; i++) {
+          const mx = (i / mSteps) * width;
+          const noise = Math.sin((mx + state.mountainOffset) * 0.005) * 45 + Math.cos((mx + state.mountainOffset) * 0.012) * 25;
+          const my = horizonY - 40 - Math.abs(noise);
+          bgCtx.lineTo(mx, my);
+        }
+        bgCtx.lineTo(width, horizonY);
+        bgCtx.closePath();
+        bgCtx.fill();
+        bgCtx.stroke();
+        bgCtx.restore();
+
+        // E. Cyber Skyline with Glowing Windows & Beacons
+        state.skylineOffset = (state.skylineOffset + state.currentSpeed * 0.18 * dt) % totalSkylineWidth;
+        bgCtx.save();
+        let curX = -state.skylineOffset;
+        while (curX < width + 100) {
+          for (let i = 0; i < BUILDINGS.length; i++) {
+            const b = BUILDINGS[i];
+            const bx = curX;
+            const by = horizonY - b.h;
+
+            if (bx + b.w > -50 && bx < width + 50) {
+              // Building body
+              bgCtx.fillStyle = b.color;
+              bgCtx.fillRect(bx, by, b.w, b.h);
+
+              // Building top rim glow
+              bgCtx.fillStyle = '#00f5ff';
+              bgCtx.fillRect(bx, by, b.w, 1.5);
+
+              // Windows
+              for (let w = 0; w < b.windows.length; w++) {
+                const win = b.windows[w];
+                bgCtx.fillStyle = win.color;
+                bgCtx.globalAlpha = win.alpha;
+                bgCtx.fillRect(bx + win.x, by + win.y, 5, 6);
+                bgCtx.globalAlpha = 1.0;
+              }
+
+              // Antenna strobe
+              if (b.hasAntenna) {
+                const antX = bx + b.w * 0.5;
+                bgCtx.strokeStyle = '#2b1b48';
+                bgCtx.lineWidth = 2;
+                bgCtx.beginPath();
+                bgCtx.moveTo(antX, by);
+                bgCtx.lineTo(antX, by - b.antennaH);
+                bgCtx.stroke();
+
+                const blink = Math.sin(state.time * 6 + i) > 0.2;
+                bgCtx.fillStyle = blink ? '#ff0055' : '#ffffff';
+                bgCtx.beginPath();
+                bgCtx.arc(antX, by - b.antennaH, 2.5, 0, Math.PI * 2);
+                bgCtx.fill();
+              }
+            }
+            curX += b.w + 12;
+          }
+        }
+        bgCtx.restore();
+
+        // F. Perspective Cyber Highway (3D Road)
+        const roadH = height - horizonY;
+        const roadGrad = bgCtx.createLinearGradient(0, horizonY, 0, height);
+        roadGrad.addColorStop(0.0, '#090514');
+        roadGrad.addColorStop(0.4, '#150a24');
+        roadGrad.addColorStop(1.0, '#0a0514');
+        bgCtx.fillStyle = roadGrad;
+        bgCtx.fillRect(0, horizonY, width, roadH);
+
+        // Perspective Ground Grid & Highway Lines
+        const vpX = width * 0.5;
+        const cameraH = roadH;
+        const numTransverse = 22;
+
+        // 1. Transverse Cross Grid Lines (moving forward)
+        bgCtx.save();
+        for (let i = 0; i < numTransverse; i++) {
+          const zProgress = ((state.distance * 0.0035 + i / numTransverse) % 1.0);
+          const z = Math.pow(zProgress, 2.2); // Exponential depth
+          const lineY = horizonY + z * roadH;
+
+          if (lineY > horizonY + 2) {
+            const alpha = Math.min(1.0, z * 1.5);
+            bgCtx.strokeStyle = `rgba(0, 245, 255, ${alpha * 0.45})`;
+            bgCtx.lineWidth = Math.max(1, z * 2.8);
+            bgCtx.beginPath();
+            bgCtx.moveTo(0, lineY);
+            bgCtx.lineTo(width, lineY);
+            bgCtx.stroke();
+          }
+        }
+
+        // 2. Longitudinal Perspective Radiating Grid Lines
+        const numLong = 18;
+        for (let i = -numLong / 2; i <= numLong / 2; i++) {
+          const bottomX = vpX + i * (width / (numLong * 0.65));
+          bgCtx.strokeStyle = (i === 0) ? 'rgba(255, 0, 127, 0.7)' : 'rgba(0, 245, 255, 0.28)';
+          bgCtx.lineWidth = (i === 0) ? 2.5 : 1.2;
+          bgCtx.beginPath();
+          bgCtx.moveTo(vpX, horizonY);
+          bgCtx.lineTo(bottomX, height);
+          bgCtx.stroke();
+        }
+
+        // 3. Center High-Speed Dashed Divider Strip
+        const dashCount = 14;
+        for (let i = 0; i < dashCount; i++) {
+          const zProgress = ((state.distance * 0.006 + i / dashCount) % 1.0);
+          const z = Math.pow(zProgress, 2.5);
+          const dashY = horizonY + z * roadH;
+          const dashLen = Math.max(4, z * 45);
+          const dashW = Math.max(2, z * 7);
+
+          if (dashY > horizonY + 4) {
+            bgCtx.fillStyle = `rgba(255, 235, 80, ${z * 0.9})`;
+            bgCtx.fillRect(vpX - dashW / 2, dashY, dashW, dashLen);
+          }
+        }
+
+        // 4. Outer Highway Neon Rails
+        const leftRailBottom = 0;
+        const rightRailBottom = width;
+        bgCtx.strokeStyle = '#ff00aa';
+        bgCtx.lineWidth = 3;
+        bgCtx.beginPath();
+        bgCtx.moveTo(vpX, horizonY);
+        bgCtx.lineTo(leftRailBottom, height);
+        bgCtx.moveTo(vpX, horizonY);
+        bgCtx.lineTo(rightRailBottom, height);
+        bgCtx.stroke();
+        bgCtx.restore();
+
+        // G. Ground Projection & Reflection of Hoverboard
+        // Position on asphalt directly below the hoverboard
+        const groundY = Math.min(height - 20, Math.max(horizonY + 30, state.y + 45));
+        const altitude = Math.max(10, groundY - state.y);
+        const shadowScale = Math.max(0.5, 1.4 - (altitude / 250));
+        const shadowAlpha = Math.max(0.2, 0.85 - (altitude / 260));
+
+        bgCtx.save();
+        bgCtx.translate(state.x, groundY);
+        bgCtx.scale(shadowScale, shadowScale * 0.28);
+
+        // Outer Neon Glow Pool
+        const groundGrad = bgCtx.createRadialGradient(0, 0, 10, 0, 0, 160);
+        groundGrad.addColorStop(0.0, `rgba(0, 245, 255, ${shadowAlpha * 0.9})`);
+        groundGrad.addColorStop(0.35, `rgba(255, 0, 127, ${shadowAlpha * 0.5})`);
+        groundGrad.addColorStop(1.0, 'rgba(0, 245, 255, 0.0)');
+        bgCtx.fillStyle = groundGrad;
+        bgCtx.beginPath();
+        bgCtx.arc(0, 0, 160, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        // Expanding repulsor shockwave ripples
+        const rippleCount = 3;
+        for (let r = 0; r < rippleCount; r++) {
+          const ripProgress = (((state.time * 2.2 + r / rippleCount) % 1.0) + 1.0) % 1.0;
+          const ripRadius = Math.max(0.1, ripProgress * 150);
+          const ripAlpha = (1.0 - ripProgress) * shadowAlpha * 0.7;
+          bgCtx.strokeStyle = `rgba(0, 245, 255, ${ripAlpha})`;
+          bgCtx.lineWidth = 3;
+          bgCtx.beginPath();
+          bgCtx.arc(0, 0, ripRadius, 0, Math.PI * 2);
+          bgCtx.stroke();
+        }
+        bgCtx.restore();
+
+        // H. Render Thruster Plasma Particles
+        bgCtx.save();
+        bgCtx.globalCompositeOperation = 'lighter';
+        for (let i = thrusterParticles.length - 1; i >= 0; i--) {
+          const p = thrusterParticles[i];
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.life -= p.decay * dt;
+
+          if (p.life <= 0) {
+            thrusterParticles.splice(i, 1);
+            continue;
+          }
+
+          const currentR = Math.max(0.1, p.r * p.life);
+          const alpha = p.life * 0.85;
+          let col = `rgba(0, 245, 255, ${alpha})`;
+          if (p.colorType > 0.6) col = `rgba(255, 0, 127, ${alpha})`;
+          else if (p.colorType > 0.35) col = `rgba(255, 255, 255, ${alpha})`;
+
+          bgCtx.fillStyle = col;
+          bgCtx.beginPath();
+          bgCtx.arc(p.x, p.y, currentR, 0, Math.PI * 2);
+          bgCtx.fill();
+        }
+        bgCtx.restore();
+
+        // ==========================================
+        // RENDER FOREGROUND CANVAS (Speed Lines, Trick Sparks)
+        // ==========================================
+        fgCtx.clearRect(0, 0, width, height);
+
+        // A. Speed Lines
+        fgCtx.save();
+        for (let i = speedLines.length - 1; i >= 0; i--) {
+          const sl = speedLines[i];
+          sl.x -= sl.speed * dt;
+          if (sl.x + sl.len < 0) {
+            speedLines.splice(i, 1);
+            continue;
+          }
+          fgCtx.strokeStyle = sl.color;
+          fgCtx.globalAlpha = sl.alpha;
+          fgCtx.lineWidth = state.isTurbo ? 2.5 : 1.2;
+          fgCtx.beginPath();
+          fgCtx.moveTo(sl.x, sl.y);
+          fgCtx.lineTo(sl.x + sl.len, sl.y);
+          fgCtx.stroke();
+        }
+        fgCtx.restore();
+
+        // B. Trick Confetti & Sparkles
+        fgCtx.save();
+        for (let i = trickBursts.length - 1; i >= 0; i--) {
+          const tb = trickBursts[i];
+          tb.x += tb.vx * dt;
+          tb.y += tb.vy * dt;
+          tb.vy += 220 * dt; // Gravity
+          tb.rot += tb.rotV * dt;
+          tb.life -= tb.decay * dt;
+
+          if (tb.life <= 0) {
+            trickBursts.splice(i, 1);
+            continue;
+          }
+
+          fgCtx.save();
+          fgCtx.translate(tb.x, tb.y);
+          fgCtx.rotate(tb.rot);
+          fgCtx.globalAlpha = tb.life;
+          fgCtx.fillStyle = tb.color;
+
+          // Draw small sparkling diamond / star
+          const sz = tb.r * tb.life;
+          fgCtx.beginPath();
+          fgCtx.moveTo(0, -sz);
+          fgCtx.lineTo(sz * 0.6, 0);
+          fgCtx.lineTo(0, sz);
+          fgCtx.lineTo(-sz * 0.6, 0);
+          fgCtx.closePath();
+          fgCtx.fill();
+          fgCtx.restore();
+        }
+        fgCtx.restore();
+
+        requestAnimationFrame(animate);
+      }
+
+      requestAnimationFrame(animate);
+    })();
+  </script>
+</body>
+</html>
