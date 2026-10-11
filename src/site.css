@@ -430,6 +430,9 @@
     align-items: end;
     gap: 1rem;
   }
+  body[data-page="compare"] main {
+    min-height: 100vh;
+  }
   body[data-page="compare"] .back-link {
     margin-top: 0.75rem;
   }
