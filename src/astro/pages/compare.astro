@@ -21,7 +21,7 @@ const dates = new Intl.DateTimeFormat("en-GB", {
       Inspect the differences. No scores, no automatic winners.
     </p>
   </header>
-  <form id="compare-form" action="/compare/" method="get">
+  <form id="compare-form" action="/compare/" method="get" autocomplete="off">
     <div class="compare-selectors">
       {["left", "right"].map((side) => (
         <label>
