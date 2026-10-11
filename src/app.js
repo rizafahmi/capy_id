@@ -8,6 +8,18 @@ const element = (tag, text, className) => {
   if (className) node.className = className;
   return node;
 };
+const utf8Decoder = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
+const nameCollator = new Intl.Collator("en", { sensitivity: "base" });
+const compareDateFormat = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23",
+  timeZone: "UTC",
+});
 const artifactCache = new Map();
 const verifiedChecksums = new Set();
 async function artifact(url, checksum) {
@@ -135,10 +147,7 @@ function enableEvidence() {
       try {
         const bytes = await artifact(details.dataset.evidenceUrl, details.dataset.sha256);
         const code = details.querySelector("code");
-        const source = new TextDecoder("utf-8", {
-          fatal: true,
-          ignoreBOM: true,
-        }).decode(bytes);
+        const source = utf8Decoder.decode(bytes);
         code.textContent = source;
         details.dataset.loaded = "true";
         status.textContent = "Preserved artifact loaded. SHA-256 verified.";
@@ -164,7 +173,7 @@ function enableEvidence() {
           button.dataset.copyUrl,
           button.closest("[data-sha256]")?.dataset.sha256,
         );
-        text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes);
+        text = utf8Decoder.decode(bytes);
       } catch (error) {
         artifactStatus(button, error.message);
         return;
@@ -232,7 +241,6 @@ function enableGallery() {
   }));
   const selected = new Map();
   const tray = document.querySelector(".comparison-tray");
-  const collator = new Intl.Collator("en", { sensitivity: "base" });
   const search = filters.elements.namedItem("search");
   const provider = filters.elements.namedItem("provider");
   const sort = filters.elements.namedItem("sort");
@@ -243,7 +251,7 @@ function enableGallery() {
     let count = 0;
     cardItems.sort((a, b) => {
       const primary =
-        sort.value === "name" ? collator.compare(a.name, b.name) : b.timestamp - a.timestamp;
+        sort.value === "name" ? nameCollator.compare(a.name, b.name) : b.timestamp - a.timestamp;
       return primary || a.id.localeCompare(b.id, "en");
     });
     for (const item of cardItems) {
@@ -614,16 +622,7 @@ async function enableComparison() {
       const identity = element("p", undefined, "compare-identity");
       identity.append(element("strong", effortLabel));
       if (entry.run.generated_at) {
-        const date = new Intl.DateTimeFormat("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hourCycle: "h23",
-          timeZone: "UTC",
-        }).format(new Date(entry.run.generated_at));
+        const date = compareDateFormat.format(new Date(entry.run.generated_at));
         const time = element("time", `${date} UTC`);
         time.dateTime = entry.run.generated_at;
         identity.append(time);
