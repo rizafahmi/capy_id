@@ -1,5 +1,7 @@
 import { cp, lstat, mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve, sep } from "node:path";
+import { transform } from "lightningcss";
+import { transformWithOxc } from "vite";
 import {
   type AstroPages,
   buildAstroPages,
@@ -190,8 +192,17 @@ export async function buildSite(options: {
     if (options.render !== "dev") await buildAstroPages({ pages, staging });
     await put("gallery/assets/runs.json", `${JSON.stringify(views)}\n`);
     await mkdir(join(staging, "gallery/assets"), { recursive: true });
-    for (const file of ["app.js", "site.css"])
-      await cp(new URL(`../src/${file}`, import.meta.url), join(staging, "gallery/assets", file));
+    const rawCss = await readFile(new URL("../src/site.css", import.meta.url));
+    const minifiedCss = transform({ filename: "site.css", code: rawCss, minify: true }).code;
+    await put("gallery/assets/site.css", minifiedCss);
+
+    const rawJs = await readFile(new URL("../src/app.js", import.meta.url), "utf8");
+    const minifiedJs = (
+      await transformWithOxc(rawJs, "app.js", {
+        minify: true,
+      } as Parameters<typeof transformWithOxc>[2] & { minify?: boolean })
+    ).code;
+    await put("gallery/assets/app.js", minifiedJs);
     await cp(new URL("../src/assets/", import.meta.url), join(staging, "gallery/assets"), {
       recursive: true,
     });
