@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Capybara Hoverboard Cruise</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #06020e;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #fff;
+      touch-action: none;
+    }
+
+    #canvas-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Modern Glassmorphic Cyber HUD */
+    .hud-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px 24px;
+      z-index: 10;
+    }
+
+    /* Top HUD stats bar */
+    .hud-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .hud-card {
+      background: rgba(14, 7, 28, 0.68);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      padding: 10px 18px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45), 0 0 16px rgba(0, 240, 255, 0.12);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .hud-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 2px;
+    }
+
+    .hud-val {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #00f0ff;
+      text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+    }
+
+    .vibe-meter {
+      display: flex;
+      flex-direction: column;
+      min-width: 130px;
+      max-width: 200px;
+    }
+
+    .vibe-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .vibe-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #ff007f, #00f0ff);
+      box-shadow: 0 0 10px #00f0ff;
+      border-radius: 4px;
+      animation: vibePulse 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes vibePulse {
+      0% { filter: hue-rotate(0deg) brightness(1); }
+      100% { filter: hue-rotate(45deg) brightness(1.3); }
+    }
+
+    /* Floating Trick Banner */
+    .trick-banner {
+      position: absolute;
+      top: 18%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background: rgba(255, 0, 127, 0.88);
+      border: 2px solid #ffffff;
+      padding: 10px 26px;
+      border-radius: 30px;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      box-shadow: 0 0 35px rgba(255, 0, 127, 0.8);
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .trick-banner.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    /* Bottom HUD Controls */
+    .hud-bottom {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      background: rgba(12, 6, 24, 0.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .ctrl-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      color: #fff;
+      padding: 8px 15px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.18s ease;
+      outline: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(0, 240, 255, 0.22);
+      border-color: #00f0ff;
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    }
+
+    .ctrl-btn:active, .ctrl-btn.active {
+      background: rgba(255, 0, 127, 0.35);
+      border-color: #ff007f;
+      transform: translateY(0);
+      box-shadow: 0 0 18px rgba(255, 0, 127, 0.55);
+    }
+
+    .ctrl-btn.turbo-btn:hover, .ctrl-btn.turbo-btn.active {
+      background: rgba(255, 170, 0, 0.38);
+      border-color: #ffaa00;
+      box-shadow: 0 0 22px rgba(255, 170, 0, 0.65);
+    }
+
+    .ctrl-key-hint {
+      font-size: 10px;
+      opacity: 0.65;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 2px 5px;
+      border-radius: 5px;
+    }
+
+    .desktop-hint {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.55);
+      letter-spacing: 0.8px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      text-align: center;
+    }
+
+    @media (max-width: 680px) {
+      .hud-layer { padding: 10px; }
+      .hud-card { padding: 6px 12px; }
+      .hud-val { font-size: 15px; }
+      .ctrl-btn { padding: 6px 11px; font-size: 12px; }
+      .desktop-hint { display: none; }
+      .trick-banner { font-size: 18px; padding: 8px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="canvas-container">
+    <canvas id="c"></canvas>
+  </div>
+
+  <div class="hud-layer">
+    <!-- Top HUD Cards -->
+    <div class="hud-top">
+      <div class="hud-card">
+        <span style="font-size: 22px;">🦫</span>
+        <div>
+          <div class="hud-title">Rider Status</div>
+          <div class="hud-val" id="status-text">MAXIMUM CHILL</div>
+        </div>
+      </div>
+
+      <div class="hud-card vibe-meter">
+        <div style="display: flex; justify-content: space-between;">
+          <span class="hud-title">Vibe Level</span>
+          <span class="hud-title" style="color: #00f0ff;">100%</span>
+        </div>
+        <div class="vibe-bar-bg">
+          <div class="vibe-bar-fill"></div>
+        </div>
+      </div>
+
+      <div class="hud-card">
+        <span style="font-size: 20px;">⚡</span>
+        <div>
+          <div class="hud-title">Velocity</div>
+          <div class="hud-val"><span id="speed-disp">88</span> <span style="font-size: 12px; opacity: 0.75;">MPH</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Trick Banner -->
+    <div id="trick-banner" class="trick-banner"></div>
+
+    <!-- Bottom Controls Bar -->
+    <div class="hud-bottom">
+      <div class="controls-row">
+        <button id="btn-trick" class="ctrl-btn">
+          <span>🛹</span> Flip Trick <span class="ctrl-key-hint">SPACE</span>
+        </button>
+        <button id="btn-turbo" class="ctrl-btn turbo-btn">
+          <span>🚀</span> Turbo <span class="ctrl-key-hint">SHIFT</span>
+        </button>
+        <button id="btn-shades" class="ctrl-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle;">
+            <path d="M4 8C2.9 8 2 8.9 2 10V14C2 15.1 2.9 16 4 16H8C9.1 16 10 15.1 10 14V10C10 8.9 9.1 8 8 8H4ZM16 8C14.9 8 14 8.9 14 10V14C14 15.1 14.9 16 16 16H20C21.1 16 22 15.1 22 14V10C22 8.9 21.1 8 20 8H16ZM10 11H14V13H10V11Z"/>
+          </svg>
+          Shades
+        </button>
+        <button id="btn-yuzu" class="ctrl-btn active">
+          <span>🍊</span> Yuzu
+        </button>
+        <button id="btn-theme" class="ctrl-btn">
+          <span>🎨</span> <span id="theme-name">Sunset Synth</span>
+        </button>
+        <button id="btn-auto" class="ctrl-btn active">
+          <span>🕹️</span> Auto: <span id="auto-state">ON</span>
+        </button>
+      </div>
+      <div class="desktop-hint">
+        [WASD / Arrows / Drag] Glide • [Space / Tap] Flip Trick • [Shift / Turbo] Rocket Boost
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+
+  // DOM elements
+  const speedDisp = document.getElementById('speed-disp');
+  const statusText = document.getElementById('status-text');
+  const trickBanner = document.getElementById('trick-banner');
+  const btnTrick = document.getElementById('btn-trick');
+  const btnTurbo = document.getElementById('btn-turbo');
+  const btnShades = document.getElementById('btn-shades');
+  const btnYuzu = document.getElementById('btn-yuzu');
+  const btnTheme = document.getElementById('btn-theme');
+  const btnAuto = document.getElementById('btn-auto');
+  const themeNameDisp = document.getElementById('theme-name');
+  const autoStateDisp = document.getElementById('auto-state');
+
+  // COLOR PALETTES
+  const THEMES = [
+    {
+      name: 'Sunset Synth',
+      primary: '#00f0ff',
+      secondary: '#ff007f',
+      accent: '#ffb03a',
+      skyTop: '#09021b',
+      skyMid1: '#1d0738',
+      skyMid2: '#5c0f4f',
+      skyMid3: '#a3205b',
+      skyLow: '#e8524e',
+      skyBottom: '#ffa245',
+      sunTop: '#fff6a8',
+      sunMid: '#ff4672',
+      sunBottom: '#48004b',
+      roadBase: '#0a0316',
+      gridColor: 'rgba(255, 0, 128, 0.28)'
+    },
+    {
+      name: 'Cyber Tokyo',
+      primary: '#00ffff',
+      secondary: '#bd00ff',
+      accent: '#00e5ff',
+      skyTop: '#030517',
+      skyMid1: '#090f32',
+      skyMid2: '#1b1b54',
+      skyMid3: '#361c6b',
+      skyLow: '#6a127a',
+      skyBottom: '#b01088',
+      sunTop: '#a3f7ff',
+      sunMid: '#7e22ce',
+      sunBottom: '#1e053a',
+      roadBase: '#040514',
+      gridColor: 'rgba(0, 255, 255, 0.28)'
+    },
+    {
+      name: 'Solar Emerald',
+      primary: '#00ff9d',
+      secondary: '#ffbf00',
+      accent: '#00e1d9',
+      skyTop: '#011210',
+      skyMid1: '#04241d',
+      skyMid2: '#0b4737',
+      skyMid3: '#186e4e',
+      skyLow: '#2e9e62',
+      skyBottom: '#ffd152',
+      sunTop: '#fff8b3',
+      sunMid: '#22c55e',
+      sunBottom: '#022c22',
+      roadBase: '#020f0c',
+      gridColor: 'rgba(0, 255, 157, 0.28)'
+    },
+    {
+      name: 'Vapor Dream',
+      primary: '#ff71ce',
+      secondary: '#01cdfe',
+      accent: '#05ffa1',
+      skyTop: '#100524',
+      skyMid1: '#250b4a',
+      skyMid2: '#47146e',
+      skyMid3: '#79208a',
+      skyLow: '#ab329d',
+      skyBottom: '#ff9ad9',
+      sunTop: '#ffffff',
+      sunMid: '#ff71ce',
+      sunBottom: '#2d0854',
+      roadBase: '#0e041e',
+      gridColor: 'rgba(255, 113, 206, 0.28)'
+    }
+  ];
+
+  let currentThemeIdx = 0;
+  let theme = THEMES[0];
+
+  // CANVAS & VIEWPORT DIMENSIONS
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  let dpr = window.devicePixelRatio || 1;
+
+  // RIDER STATE
+  const state = {
+    x: width * 0.44,
+    y: height * 0.72,
+    baseY: height * 0.72,
+    vx: 0,
+    vy: 0,
+    targetX: width * 0.44,
+    targetY: height * 0.72,
+    tilt: 0,
+    targetTilt: 0,
+    // Jump & Trick
+    jumping: false,
+    jumpTimer: 0,
+    jumpDuration: 0.85,
+    jumpHeight: 140,
+    spinAngle: 0,
+    trickName: '',
+    // Speed
+    turbo: false,
+    baseSpeed: 88,
+    curSpeed: 88,
+    // Customization
+    shades: false,
+    yuzu: true,
+    autoCruise: true,
+    autoWanderTimer: 0
+  };
+
+  // Keyboard input
+  const keys = {
+    ArrowLeft: false,
+    ArrowRight: false,
+    ArrowUp: false,
+    ArrowDown: false,
+    KeyA: false,
+    KeyD: false,
+    KeyW: false,
+    KeyS: false,
+    Space: false,
+    ShiftLeft: false,
+    ShiftRight: false
+  };
+
+  // Particle systems
+  const thrusterParticles = [];
+  const ambientSparks = [];
+  const speedLines = [];
+
+  // Initialize Speed Lines
+  for (let i = 0; i < 22; i++) {
+    speedLines.push({
+      x: Math.random() * width,
+      y: Math.random() * height * 0.9,
+      len: 70 + Math.random() * 120,
+      spd: 12 + Math.random() * 16,
+      alpha: 0.2 + Math.random() * 0.5
+    });
+  }
+
+  // Initialize Ambient sparks
+  for (let i = 0; i < 45; i++) {
+    ambientSparks.push({
+      x: Math.random() * width,
+      y: height * 0.35 + Math.random() * height * 0.6,
+      rad: 1 + Math.random() * 2.2,
+      spd: 1.5 + Math.random() * 3,
+      pulse: Math.random() * Math.PI * 2,
+      isPrimary: Math.random() > 0.5
+    });
+  }
+
+  // Window Resize
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    dpr = window.devicePixelRatio || 1;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
+    state.baseY = height * 0.72;
+    if (!state.jumping) {
+      state.y = state.baseY;
+      state.targetY = state.baseY;
+    }
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+
+  // Input Listeners
+  window.addEventListener('keydown', (e) => {
+    if (keys.hasOwnProperty(e.code)) {
+      keys[e.code] = true;
+      state.autoCruise = false;
+      updateAutoCruiseUI();
+    }
+    if (e.code === 'Space') {
+      e.preventDefault();
+      triggerTrick();
+    }
+    if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+      state.turbo = true;
+    }
+    if (e.code === 'KeyS' && !e.ctrlKey && !e.metaKey) {
+      toggleShades();
+    }
+    if (e.code === 'KeyO' || e.code === 'KeyY') {
+      toggleYuzu();
+    }
+    if (e.code === 'KeyC' || e.code === 'KeyT') {
+      cycleTheme();
+    }
+    if (e.code === 'KeyA' && (e.altKey || !keys.KeyA)) {
+      state.autoCruise = !state.autoCruise;
+      updateAutoCruiseUI();
+    }
+  });
+
+  window.addEventListener('keyup', (e) => {
+    if (keys.hasOwnProperty(e.code)) {
+      keys[e.code] = false;
+    }
+    if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+      state.turbo = false;
+    }
+  });
+
+  // Pointer / Touch Drag
+  let isPointerDown = false;
+  let lastPointerX = 0;
+  let lastPointerY = 0;
+
+  window.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.hud-card') || e.target.closest('.controls-row')) return;
+    isPointerDown = true;
+    lastPointerX = e.clientX;
+    lastPointerY = e.clientY;
+    state.autoCruise = false;
+    updateAutoCruiseUI();
+
+    // Tap/Click jumps
+    triggerTrick();
+  });
+
+  window.addEventListener('pointermove', (e) => {
+    if (!isPointerDown) return;
+    const dx = e.clientX - lastPointerX;
+    const dy = e.clientY - lastPointerY;
+    lastPointerX = e.clientX;
+    lastPointerY = e.clientY;
+
+    const baseScale = Math.min(1.0, Math.max(0.55, width / 680));
+    const margin = Math.max(90, 150 * baseScale);
+    state.targetX = Math.max(margin, Math.min(width - margin, state.targetX + dx * 1.25));
+    state.targetY = Math.max(height * 0.45, Math.min(height * 0.82, state.targetY + dy * 1.25));
+  });
+
+  window.addEventListener('pointerup', () => { isPointerDown = false; });
+  window.addEventListener('pointercancel', () => { isPointerDown = false; });
+
+  // Buttons
+  btnTrick.addEventListener('click', (e) => {
+    e.stopPropagation();
+    triggerTrick();
+  });
+
+  btnTurbo.addEventListener('pointerdown', (e) => {
+    e.stopPropagation();
+    state.turbo = true;
+    btnTurbo.classList.add('active');
+  });
+
+  window.addEventListener('pointerup', () => {
+    if (state.turbo && !keys.ShiftLeft && !keys.ShiftRight) {
+      state.turbo = false;
+      btnTurbo.classList.remove('active');
+    }
+  });
+
+  btnShades.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleShades();
+  });
+
+  btnYuzu.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleYuzu();
+  });
+
+  btnTheme.addEventListener('click', (e) => {
+    e.stopPropagation();
+    cycleTheme();
+  });
+
+  btnAuto.addEventListener('click', (e) => {
+    e.stopPropagation();
+    state.autoCruise = !state.autoCruise;
+    updateAutoCruiseUI();
+  });
+
+  function toggleShades() {
+    state.shades = !state.shades;
+    btnShades.classList.toggle('active', state.shades);
+    showTrickText(state.shades ? 'SHADES EQUIPPED 🕶️' : 'ZEN GAZE 👀');
+  }
+
+  function toggleYuzu() {
+    state.yuzu = !state.yuzu;
+    btnYuzu.classList.toggle('active', state.yuzu);
+    showTrickText(state.yuzu ? 'CITRUS BALANCE 🍊' : 'HATLESS MODE 🌿');
+  }
+
+  function cycleTheme() {
+    currentThemeIdx = (currentThemeIdx + 1) % THEMES.length;
+    theme = THEMES[currentThemeIdx];
+    themeNameDisp.textContent = theme.name;
+    showTrickText(theme.name.toUpperCase() + ' 🎨');
+  }
+
+  function updateAutoCruiseUI() {
+    autoStateDisp.textContent = state.autoCruise ? 'ON' : 'OFF';
+    btnAuto.classList.toggle('active', state.autoCruise);
+  }
+
+  const TRICK_NAMES = [
+    'SICK KICKFLIP +500',
+    '360 HEEL-CHILL +750',
+    'ZEN POP-SHOVIT +600',
+    'NO DRAMA FLIP +800',
+    'MAXIMUM VIBE +1000',
+    'OK I PULL UP 🦫✨'
+  ];
+
+  function triggerTrick() {
+    if (state.jumping) return;
+    state.jumping = true;
+    state.jumpTimer = 0;
+    state.trickName = TRICK_NAMES[Math.floor(Math.random() * TRICK_NAMES.length)];
+    showTrickText(state.trickName);
+  }
+
+  let trickBannerTimeout = null;
+  function showTrickText(text) {
+    trickBanner.textContent = text;
+    trickBanner.classList.add('show');
+    clearTimeout(trickBannerTimeout);
+    trickBannerTimeout = setTimeout(() => {
+      trickBanner.classList.remove('show');
+    }, 1400);
+  }
+
+  // Animation Loop Variables
+  let lastTime = performance.now();
+  let timeSeconds = 0;
+
+  function loop(now) {
+    const dt = Math.min(0.05, (now - lastTime) / 1000);
+    lastTime = now;
+    timeSeconds += dt;
+
+    update(dt);
+    render(timeSeconds);
+
+    requestAnimationFrame(loop);
+  }
+
+  // Physics & State Updates
+  function update(dt) {
+    // 1. Auto Cruise Wandering AI
+    if (state.autoCruise) {
+      state.autoWanderTimer += dt;
+      const baseScale = Math.min(1.0, Math.max(0.55, width / 680));
+      const margin = Math.max(100, 160 * baseScale);
+      const wanderAmp = Math.max(20, (width - margin * 2) * 0.35);
+      state.targetX = (width * 0.46) + Math.sin(state.autoWanderTimer * 0.75) * wanderAmp;
+      state.targetY = state.baseY + Math.sin(state.autoWanderTimer * 1.4) * 20;
+
+      // Casual automatic trick after initial cruise
+      if (state.autoWanderTimer > 5.0 && (state.autoWanderTimer % 10.0 < dt) && !state.jumping) {
+        triggerTrick();
+      }
+    } else {
+      // Manual Steering
+      const moveSpeed = 380 * dt;
+      if (keys.ArrowLeft || keys.KeyA) state.targetX -= moveSpeed;
+      if (keys.ArrowRight || keys.KeyD) state.targetX += moveSpeed;
+      if (keys.ArrowUp || keys.KeyW) state.targetY -= moveSpeed * 0.7;
+      if (keys.ArrowDown || keys.KeyS) state.targetY += moveSpeed * 0.7;
+
+      const baseScale = Math.min(1.0, Math.max(0.55, width / 680));
+      const margin = Math.max(90, 150 * baseScale);
+      state.targetX = Math.max(margin, Math.min(width - margin, state.targetX));
+      state.targetY = Math.max(height * 0.45, Math.min(height * 0.82, state.targetY));
+    }
+
+    // Smooth Spring-Mass Position Smoothing
+    const springSpeed = 6.0 * dt;
+    state.vx = (state.targetX - state.x) * springSpeed;
+    state.x += state.vx;
+
+    // Smooth Banking Angle based on horizontal glide velocity
+    state.targetTilt = (state.targetX - state.x) * 0.0009;
+    state.tilt += (state.targetTilt - state.tilt) * (8.0 * dt);
+
+    // Jump / Ollie / Trick Physics
+    let jumpOffset = 0;
+    if (state.jumping) {
+      state.jumpTimer += dt;
+      const progress = state.jumpTimer / state.jumpDuration;
+
+      if (progress >= 1.0) {
+        state.jumping = false;
+        state.jumpTimer = 0;
+        state.spinAngle = 0;
+      } else {
+        // Jump parabolic arc
+        jumpOffset = Math.sin(progress * Math.PI) * state.jumpHeight;
+        // 360 Spin
+        state.spinAngle = progress * Math.PI * 2;
+      }
+    }
+
+    // Gentle hoverboard harmonic float oscillation
+    const floatBob = Math.sin(timeSeconds * 3.5) * 11 + Math.sin(timeSeconds * 6.7) * 3;
+    state.y = (state.targetY - jumpOffset) + floatBob;
+
+    // Turbo Speed Interpolation
+    const targetSpeed = state.turbo ? 142 : state.baseSpeed;
+    state.curSpeed += (targetSpeed - state.curSpeed) * (5.0 * dt);
+    speedDisp.textContent = Math.round(state.curSpeed);
+
+    if (state.turbo) {
+      btnTurbo.classList.add('active');
+    } else if (!keys.ShiftLeft && !keys.ShiftRight) {
+      btnTurbo.classList.remove('active');
+    }
+
+    // Spawn Thruster Plasma Particles from Kicktail
+    const spawnRate = state.turbo ? 4 : 2;
+    for (let i = 0; i < spawnRate; i++) {
+      thrusterParticles.push({
+        x: state.x - 175 + (Math.random() - 0.5) * 8,
+        y: state.y - 6 + (Math.random() - 0.5) * 6,
+        vx: -(state.turbo ? 380 : 220) - Math.random() * 160,
+        vy: (Math.random() - 0.5) * 45,
+        size: 3 + Math.random() * 5,
+        alpha: 1.0,
+        decay: 1.8 + Math.random() * 2.5,
+        color: Math.random() > 0.4 ? theme.primary : theme.secondary
+      });
+    }
+
+    // Update Particles
+    for (let i = thrusterParticles.length - 1; i >= 0; i--) {
+      const p = thrusterParticles[i];
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.alpha -= p.decay * dt;
+      p.size = Math.max(0, p.size - dt * 2.2);
+      if (p.alpha <= 0 || p.size <= 0) {
+        thrusterParticles.splice(i, 1);
+      }
+    }
+
+    // Update Speed Lines
+    const speedMult = state.turbo ? 2.5 : 1.2;
+    speedLines.forEach(l => {
+      l.x -= l.spd * speedMult * 60 * dt;
+      if (l.x < -200) {
+        l.x = width + 50 + Math.random() * 150;
+        l.y = Math.random() * height * 0.9;
+      }
+    });
+
+    // Update Ambient Floating Sparks
+    ambientSparks.forEach(s => {
+      s.x -= s.spd * speedMult * 35 * dt;
+      s.pulse += dt * 3;
+      if (s.x < -50) {
+        s.x = width + 50 + Math.random() * 80;
+        s.y = height * 0.35 + Math.random() * height * 0.6;
+      }
+    });
+  }
+
+  // Master Render Function
+  function render(t) {
+    ctx.clearRect(0, 0, width, height);
+
+    // Subtle camera shake during hyperspeed rocket boost
+    const shakeX = state.turbo ? (Math.random() - 0.5) * 3 : 0;
+    const shakeY = state.turbo ? (Math.random() - 0.5) * 2.5 : 0;
+
+    ctx.save();
+    if (state.turbo) {
+      ctx.translate(shakeX, shakeY);
+    }
+
+    const horizonY = height * 0.62;
+
+    // 1. SKY GRADIENT
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
+    skyGrad.addColorStop(0, theme.skyTop);
+    skyGrad.addColorStop(0.28, theme.skyMid1);
+    skyGrad.addColorStop(0.52, theme.skyMid2);
+    skyGrad.addColorStop(0.74, theme.skyMid3);
+    skyGrad.addColorStop(0.9, theme.skyLow);
+    skyGrad.addColorStop(1, theme.skyBottom);
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, width, horizonY);
+
+    // Twinkling Celestial Stars
+    ctx.fillStyle = '#ffffff';
+    for (let i = 0; i < 50; i++) {
+      const sx = (i * 137.5 + 40) % width;
+      const sy = (i * 47.3 + 20) % (horizonY * 0.55);
+      const twinkle = 0.3 + 0.7 * Math.sin(t * 2.5 + i);
+      ctx.globalAlpha = twinkle;
+      const sz = (i % 4 === 0) ? 2.2 : 1.4;
+      ctx.fillRect(sx, sy, sz, sz);
+    }
+    ctx.globalAlpha = 1.0;
+
+    // 2. GIANT SYNTHWAVE SUN
+    const sunR = Math.min(width * 0.16, 140);
+    const sunX = width * 0.65;
+    const sunY = horizonY - sunR * 0.65;
+
+    const sunGrad = ctx.createLinearGradient(sunX, sunY - sunR, sunX, sunY + sunR);
+    sunGrad.addColorStop(0, theme.sunTop);
+    sunGrad.addColorStop(0.4, theme.sunMid);
+    sunGrad.addColorStop(1, theme.sunBottom);
+
+    ctx.save();
+    ctx.shadowColor = theme.sunMid;
+    ctx.shadowBlur = 50;
+    ctx.fillStyle = sunGrad;
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Horizontal scanline cuts through sun
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = theme.skyMid1;
+    const cuts = 9;
+    for (let i = 0; i < cuts; i++) {
+      const cutY = sunY + (sunR * 0.1) + i * (sunR * 0.11);
+      const cutH = 2 + i * 1.5;
+      ctx.fillRect(sunX - sunR - 15, cutY, sunR * 2 + 30, cutH);
+    }
+    ctx.restore();
+
+    // 3. PARALLAX MOUNTAINS LAYER
+    ctx.fillStyle = '#140624';
+    ctx.beginPath();
+    ctx.moveTo(0, horizonY);
+    ctx.lineTo(0, horizonY - 80);
+    const mtnSegments = 12;
+    for (let i = 0; i <= mtnSegments; i++) {
+      const mx = (width / mtnSegments) * i;
+      const my = horizonY - 50 - Math.sin(i * 1.3) * 60 - ((i % 3 === 0) ? 40 : 0);
+      ctx.lineTo(mx, my);
+    }
+    ctx.lineTo(width, horizonY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Mountain neon rim light
+    ctx.strokeStyle = theme.secondary;
+    ctx.globalAlpha = 0.35;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.globalAlpha = 1.0;
+
+    // 4. PARALLAX CITY SKYLINE
+    const cityScroll = (t * (state.turbo ? 90 : 45)) % 300;
+    ctx.fillStyle = '#0e041a';
+    const numBuildings = Math.ceil(width / 60) + 6;
+    for (let b = -2; b < numBuildings; b++) {
+      const bx = b * 65 - cityScroll;
+      const seed = Math.abs(Math.sin(b * 99)) * 1000;
+      const bh = 50 + (seed % 100);
+      const bw = 40 + (seed % 25);
+      ctx.fillRect(bx, horizonY - bh, bw, bh);
+
+      // Windows
+      ctx.fillStyle = theme.primary;
+      ctx.globalAlpha = 0.3;
+      for (let wy = horizonY - bh + 10; wy < horizonY - 10; wy += 16) {
+        for (let wx = bx + 6; wx < bx + bw - 6; wx += 10) {
+          if ((Math.sin(wx * 11 + wy * 17) > 0.3)) {
+            ctx.fillRect(wx, wy, 3, 6);
+          }
+        }
+      }
+      ctx.globalAlpha = 1.0;
+      ctx.fillStyle = '#0e041a';
+    }
+
+    // 5. HIGHWAY SURFACE
+    const roadH = height - horizonY;
+    const roadGrad = ctx.createLinearGradient(0, horizonY, 0, height);
+    roadGrad.addColorStop(0, theme.roadBase);
+    roadGrad.addColorStop(0.3, '#120524');
+    roadGrad.addColorStop(1, '#1c0836');
+    ctx.fillStyle = roadGrad;
+    ctx.fillRect(0, horizonY, width, roadH);
+
+    // Horizon Neon Glow Laser Strip
+    ctx.save();
+    ctx.strokeStyle = theme.primary;
+    ctx.shadowColor = theme.primary;
+    ctx.shadowBlur = 18;
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.moveTo(0, horizonY);
+    ctx.lineTo(width, horizonY);
+    ctx.stroke();
+    ctx.restore();
+
+    // Road Perspective Grid
+    ctx.save();
+    ctx.strokeStyle = theme.gridColor;
+    ctx.lineWidth = 1.5;
+    const vanishX = width * 0.5;
+    const gridCount = 24;
+    for (let i = -gridCount; i <= gridCount * 2; i++) {
+      const bottomX = (width / gridCount) * i;
+      ctx.beginPath();
+      ctx.moveTo(vanishX, horizonY);
+      ctx.lineTo(bottomX, height);
+      ctx.stroke();
+    }
+
+    // Fast speed laser dashes on road
+    const speedCycle = (t * (state.turbo ? 1600 : 800)) % 220;
+    ctx.strokeStyle = theme.secondary;
+    ctx.shadowColor = theme.secondary;
+    ctx.shadowBlur = 12;
+    ctx.lineWidth = 3.5;
+    for (let z = 0; z < 14; z++) {
+      const normY = (z + (speedCycle / 220)) / 14;
+      const yPos = horizonY + Math.pow(normY, 2.3) * roadH;
+      if (yPos > height) continue;
+      ctx.beginPath();
+      ctx.moveTo(0, yPos);
+      ctx.lineTo(width, yPos);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Roadside glowing neon guide rails (spaced widely as highway boundaries)
+    ctx.save();
+    ctx.strokeStyle = theme.primary;
+    ctx.shadowColor = theme.primary;
+    ctx.shadowBlur = 14;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(vanishX - width * 0.08, horizonY);
+    ctx.lineTo(-width * 0.15, height);
+    ctx.moveTo(vanishX + width * 0.08, horizonY);
+    ctx.lineTo(width * 1.15, height);
+    ctx.stroke();
+    ctx.restore();
+
+    // 6. SPEED STREAKS & FLOATING MOTES
+    // Speed lines
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+    ctx.lineWidth = state.turbo ? 2.5 : 1.5;
+    speedLines.forEach(l => {
+      ctx.globalAlpha = l.alpha * (state.turbo ? 1.0 : 0.6);
+      ctx.beginPath();
+      ctx.moveTo(l.x, l.y);
+      ctx.lineTo(l.x - l.len * (state.turbo ? 2.0 : 1.0), l.y);
+      ctx.stroke();
+    });
+    ctx.restore();
+
+    // Ambient floating neon motes
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ambientSparks.forEach(s => {
+      const alpha = 0.4 + 0.6 * Math.sin(s.pulse);
+      ctx.fillStyle = s.isPrimary ? theme.primary : theme.secondary;
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.rad, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+
+    // 7. HOVERBOARD GROUND REFLECTION & SHADOW
+    const groundY = Math.min(height - 35, state.baseY + 80);
+    ctx.save();
+    ctx.translate(state.x, groundY);
+
+    // Contact shadow
+    const shadowScale = Math.max(0.4, 1 - ((state.baseY - state.y) / 250));
+    const shadowGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, 150 * shadowScale);
+    shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0.85)');
+    shadowGrad.addColorStop(0.5, 'rgba(0, 0, 0, 0.4)');
+    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = shadowGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 140 * shadowScale, 22 * shadowScale, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Dual Repulsor Light Puddles reflecting on road
+    ctx.globalCompositeOperation = 'lighter';
+    [-75, 75].forEach(rx => {
+      const puddleGrad = ctx.createRadialGradient(rx * shadowScale, 0, 5, rx * shadowScale, 0, 70 * shadowScale);
+      puddleGrad.addColorStop(0, theme.primary);
+      puddleGrad.addColorStop(0.35, theme.secondary);
+      puddleGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = puddleGrad;
+      ctx.globalAlpha = 0.7 * shadowScale;
+      ctx.beginPath();
+      ctx.ellipse(rx * shadowScale, 0, 65 * shadowScale, 18 * shadowScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+
+    // 8. THRUSTER PARTICLES (behind board)
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    thrusterParticles.forEach(p => {
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = Math.max(0, p.alpha);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+
+    // 9. THE CAPYBARA & HOVERBOARD
+    ctx.save();
+    ctx.translate(state.x, state.y);
+    ctx.rotate(state.tilt + state.spinAngle);
+
+    drawCapybaraAndBoard(t);
+
+    ctx.restore();
+    ctx.restore(); // end camera shake
+  }
+
+  // Draw Capybara and Hoverboard Component
+  function drawCapybaraAndBoard(t) {
+    const primary = theme.primary;
+    const secondary = theme.secondary;
+    const baseScale = Math.min(1.0, Math.max(0.58, width / 680));
+    ctx.scale(baseScale, baseScale);
+
+    const breath = Math.sin(t * 3.2) * 2;
+    const earWiggle = Math.sin(t * (state.turbo ? 8 : 4.5)) * 0.04 + (Math.sin(t * 1.8) > 0.85 ? Math.sin(t * 26) * 0.12 : 0);
+    const bob = Math.sin(t * 3.2 - 0.4) * 1.5;
+
+    // 1. DUAL UNDER-DECK REPULSOR PODS
+    [-75, 75].forEach(rx => {
+      ctx.save();
+      // Metallic generator housing
+      ctx.fillStyle = '#151928';
+      ctx.strokeStyle = primary;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.roundRect(rx - 28, 14, 56, 18, 5);
+      ctx.fill();
+      ctx.stroke();
+
+      // Glowing power core
+      ctx.fillStyle = primary;
+      ctx.shadowColor = primary;
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.roundRect(rx - 20, 23, 40, 7, 3);
+      ctx.fill();
+
+      // Expanding plasma shockwave rings
+      ctx.globalCompositeOperation = 'lighter';
+      for (let r = 0; r < 3; r++) {
+        const ringScale = (t * 3.6 + r * 0.33) % 1;
+        const ringY = 32 + ringScale * 45;
+        const ringW = 28 + ringScale * 38;
+        const ringAlpha = (1 - ringScale) * 0.85;
+        ctx.strokeStyle = primary;
+        ctx.globalAlpha = ringAlpha;
+        ctx.lineWidth = 2.6;
+        ctx.beginPath();
+        ctx.ellipse(rx, ringY, ringW, 7, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    });
+
+    // Aerodynamic Rear Ion Jet Thruster at Kicktail (x = -165, y = -6)
+    ctx.save();
+    ctx.fillStyle = '#181c2b';
+    ctx.strokeStyle = primary;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(-178, -13, 20, 14, 3);
+    ctx.fill();
+    ctx.stroke();
+
+    // Blazing Plasma Jet shooting straight back from tail
+    ctx.globalCompositeOperation = 'lighter';
+    const jetLen = state.turbo ? (230 + Math.random() * 50) : (95 + Math.sin(t * 16) * 25);
+    const jetWidth = state.turbo ? 16 : 9;
+    const jetGrad = ctx.createLinearGradient(-178, -6, -178 - jetLen, -6);
+    jetGrad.addColorStop(0, '#ffffff');
+    jetGrad.addColorStop(0.18, primary);
+    jetGrad.addColorStop(0.6, secondary);
+    jetGrad.addColorStop(1, 'rgba(255, 0, 128, 0)');
+    ctx.fillStyle = jetGrad;
+    ctx.shadowColor = primary;
+    ctx.shadowBlur = state.turbo ? 30 : 18;
+    ctx.beginPath();
+    ctx.moveTo(-178, -6 - jetWidth);
+    ctx.lineTo(-178 - jetLen, -6);
+    ctx.lineTo(-178, -6 + jetWidth);
+    ctx.closePath();
+    ctx.fill();
+
+    // Inner white-hot plasma core
+    const coreLen = jetLen * 0.45;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(-178, -6 - jetWidth * 0.4);
+    ctx.lineTo(-178 - coreLen, -6);
+    ctx.lineTo(-178, -6 + jetWidth * 0.4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    // 2. HOVERBOARD DECK CHASSIS
+    ctx.save();
+    const deckGrad = ctx.createLinearGradient(-190, 0, 190, 0);
+    deckGrad.addColorStop(0, '#101320');
+    deckGrad.addColorStop(0.25, '#22273e');
+    deckGrad.addColorStop(0.75, '#2e3552');
+    deckGrad.addColorStop(1, '#171a29');
+
+    ctx.fillStyle = deckGrad;
+    ctx.strokeStyle = primary;
+    ctx.lineWidth = 3.5;
+    ctx.shadowColor = primary;
+    ctx.shadowBlur = 16;
+
+    ctx.beginPath();
+    ctx.moveTo(-165, 0);
+    ctx.quadraticCurveTo(-190, -16, -165, -18); // kicktail
+    ctx.lineTo(-125, -2);
+    ctx.lineTo(125, -2);
+    ctx.quadraticCurveTo(190, -16, 178, 0);     // nose tip
+    ctx.quadraticCurveTo(185, 18, 145, 18);     // nose underside
+    ctx.lineTo(-145, 18);                       // bottom flat
+    ctx.quadraticCurveTo(-182, 16, -165, 0);    // tail underside
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Dual Neon Edge Rail Piping
+    ctx.strokeStyle = secondary;
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = secondary;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.moveTo(-145, 6);
+    ctx.lineTo(145, 6);
+    ctx.stroke();
+
+    // Grip Tape Sections
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#0b0d16';
+    ctx.beginPath();
+    ctx.roundRect(-120, -1, 75, 5, 2);
+    ctx.roundRect(-30, -1, 60, 5, 2);
+    ctx.roundRect(45, -1, 75, 5, 2);
+    ctx.fill();
+
+    // LED Power Gauge
+    const leds = [primary, primary, '#39ff14', '#ffe600', secondary];
+    leds.forEach((col, i) => {
+      ctx.fillStyle = col;
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 6;
+      ctx.fillRect(-22 + i * 11, 10, 7, 4);
+    });
+
+    // Tech deck lettering
+    ctx.fillStyle = primary;
+    ctx.font = 'bold 9px monospace';
+    ctx.shadowBlur = 4;
+    ctx.fillText('CAPY-LEV • MK-IV', 40, 14);
+    ctx.restore();
+
+    // 3. FAR LEGS (Left-side paws on board)
+    // Far hind leg
+    ctx.save();
+    ctx.fillStyle = '#452511';
+    ctx.beginPath();
+    ctx.ellipse(-72, -32, 16, 26, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#261205';
+    ctx.beginPath();
+    ctx.roundRect(-88, -10, 32, 11, [4, 4, 1, 1]);
+    ctx.fill();
+    ctx.restore();
+
+    // Far front leg
+    ctx.save();
+    ctx.fillStyle = '#452511';
+    ctx.beginPath();
+    ctx.ellipse(55, -32, 15, 26, 0.1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#261205';
+    ctx.beginPath();
+    ctx.roundRect(45, -10, 32, 11, [4, 4, 1, 1]);
+    ctx.fill();
+    ctx.restore();
+
+    // 4. CAPYBARA TORSO & SCULPTED BODY
+    ctx.save();
+    ctx.translate(0, breath * 0.3);
+
+    // Warm radial fur gradient
+    const bodyGrad = ctx.createRadialGradient(-10, -75, 20, 0, -65, 130);
+    bodyGrad.addColorStop(0, '#be824c');
+    bodyGrad.addColorStop(0.35, '#92572b');
+    bodyGrad.addColorStop(0.75, '#693816');
+    bodyGrad.addColorStop(1, '#43200a');
+    ctx.fillStyle = bodyGrad;
+
+    ctx.beginPath();
+    ctx.moveTo(-112, -25);
+    ctx.bezierCurveTo(-132, -55, -125, -115, -75, -135); // rump curve
+    ctx.bezierCurveTo(-35, -150, 30, -150, 75, -125);   // dorsal spine
+    ctx.bezierCurveTo(98, -115, 110, -95, 102, -55);    // chest transition
+    ctx.bezierCurveTo(92, -20, 50, 4, -10, 2);          // belly
+    ctx.bezierCurveTo(-65, 0, -98, -8, -112, -25);      // lower rump
+    ctx.closePath();
+    ctx.fill();
+
+    // Soft warm belly highlight
+    const bellyGrad = ctx.createLinearGradient(0, 2, 0, -35);
+    bellyGrad.addColorStop(0, 'rgba(225, 180, 130, 0.45)');
+    bellyGrad.addColorStop(1, 'rgba(150, 90, 50, 0)');
+    ctx.fillStyle = bellyGrad;
+    ctx.beginPath();
+    ctx.ellipse(-10, -14, 60, 16, -0.05, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Fine fur texture strokes
+    ctx.strokeStyle = 'rgba(255, 230, 195, 0.2)';
+    ctx.lineWidth = 1.4;
+    for (let fx = -80; fx <= 50; fx += 16) {
+      const fy = -135 + Math.sin(fx * 0.04) * 6;
+      ctx.beginPath();
+      ctx.moveTo(fx, fy);
+      ctx.lineTo(fx + 7, fy + 7);
+      ctx.stroke();
+    }
+
+    // Neon underglow reflection from hoverboard onto capybara belly
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    const rimGrad = ctx.createLinearGradient(0, 4, 0, -25);
+    rimGrad.addColorStop(0, 'rgba(0, 240, 255, 0.45)');
+    rimGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
+    ctx.fillStyle = rimGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, -6, 95, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 5. FOREGROUND LEGS & GRIPPING PAWS
+    // Near Hind Leg & Paw
+    ctx.save();
+    ctx.translate(-62, -42);
+    const thighGrad = ctx.createRadialGradient(-5, -5, 8, 0, 10, 42);
+    thighGrad.addColorStop(0, '#b17544');
+    thighGrad.addColorStop(0.6, '#7c451e');
+    thighGrad.addColorStop(1, '#4e240d');
+    ctx.fillStyle = thighGrad;
+    ctx.beginPath();
+    ctx.ellipse(-2, 0, 30, 36, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#653617';
+    ctx.beginPath();
+    ctx.roundRect(-18, 16, 26, 24, 7);
+    ctx.fill();
+
+    // Paw planted solidly on deck
+    ctx.fillStyle = '#321708';
+    ctx.beginPath();
+    ctx.roundRect(-26, 32, 42, 12, [5, 5, 1, 1]);
+    ctx.fill();
+
+    // 3 Toes & Claws
+    [-14, -2, 10].forEach(tx => {
+      ctx.fillStyle = '#1a0b03';
+      ctx.beginPath();
+      ctx.roundRect(tx, 33, 7.5, 11, 2.5);
+      ctx.fill();
+      ctx.fillStyle = '#080301';
+      ctx.fillRect(tx + 1.5, 41, 4.5, 3);
+    });
+    ctx.restore();
+
+    // Near Front Leg & Paw
+    ctx.save();
+    ctx.translate(52, -42);
+    const foreGrad = ctx.createLinearGradient(-15, -10, 20, 35);
+    foreGrad.addColorStop(0, '#a86e3f');
+    foreGrad.addColorStop(0.7, '#743f1b');
+    foreGrad.addColorStop(1, '#4e240d');
+    ctx.fillStyle = foreGrad;
+    ctx.beginPath();
+    ctx.roundRect(-15, -10, 32, 42, 10);
+    ctx.fill();
+
+    // Paw on deck
+    ctx.fillStyle = '#321708';
+    ctx.beginPath();
+    ctx.roundRect(-15, 32, 42, 12, [5, 5, 1, 1]);
+    ctx.fill();
+
+    // 4 Toes & Claws
+    [-9, 3, 14, 25].forEach(tx => {
+      ctx.fillStyle = '#1a0b03';
+      ctx.beginPath();
+      ctx.roundRect(tx, 33, 6.5, 11, 2);
+      ctx.fill();
+      ctx.fillStyle = '#080301';
+      ctx.fillRect(tx + 1, 41, 4.5, 3);
+    });
+    ctx.restore();
+
+    // 6. CAPYBARA HEAD (Dignified, peaceful, iconic)
+    ctx.save();
+    ctx.translate(65, -125 + bob);
+    const headTilt = Math.sin(t * 3 - 0.2) * 0.035;
+    ctx.rotate(headTilt);
+
+    // Definitive Capybara Head
+    const headGrad = ctx.createRadialGradient(35, -15, 15, 40, 5, 95);
+    headGrad.addColorStop(0, '#c78952');   // golden cheek
+    headGrad.addColorStop(0.45, '#9a5c2d'); // warm brown
+    headGrad.addColorStop(0.85, '#683916');
+    headGrad.addColorStop(1, '#44210a');
+    ctx.fillStyle = headGrad;
+
+    ctx.beginPath();
+    ctx.moveTo(-35, -34);
+    ctx.bezierCurveTo(0, -48, 50, -48, 85, -38);
+    ctx.bezierCurveTo(112, -30, 126, -16, 134, 4); // snout bridge
+    ctx.lineTo(136, 44);                           // blunt snout front
+    ctx.bezierCurveTo(130, 62, 105, 65, 82, 62);    // chin
+    ctx.bezierCurveTo(45, 60, 5, 50, -25, 25);     // jawline
+    ctx.bezierCurveTo(-45, 5, -45, -20, -35, -34); // back of skull
+    ctx.closePath();
+    ctx.fill();
+
+    // Cream cheek buff
+    const buffGrad = ctx.createRadialGradient(78, 24, 5, 78, 24, 55);
+    buffGrad.addColorStop(0, '#d9ac7e');
+    buffGrad.addColorStop(0.65, '#be8d5c');
+    buffGrad.addColorStop(1, 'rgba(160, 95, 50, 0)');
+    ctx.fillStyle = buffGrad;
+    ctx.beginPath();
+    ctx.ellipse(75, 24, 52, 28, 0.08, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Leathery Dark Nose Pad
+    const noseGrad = ctx.createLinearGradient(112, -5, 136, 26);
+    noseGrad.addColorStop(0, '#2e170c');
+    noseGrad.addColorStop(1, '#140803');
+    ctx.fillStyle = noseGrad;
+    ctx.beginPath();
+    ctx.moveTo(114, -18);
+    ctx.bezierCurveTo(128, -10, 137, 6, 137, 24);
+    ctx.bezierCurveTo(137, 34, 130, 38, 120, 34);
+    ctx.bezierCurveTo(110, 28, 107, 10, 109, -10);
+    ctx.closePath();
+    ctx.fill();
+
+    // Nostril slit
+    ctx.fillStyle = '#060201';
+    ctx.beginPath();
+    ctx.ellipse(125, 12, 6.5, 3.5, -0.35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.arc(124, 10, 3.2, 0.2, Math.PI * 0.9);
+    ctx.stroke();
+
+    // Content, serene smile (upturned at the cheek!)
+    ctx.strokeStyle = '#281105';
+    ctx.lineWidth = 3.2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(126, 30);
+    ctx.quadraticCurveTo(106, 32, 90, 28);
+    ctx.quadraticCurveTo(74, 24, 66, 18);
+    ctx.stroke();
+
+    // Whiskers
+    ctx.strokeStyle = 'rgba(255, 245, 230, 0.55)';
+    ctx.lineWidth = 1.3;
+    [
+      [106, 18, 146, 20],
+      [109, 26, 150, 32],
+      [104, 33, 142, 42]
+    ].forEach(([x1, y1, x2, y2]) => {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.quadraticCurveTo((x1 + x2) / 2, (y1 + y2) / 2 - 2, x2, y2);
+      ctx.stroke();
+    });
+
+    // Capybara Eye (Zen & sleepy)
+    ctx.save();
+    ctx.translate(38, -14);
+
+    ctx.fillStyle = '#48240f';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 16, 11, -0.15, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#1a0b04';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 12, 8.5, -0.15, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#834213';
+    ctx.beginPath();
+    ctx.ellipse(1, 2, 7, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Natural Eye Blinking animation (brief blink every 3.5s)
+    const blinkCycle = (t * 0.28) % 1;
+    const isBlinking = blinkCycle > 0.96;
+    const lidDrop = isBlinking ? 8.5 : 2.5;
+
+    ctx.fillStyle = '#9a5c2d';
+    ctx.beginPath();
+    ctx.moveTo(-16, -4);
+    ctx.quadraticCurveTo(0, -13, 16, -5);
+    ctx.quadraticCurveTo(0, lidDrop, -16, -4);
+    ctx.closePath();
+    ctx.fill();
+
+    // Specular shine catchlights
+    if (!isBlinking) {
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(3.5, -2.5, 2.4, 0, Math.PI * 2);
+      ctx.arc(-1, 0, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // Capybara Ear (Cute rounded cup on skull)
+    ctx.save();
+    ctx.translate(-26, -38);
+    ctx.rotate(-0.12 + earWiggle);
+
+    ctx.fillStyle = '#54290f';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 14, 19, 0.35, 0, Math.PI * 2);
+    ctx.fill();
+
+    const earInner = ctx.createLinearGradient(0, -9, 2, 9);
+    earInner.addColorStop(0, '#b86654');
+    earInner.addColorStop(1, '#df9482');
+    ctx.fillStyle = earInner;
+    ctx.beginPath();
+    ctx.ellipse(2, 2, 8, 12, 0.35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // RETRO CYBER SUNGLASSES (Toggleable)
+    if (state.shades) {
+      ctx.save();
+      ctx.translate(48, -14);
+
+      ctx.fillStyle = '#0a0d14';
+      ctx.strokeStyle = primary;
+      ctx.lineWidth = 2.2;
+      ctx.shadowColor = primary;
+      ctx.shadowBlur = 8;
+
+      ctx.beginPath();
+      ctx.moveTo(-34, -14);
+      ctx.lineTo(28, -10);
+      ctx.quadraticCurveTo(36, -9, 38, -1);
+      ctx.lineTo(35, 14);
+      ctx.quadraticCurveTo(32, 22, 20, 22);
+      ctx.lineTo(-26, 17);
+      ctx.quadraticCurveTo(-36, 14, -36, 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Mirror lens
+      const lensGrad = ctx.createLinearGradient(-30, -10, 28, 16);
+      lensGrad.addColorStop(0, secondary);
+      lensGrad.addColorStop(0.5, '#8925d4');
+      lensGrad.addColorStop(1, primary);
+      ctx.fillStyle = lensGrad;
+      ctx.beginPath();
+      ctx.roundRect(-30, -8, 60, 24, 5);
+      ctx.fill();
+
+      // Moving specular glare
+      const gx = -35 + ((t * 1.5) % 4) * 30;
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(-30, -8, 60, 24, 5);
+      ctx.clip();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(gx, 28);
+      ctx.lineTo(gx + 18, -18);
+      ctx.stroke();
+      ctx.restore();
+
+      // Frame temple arm
+      ctx.strokeStyle = '#0a0d14';
+      ctx.lineWidth = 2.5;
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.moveTo(-34, -8);
+      ctx.lineTo(-68, -22);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // THE GOLDEN YUZU / ORANGE ON HEAD (Toggleable)
+    if (state.yuzu) {
+      ctx.save();
+      const yuzuWobble = Math.sin(t * 4.5) * 0.1 - headTilt * 0.7;
+      ctx.translate(30, -50);
+      ctx.rotate(yuzuWobble);
+
+      const yuzuGrad = ctx.createRadialGradient(-5, -6, 3, 0, 0, 20);
+      yuzuGrad.addColorStop(0, '#fff47a');
+      yuzuGrad.addColorStop(0.35, '#ffb800');
+      yuzuGrad.addColorStop(0.8, '#f57c00');
+      yuzuGrad.addColorStop(1, '#b84e00');
+      ctx.fillStyle = yuzuGrad;
+      ctx.shadowColor = 'rgba(255, 170, 0, 0.6)';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 18, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Pores texture
+      ctx.fillStyle = 'rgba(180, 80, 0, 0.28)';
+      ctx.shadowBlur = 0;
+      [[-6, -5], [5, -4], [-2, 3], [7, 2], [-8, 2], [3, 7]].forEach(([dx, dy]) => {
+        ctx.beginPath();
+        ctx.arc(dx, dy, 1, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Stem
+      ctx.strokeStyle = '#3e6b18';
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.moveTo(0, -15);
+      ctx.quadraticCurveTo(2, -22, 6, -24);
+      ctx.stroke();
+
+      // Leaf
+      ctx.fillStyle = '#5eb81e';
+      ctx.beginPath();
+      ctx.moveTo(4, -22);
+      ctx.quadraticCurveTo(18, -28, 20, -19);
+      ctx.quadraticCurveTo(10, -17, 4, -22);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    ctx.restore(); // end head
+    ctx.restore(); // end torso
+  }
+
+  // Kick off silky 60fps loop
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
