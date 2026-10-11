@@ -5,12 +5,46 @@
 Migrate one page type per verified slice. Preserve visible output, vanilla browser
 controls, original evidence bytes, preview isolation, response headers, and safe
 build replacement. All gallery pages now use Astro. Native development rendering
-and source hot reload are integrated. Content watching remains a separate slice.
+source hot reload, and validated content watching are integrated. Content watching
+keeps validation and immutable-ledger checks at the boundary.
+
+### Validated content-watch slice
+
+- [x] Pin the behavior contract. Content and curation edits update the open gallery only after validation succeeds. Invalid edits leave the last good gallery, previews, and evidence available. New imports remain subject to the immutable ledger.
+- [x] Name the state. Keep one validated `AstroPages` snapshot plus one prepared-output generation. A rebuild either produces a new pair or keeps the old pair; no partial page data is valid.
+- [x] Name the target shape. Vite watches the content root only as a trigger. `buildSite({ render: "dev" })` validates and prepares the next generation. The Astro dev server restarts against that generation. Preview serving stays separate.
+- [x] Capture a failing content-edit test in the isolated integration project before adding the watcher.
+- [x] Add debounce, serialized rebuilds, invalid-edit retention, and successful page refresh. Do not watch arbitrary files or expose the content root through Vite.
+- [x] Verify withheld records, artifact bytes, preview policy, immutable-ledger rejection, and shutdown cleanup.
+- [x] Run the full checks and record the result in `decisions.tsv`. Content watching, commits, pushes, deployment, and PR creation remain separate decisions.
+
+#### Validated content-watch throughput checkpoint
+
+- Blocking first steps. The failing browser test and output-retention test precede the watcher.
+- Independent workstreams. No delegated work. Static checks can run after the watcher and integration test settle.
+- Shared mutable state. Serialize rebuilds and Astro replacement. Keep the current generation until the next validation and preparation complete.
+- Smallest safe decomposition. Watch content and curation only. Do not add live import workflows, ledger mutation, or deployment watching.
+
+#### Validated content-watch handoff
+
+The Vite watcher treats the content root as a trigger, not a public file tree.
+A debounced serial queue calls `buildSite({ render: "dev" })`. The build validates
+immutable bytes, prepares the next generation, and replaces the prepared output.
+Only then does Astro restart with the next `AstroPages` value. An invalid edit logs
+an error and keeps the current gallery, preview files, and evidence. A later valid
+edit retries the same queue.
+
+The isolated integration test covers curation withdrawal, invalid JSON, tampered
+historical bytes, original preview bytes, private Vite paths, restart, stop, and
+unmanaged port conflicts. It also covers source reload and static parity. Full
+checks pass. Content watching adds no production runtime or dependency. Suggested
+commit, not executed:
+`git commit -m "feat: reload validated content during Astro development"`.
 
 ### Native development-server slice
 
 - [x] Read the Principles section of the poteto-mode skill.
-- [x] Phase A: Frame. Limit this slice to source hot reload, validated startup, origin isolation, and owned-server lifecycle. Content changes still require restart. Done means live template, CSS, JavaScript, and asset edits reach an open browser in all three engines without weakening previews or production headers.
+- [x] Phase A: Frame. Limit this slice to source hot reload, validated startup, origin isolation, and owned-server lifecycle. Content changes remain a separate validated watcher. Done means live template, CSS, JavaScript, and asset edits reach an open browser in all three engines without weakening previews or production headers.
 - [x] Phase B: Design the workflow. Trace the existing validated build and managed shell. Compare a separate Astro child with the programmatic dev API. Use one owned process and Astro's documented stop API. How, architect, and independent-review delegation are skipped because subagents are not authorized.
 - [x] Phase C: Run the loop.
 - [x] Capture a failing live-update test in an isolated copy of the project. Do not edit genuine evidence or shared source files for the test.
@@ -25,13 +59,13 @@ and source hot reload are integrated. Content watching remains a separate slice.
 - Blocking first steps. A real-browser failing update test precedes implementation. Inspect native Astro scripts before choosing the development CSP.
 - Independent workstreams. No delegated work. Static checks can run alongside independent build tests after source edits settle.
 - Shared mutable state. Browser update tests use a temporary project copy. Development page data and caches remain private to the managed process. Production builds retain separate child-process workspaces.
-- Smallest safe decomposition. Source hot reload is one verified slice. Validated content watching is a separate follow-up, not an unvalidated file watcher added here.
+- Smallest safe decomposition. Source hot reload is one verified slice. Validated content watching is a separate validated slice, not an unvalidated file watcher added here.
 
 #### Native development handoff
 
 Astro renders gallery pages live. Source assets retain their external URLs and
-reload the browser after copying. Content and curation remain validated snapshots
-until restart. Preview execution and static production generation are unchanged.
+reload the browser after copying. Content and curation rebuild through the
+validated watcher. Preview execution and static production generation are unchanged.
 `npm run test:e2e` includes the real managed-server integration test before the
 acceptance suite. `npm run check` remains independent of installed browsers.
 
@@ -46,8 +80,8 @@ CSP. Managed restart, both occupied ports, invalid evidence, and shutdown pass.
 Logs are in `.audit/astro-dev-check.txt`, `.audit/astro-dev-e2e.txt`, and
 `.audit/astro-dev-real.txt`. `tests/integration/astro-dev.test.ts` reruns the live
 update, parity, containment, and lifecycle evidence in an isolated project copy.
-Content watching, remote CI, deployed HTTPS verification, and independent review
-remain open. The unrelated `NOTES.md` is untouched. Suggested commit, not executed:
+Remote CI, deployed HTTPS verification, and independent review remain open. The
+unrelated `NOTES.md` is untouched. Suggested commit, not executed:
 `git commit -m "feat: integrate Astro development server and source reloads"`.
 
 ### First-slice checklist

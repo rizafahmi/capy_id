@@ -42,20 +42,47 @@ if (values["test-fixtures"]) {
 }
 const out = resolve(values.out);
 await mkdir(join(out, ".."), { recursive: true });
-const pages = await buildSite({
+const priorIntegrity = await readWorkingTreeIntegrity(root);
+let pages = await buildSite({
   root,
   out,
   galleryOrigin: "http://127.0.0.1:4173",
   previewOrigin: "http://127.0.0.1:4174",
   development: true,
-  priorIntegrity: await readWorkingTreeIntegrity(root),
+  priorIntegrity,
   render: "dev",
 });
 const workspace = await mkdtemp(join(tmpdir(), "capyboard-astro-dev-"));
 const servers: Server[] = [];
 let gallery: Awaited<ReturnType<typeof serveAstro>> | undefined;
 let stopping: Promise<void> | undefined;
+let stopped = false;
+const refreshContent = async () => {
+  if (stopped) return;
+  const nextPages = await buildSite({
+    root,
+    out,
+    galleryOrigin: "http://127.0.0.1:4173",
+    previewOrigin: "http://127.0.0.1:4174",
+    development: true,
+    priorIntegrity,
+    render: "dev",
+  });
+  if (stopped) return;
+  const previous = gallery;
+  if (previous) await previous.stop();
+  if (stopped) return;
+  pages = nextPages;
+  gallery = await serveAstro({
+    pages,
+    workspace,
+    out,
+    contentRoot: root,
+    onContentChange: refreshContent,
+  });
+};
 function stop(): Promise<void> {
+  stopped = true;
   stopping ??= (async () => {
     await Promise.all([
       gallery?.stop(),
@@ -74,7 +101,13 @@ function stop(): Promise<void> {
 }
 try {
   servers.push(await serveStatic(join(out, "preview"), 4174));
-  gallery = await serveAstro({ pages, workspace, out });
+  gallery = await serveAstro({
+    pages,
+    workspace,
+    out,
+    contentRoot: root,
+    onContentChange: refreshContent,
+  });
   if (values["test-fixtures"]) {
     let attempts: string[] = [];
     const trap = createServer((request, response) => {

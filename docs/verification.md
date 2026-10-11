@@ -284,16 +284,16 @@ renderer callers. The active LSP probe confirmed all five changed tooling files
 clean. Full tooling and template compilation pass separately. Existing Zod hints
 remain unrelated. Delegated design and review were not authorized.
 
-Gallery template migration is complete. Astro dev-server integration and hot
-reloading remain separate work. Remote CI, deployed HTTPS verification, and
-independent review remain unverified. No commit, push, or PR was performed.
-The unrelated `NOTES.md` was left untouched.
+Gallery template migration and local Astro development integration are complete.
+Remote CI, deployed HTTPS verification, and independent review remain unverified.
+No commit, push, or PR was performed. The unrelated `NOTES.md` was left untouched.
 
 ## Native Astro development integration
 
 Astro now renders development gallery routes live. The managed shell still owns
 one process and separate gallery and preview origins. Content validation runs
-before either origin is ready. Content and curation edits require restart.
+before either origin is ready. Content and curation edits trigger a debounced
+validated rebuild.
 
 - Formatting, lint, TypeScript, and Astro checks pass. All 57 tooling tests pass.
   `npm run check` remains independent of browser installation, matching CI's order.
@@ -312,10 +312,10 @@ before either origin is ready. Content and curation edits require restart.
 - Preview and evidence response bodies match the original artifact bytes.
   Evidence keeps plain-text MIME and `nosniff`. Private content and PID records
   cannot be retrieved through normal routes or Vite filesystem and raw requests.
-- A curation edit remains absent from the live snapshot until restart. Restart
-  validates it and removes the withheld route and its published evidence.
-  Corrupted historical bytes prevent startup. Preparation failure leaves the
-  previous output unchanged.
+- A valid curation edit removes the withheld route and its published evidence
+  without a manual restart. Invalid JSON and corrupted historical bytes leave the
+  previous gallery, preview, and evidence generation available. A later valid edit
+  retries the rebuild. Preparation failure leaves the previous output unchanged.
 - Real managed restart and stop release both ports. Occupied gallery and preview
   ports fail startup without changing the unmanaged listener. Partial startup
   closes the other owned origin and removes its PID record.
@@ -326,10 +326,13 @@ before either origin is ready. Content and curation edits require restart.
   without a fixture banner. Desktop and dark mobile screenshots were inspected.
   The challenge remains readable without JavaScript.
 
-The failing baseline is `.audit/astro-dev-red.txt`. Final checks, browser results,
-production generation, validation, and audit are in `.audit/astro-dev-check.txt`,
-`.audit/astro-dev-e2e.txt`, `.audit/astro-dev-production.txt`,
-`.audit/astro-dev-validation.txt`, and `.audit/astro-dev-audit.txt`.
+The source-reload failing baseline is `.audit/astro-dev-red.txt`. The content-watch
+failing baseline is `.audit/astro-content-watch-red.txt`. Final checks, browser
+results, production generation, validation, and audit are in
+`.audit/astro-dev-check.txt`, `.audit/astro-dev-e2e.txt`,
+`.audit/astro-dev-production.txt`, `.audit/astro-dev-validation.txt`, and
+`.audit/astro-dev-audit.txt`. The focused content-watch result is
+`.audit/astro-content-watch-green.txt`.
 `.audit/astro-dev-real.txt` records the real-content probe. Its images are
 `.audit/astro-dev-real-desktop.png` and `.audit/astro-dev-real-mobile.png`.
 
@@ -343,8 +346,8 @@ Direct source review found no new comments or suppressions. Active tooling
 language-server probes report no errors. Auxiliary rules flag intentional fixed
 loopback origins, catch-boundary `unknown`, and existing static-handler style
 hints. Astro's programmatic dev API remains experimental and version-pinned.
-Production still uses the isolated CLI build. Content watching, remote CI,
-deployment, and independent review remain unverified. Managed servers are stopped.
+Production still uses the isolated CLI build. Remote CI, deployment, and
+independent review remain unverified. Managed servers are stopped.
 No commit, push, or PR was performed. `NOTES.md` is untouched.
 
 ## Reproduce

@@ -224,24 +224,68 @@ test("managed Astro development reloads source edits in every browser and stops 
   assert.equal((await fetch("http://127.0.0.1:4174/@vite/client")).status, 404);
   const curationPath = join(root, ".fixture-content/curation/fixture-disabled.json");
   const curation = curationSchema.parse(JSON.parse(await readFile(curationPath, "utf8")));
-  await writeFile(
-    curationPath,
-    JSON.stringify({
-      ...curation,
-      visible: false,
-      series_publication_complete: false,
-      series_incomplete_reason: "Withheld during the development snapshot check.",
-    }),
-  );
+  const withheldCuration = JSON.stringify({
+    ...curation,
+    visible: false,
+    series_publication_complete: false,
+    series_incomplete_reason: "Withheld during the development snapshot check.",
+  });
+  await writeFile(curationPath, withheldCuration);
   assert.equal((await fetch("http://127.0.0.1:4173/runs/fixture-disabled/")).status, 200);
-  await command("restart");
-  assert.notEqual(await readFile(join(root, ".dev/server.pid"), "utf8"), firstPid);
-  assert.equal((await fetch("http://127.0.0.1:4173/")).status, 200);
-  assert.equal((await fetch("http://127.0.0.1:4173/runs/fixture-disabled/")).status, 404);
+  await expect
+    .poll(async () => {
+      try {
+        return (await fetch("http://127.0.0.1:4173/runs/fixture-disabled/")).status;
+      } catch {
+        return 0;
+      }
+    })
+    .toBe(404);
+  await expect
+    .poll(async () => {
+      try {
+        return await (await fetch("http://127.0.0.1:4173/")).text();
+      } catch {
+        return "";
+      }
+    })
+    .not.toContain("fixture-disabled");
   assert.equal(
     (await fetch("http://127.0.0.1:4173/evidence/runs/fixture-disabled/output.html.txt")).status,
     404,
   );
+  await writeFile(
+    join(root, ".fixture-content/curation/fixture-disabled.json"),
+    "invalid curation",
+  );
+  await writeFile(
+    join(root, ".fixture-content/runs/fixture-animation/output.html.txt"),
+    "tampered during live validation",
+  );
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  assert.match(
+    await readFile(join(root, ".dev/server.log"), "utf8"),
+    /Cannot rebuild validated content/,
+  );
+  assert.equal((await fetch("http://127.0.0.1:4173/runs/fixture-animation/")).status, 200);
+  const retainedPreview = await fetch("http://127.0.0.1:4174/runs/fixture-animation/");
+  assert.deepEqual(Buffer.from(await retainedPreview.arrayBuffer()), originalHtml);
+  await Promise.all([
+    writeFile(curationPath, withheldCuration),
+    writeFile(join(root, ".fixture-content/runs/fixture-animation/output.html.txt"), originalHtml),
+  ]);
+  await expect
+    .poll(async () => {
+      try {
+        return (await fetch("http://127.0.0.1:4173/runs/fixture-disabled/")).status;
+      } catch {
+        return 0;
+      }
+    })
+    .toBe(404);
+  await command("restart");
+  assert.notEqual(await readFile(join(root, ".dev/server.pid"), "utf8"), firstPid);
+  assert.equal((await fetch("http://127.0.0.1:4173/")).status, 200);
   assert.equal((await fetch("http://127.0.0.1:4174/runs/not-found/")).status, 404);
   await command("stop");
   await assert.rejects(fetch("http://127.0.0.1:4173/"));

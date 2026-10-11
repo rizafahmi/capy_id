@@ -49,11 +49,13 @@ content validation and maintain both origins. Astro renders gallery pages live.
 Template edits update open browsers. CSS, JavaScript, and local asset edits trigger
 a full page reload. Reloading resets filters and stops active previews.
 
-Restart after content, curation, tooling, or configuration edits. Development uses
-a validated content snapshot, not a live unvalidated collection. Its output contains
-prepared artifacts rather than deployable gallery HTML. Run `npm run build` before
-publishing. The development gallery permits its local HMR WebSocket. Preview and
-production security policies stay unchanged.
+Restart after tooling or configuration edits. Content and curation changes trigger
+a debounced validated rebuild. Invalid changes leave the last good gallery and
+preview available. Development uses a validated content snapshot, not a live
+unvalidated collection. Its output contains prepared artifacts rather than
+deployable gallery HTML. Run `npm run build` before publishing. The development
+gallery permits its local HMR WebSocket. Preview and production security policies
+stay unchanged.
 
 ## Verify
 

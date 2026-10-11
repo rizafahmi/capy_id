@@ -6,7 +6,13 @@ import type { AstroPages } from "./astro-pages.ts";
 import { galleryCsp, responseHeaders } from "./security.ts";
 import { staticHandler } from "./server.ts";
 
-export async function serveAstro(options: { pages: AstroPages; workspace: string; out: string }) {
+export async function serveAstro(options: {
+  pages: AstroPages;
+  workspace: string;
+  out: string;
+  contentRoot: string;
+  onContentChange: () => Promise<void>;
+}) {
   const config = astroConfig(options);
   const gallery = join(options.out, "gallery");
   const serveArtifacts = await staticHandler(gallery);
@@ -16,8 +22,8 @@ export async function serveAstro(options: { pages: AstroPages; workspace: string
     "connect-src 'self' ws://127.0.0.1:4173",
   );
   const assets = join(projectRoot, "src/assets");
-  await mkdir(join(options.workspace, "public"));
-  return dev({
+  await mkdir(join(options.workspace, "public"), { recursive: true });
+  const server = await dev({
     ...config,
     root: projectRoot,
     configFile: false,
@@ -40,9 +46,8 @@ export async function serveAstro(options: { pages: AstroPages; workspace: string
           ignored: [
             "**/.audit/**",
             "**/.dev/**",
-            "**/.fixture-content/**",
             "**/.test-site/**",
-            "**/content/**",
+            "**/.capyboard-build-*/**",
             `${options.out}/**`,
             `${options.workspace}/**`,
           ],
@@ -82,4 +87,32 @@ export async function serveAstro(options: { pages: AstroPages; workspace: string
       ],
     },
   });
+  const contentRoot = resolve(options.contentRoot);
+  let timer: NodeJS.Timeout | undefined;
+  let changes = Promise.resolve();
+  const scheduleContentChange = () => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+      changes = changes.then(options.onContentChange).catch((error: unknown) => {
+        process.stderr.write(`Cannot rebuild validated content: ${String(error)}\n`);
+      });
+    }, 120);
+  };
+  const onFileChange = (event: string, file: string) => {
+    const source = resolve(file);
+    if (
+      ["add", "change", "unlink"].includes(event) &&
+      (source === contentRoot || source.startsWith(`${contentRoot}${sep}`))
+    )
+      scheduleContentChange();
+  };
+  server.watcher.add(contentRoot);
+  server.watcher.on("all", onFileChange);
+  const stop = server.stop;
+  server.stop = async () => {
+    if (timer) clearTimeout(timer);
+    server.watcher.off("all", onFileChange);
+    await stop();
+  };
+  return server;
 }
