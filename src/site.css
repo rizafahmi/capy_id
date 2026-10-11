@@ -757,6 +757,7 @@
     }
   }
   .development-banner {
+    contain: layout style;
     margin-top: 0.8rem;
     padding: 0.7rem 1rem;
     border: 1px dashed var(--border);

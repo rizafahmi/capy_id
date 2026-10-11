@@ -714,9 +714,30 @@ async function enableComparison() {
   window.addEventListener("popstate", loadUrl);
   loadUrl();
 }
+function enableNavigationPrefetch() {
+  const prefetchedRoutes = new Set();
+  const navLinks = document.querySelectorAll(
+    'nav a[href^="/"], a.text-link[href^="/"], a.back-link[href^="/"]',
+  );
+  for (const anchor of navLinks) {
+    const prefetch = () => {
+      const href = anchor.getAttribute("href");
+      if (href && !prefetchedRoutes.has(href)) {
+        prefetchedRoutes.add(href);
+        const link = element("link");
+        link.rel = "prefetch";
+        link.href = href;
+        document.head.append(link);
+      }
+    };
+    anchor.addEventListener("pointerenter", prefetch, { once: true });
+    anchor.addEventListener("focusin", prefetch, { once: true });
+  }
+}
 try {
   enableEvidence();
   enableGallery();
+  enableNavigationPrefetch();
   for (const node of document.querySelectorAll("[data-preview-id]")) setupPreview(node);
   await enableComparison();
   if (previews.size) {
