@@ -778,6 +778,7 @@
     border-radius: var(--radius-panel);
     overflow: hidden;
     background: var(--surface);
+    contain: layout style;
   }
   .card:has(input:checked) {
     outline: 2px solid var(--accent-ink);
