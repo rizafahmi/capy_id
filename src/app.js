@@ -9,6 +9,7 @@ const element = (tag, text, className) => {
   return node;
 };
 const artifactCache = new Map();
+const verifiedChecksums = new Set();
 async function artifact(url, checksum) {
   if (!artifactCache.has(url)) {
     const request = (async () => {
@@ -20,7 +21,7 @@ async function artifact(url, checksum) {
     request.catch(() => artifactCache.delete(url));
   }
   const bytes = await artifactCache.get(url);
-  if (checksum) {
+  if (checksum && !verifiedChecksums.has(`${url}:${checksum}`)) {
     const hash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))]
       .map((value) => value.toString(16).padStart(2, "0"))
       .join("");
@@ -28,6 +29,7 @@ async function artifact(url, checksum) {
       artifactCache.delete(url);
       throw new Error("Artifact checksum does not match the recorded evidence.");
     }
+    verifiedChecksums.add(`${url}:${checksum}`);
   }
   return bytes;
 }
