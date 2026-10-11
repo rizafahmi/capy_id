@@ -408,11 +408,15 @@ function comparePreview(entry) {
     image.alt = `Screenshot of ${entry.run.model.display_name} output`;
     image.width = 640;
     image.height = 480;
+    image.setAttribute("loading", "eager");
+    image.setAttribute("fetchpriority", "high");
     stage.append(image);
   } else stage.append(element("div", "Screenshot not captured", "placeholder"));
   const controls = element("div", undefined, "preview-controls");
   if (entry.preview.kind === "ready") {
     const openPreview = element("a", "Open preview in new tab", "preview-open");
+    const label = element("span", ` for ${entry.run.model.display_name}`, "sr-only");
+    openPreview.append(label);
     const arrow = element("span", " ↗");
     arrow.setAttribute("aria-hidden", "true");
     openPreview.append(arrow);
@@ -484,6 +488,10 @@ async function enableComparison() {
     }
     return cataloguePromise;
   };
+  const searchParams = new URLSearchParams(location.search);
+  if (searchParams.get("left") && searchParams.get("right")) {
+    void getCatalogue();
+  }
   left.addEventListener("focus", () => void getCatalogue(), { once: true });
   right.addEventListener("focus", () => void getCatalogue(), { once: true });
   const render = async () => {
