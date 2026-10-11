@@ -274,8 +274,8 @@ function enableGallery() {
       remove.setAttribute("aria-label", `Remove ${name} from comparison`);
       remove.addEventListener("click", () => {
         selected.delete(id);
-        for (const input of document.querySelectorAll("[data-select]"))
-          if (input.value === id) input.checked = false;
+        const input = grid.querySelector(`input[value="${id}"]`);
+        if (input) input.checked = false;
         updateSelection();
       });
       item.append(remove);
@@ -415,8 +415,7 @@ function comparePreview(entry) {
   const controls = element("div", undefined, "preview-controls");
   if (entry.preview.kind === "ready") {
     const openPreview = element("a", "Open preview in new tab", "preview-open");
-    const label = element("span", ` for ${entry.run.model.display_name}`, "sr-only");
-    openPreview.append(label);
+    openPreview.setAttribute("aria-description", `for ${entry.run.model.display_name}`);
     const arrow = element("span", " ↗");
     arrow.setAttribute("aria-hidden", "true");
     openPreview.append(arrow);

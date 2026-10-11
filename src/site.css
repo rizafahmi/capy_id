@@ -481,7 +481,7 @@
     gap: 0 1.5rem;
   }
   .compare-panel {
-    contain: layout style;
+    contain: style;
     display: grid;
     grid-template-rows: subgrid;
     grid-row: span 3;
@@ -932,6 +932,7 @@
     color: var(--text);
   }
   .comparison-tray {
+    contain: layout style;
     position: sticky;
     bottom: 1rem;
     z-index: var(--layer-tray);
@@ -1083,6 +1084,7 @@
     font-weight: 650;
   }
   .run-summary {
+    contain: layout style;
     padding: 1.75rem;
   }
   .run-summary h2 {
