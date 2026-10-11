@@ -4,8 +4,9 @@
 
 Migrate one page type per verified slice. Start with run detail. Preserve visible output,
 vanilla browser controls, original evidence bytes, preview isolation, response headers,
-and safe build replacement. Run detail, gallery, challenge, and comparison are
-migrated. The not-found page stays on the existing renderer until its own slice.
+and safe build replacement. All gallery pages are migrated, including not-found.
+The preview-origin fallback remains separate. Dev-server integration and hot
+reloading remain a later slice.
 
 ### First-slice checklist
 
@@ -171,6 +172,49 @@ verification, independent review, and commits remain outside this slice.
 
 Next slice: not-found. Suggested commit, not executed:
 `git commit -m "refactor: migrate comparison rendering to Astro"`.
+
+### Not-found-slice checklist
+
+- [x] Pin the behavior contract first. Characterize actual HTTP 404 responses, fixture labeling, no-JavaScript recovery, preview-origin fallback, and screenshots before moving markup. How delegation skipped because subagents are not authorized; direct tracing covers generation, local serving, and headers.
+- [x] Name the structure the code is missing per principle-model-the-domain. Not-found input contains only the fixture flag. It does not echo requested paths or add routing state.
+- [x] Name the target shape. Astro generates gallery/404.html with the existing shell. Tooling retains HTTP header generation, preview-origin fallback, and output safeguards. Architect exploration skipped because subagents are not authorized.
+- [x] Subtract before you add. Delete the last gallery HTML-string renderer, its escaping helper, and the old 404 write when their caller migrates.
+- [x] Move in small behavior-preserving steps, each keeping the pin green. Preserve text, navigation, appearance, and response status. Mechanical delegation skipped because subagents are not authorized.
+- [x] Prove behavior is unchanged on the real artifact, not "it compiles". Verify real and fixture 404s, all browser engines, accessibility, strict preview headers, and pixel parity.
+- [x] Confirm the change is worth keeping. Review the single-field input and readable template. Confirm no obsolete renderer callers remain.
+- [x] Rebase into small ordered commits. Commits, rebasing, and opening a PR skipped because they are not authorized. Suggest the not-found-slice commit after verification.
+
+### Not-found throughput checkpoint
+
+- Blocking first steps. HTTP characterization and screenshots precede the final gallery renderer replacement.
+- Independent workstreams. n/a: one page slice and no approved delegation.
+- Shared mutable state. Keep per-build Astro workspaces and caches. Browser tests use isolated contexts and the suite-owned servers.
+- Smallest safe decomposition. Migrate only the gallery not-found page. Leave the stricter preview fallback and dev-server integration unchanged.
+
+### Not-found-slice handoff
+
+`src/astro/pages/404.astro` now generates the gallery's static not-found document.
+Its input contains only the fixture flag. The last gallery string renderer, its
+escaping helper, and the old 404 write are removed. All gallery pages now use
+Astro. The preview-origin fallback and its stricter headers remain unchanged.
+No new dependency, browser runtime, CSS, or routing state was added.
+
+Formatting, lint, both type checkers, 56 tooling tests, and 132 browser tests pass.
+Unknown routes retain actual HTTP 404 responses. Recovery works with keyboard
+input and JavaScript disabled in all three engines. All 56 compared Chromium
+screenshots match pixel-for-pixel. Eighteen cover real and fixture not-found
+pages; thirty-eight protect the other migrated pages.
+
+Production generation, validation of nine real attempts, and dependency audit
+pass. The active LSP probe confirmed five changed tooling files clean. Evidence
+is in `.audit/astro-not-found-check.txt`, `.audit/astro-not-found-e2e.txt`, and
+`.audit/astro-not-found-visual-parity.json`. Hot reloading, remote CI, deployed HTTPS
+verification, independent review, and commits remain outside this slice.
+The unrelated `NOTES.md` remains untouched.
+
+Gallery template migration is complete. Next useful slice: two-origin Astro
+server integration and hot reloading. Suggested commit, not executed:
+`git commit -m "refactor: migrate not-found rendering to Astro"`.
 
 ## Workflow
 

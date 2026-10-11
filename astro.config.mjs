@@ -36,6 +36,7 @@ export default defineConfig({
             gallery: { entries: [], fixtures: false },
             challenge: { challenges: [], fixtures: false },
             comparison: { runs: [], fixtures: false },
+            notFound: { fixtures: false },
             runs: [],
           }),
     },

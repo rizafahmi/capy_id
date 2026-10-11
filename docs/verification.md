@@ -246,6 +246,49 @@ comparison selection.
 Hot reloading, remote CI, deployed HTTPS verification, and independent review
 remain unverified. No commit, push, or PR was performed.
 
+## Astro not-found migration
+
+`src/astro/pages/404.astro` replaces the final gallery string template. The legacy
+page wrapper and its unused escaping helper are removed. All gallery pages now
+use Astro. The preview-origin fallback remains a separate minimal document under
+its stricter policy. Browser JavaScript, CSS, preview files, and headers are unchanged.
+
+- Formatting, lint, both type checkers, and all 56 tooling tests pass. Template
+  checks and browser builds also pass concurrently.
+- All 132 browser tests pass across Chromium, Firefox, and WebKit without retries.
+  Added coverage verifies actual HTTP 404s for unknown run and other routes,
+  response headers, fixture labels, keyboard recovery, no-JavaScript recovery,
+  no horizontal overflow, and detectable WCAG 2.1 AA violations.
+- Build checks verify the static 404 path, external-only scripts, and absence of
+  the fixture banner for a genuine empty collection. Unknown paths are not echoed.
+- All 56 compared Chromium screenshots have zero changed pixels. Eighteen cover
+  real and fixture not-found pages, including JavaScript-disabled captures.
+  Thirty-eight protect the other migrated pages. Widths include 360, 768, and
+  1366 CSS pixels in light and dark mode.
+- The preview-origin fallback body is byte-identical. Actual responses retain
+  HTTP 404, `nosniff`, sandbox, and network, font, and frame restrictions.
+- Validation of nine real attempts, local production generation with separate
+  HTTPS origins, and dependency audit pass. There are zero known vulnerabilities.
+  The 100-run gallery shell remains 17,604 gzip bytes.
+
+Logs are in `.audit/astro-not-found-format.txt`, `.audit/astro-not-found-check.txt`,
+`.audit/astro-not-found-e2e.txt`, `.audit/astro-not-found-validation.txt`,
+`.audit/astro-not-found-production-build.txt`, and `.audit/astro-not-found-audit.txt`.
+`.audit/astro-not-found-visual-parity.json` records image comparisons. Real-content
+captures are in `.audit/astro-not-found-real/`; fixture captures are in `test-results/`.
+`.audit/capture-not-found.mjs` and `.audit/compare-not-found.mjs` repeat the local
+captures and pixel comparison with a managed server and saved baseline.
+
+Direct review found no new comments or suppressions and no remaining legacy
+renderer callers. The active LSP probe confirmed all five changed tooling files
+clean. Full tooling and template compilation pass separately. Existing Zod hints
+remain unrelated. Delegated design and review were not authorized.
+
+Gallery template migration is complete. Astro dev-server integration and hot
+reloading remain separate work. Remote CI, deployed HTTPS verification, and
+independent review remain unverified. No commit, push, or PR was performed.
+The unrelated `NOTES.md` was left untouched.
+
 ## Reproduce
 
 ```sh

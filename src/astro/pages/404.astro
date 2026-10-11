@@ -1,0 +1,20 @@
+---
+import type { AstroPages } from "../../../scripts/astro-pages.ts";
+import Shell from "../layouts/Shell.astro";
+
+declare const __CAPYBOARD_ASTRO_PAGES__: AstroPages;
+const { fixtures } = __CAPYBOARD_ASTRO_PAGES__.notFound;
+---
+
+<Shell title="Run not found" fixtures={fixtures} section="not-found">
+  <section class="empty-state">
+    <h1>Run not found</h1>
+    <p>
+      This run is unknown or is no longer published. Its original evidence may
+      remain in the curator's repository.
+    </p>
+    <a class="button" href="/">
+      Return to the gallery
+    </a>
+  </section>
+</Shell>

@@ -24,6 +24,7 @@ export type AstroPages = {
   gallery: GalleryPage;
   challenge: ChallengePage;
   comparison: ComparisonPage;
+  notFound: { fixtures: boolean };
   runs: RunPage[];
 };
 

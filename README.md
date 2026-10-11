@@ -6,9 +6,9 @@ leaderboard.
 
 The public app uses HTML, CSS, and vanilla JavaScript. Node.js 24 and strict
 TypeScript handle import, validation, static generation, and screenshot capture.
-Astro generates the gallery, challenge, comparison, and run-detail pages. The
-not-found page uses the existing renderer until its migration slice. There is no
-runtime backend or model API integration.
+Astro generates every gallery page, including the not-found document. The
+separate preview deployment keeps preserved HTML and a minimal fallback under its
+stricter policy. There is no runtime backend or model API integration.
 
 ## Run locally
 
@@ -84,9 +84,9 @@ the generated response headers. Merely uploading HTML is not enough.
 
 - `scripts/schema.ts` defines the content model and validation types.
 - `scripts/content.ts` imports evidence and verifies historical integrity.
-- `scripts/build.ts` validates and stages both deployments, copies evidence, and
-  generates the pages not yet migrated to Astro.
-- `scripts/astro-pages.ts` builds Astro gallery, challenge, comparison, and run-detail routes inside the staging directory.
+- `scripts/build.ts` validates and stages both deployments, prepares page data,
+  and copies original evidence and previews.
+- `scripts/astro-pages.ts` builds all gallery pages and the static 404 document inside the staging directory.
 - `src/astro/` contains Astro pages, layouts, and components.
 - `src/site.css` and `src/app.js` contain shared styles and vanilla browser controls.
 - `content/` contains immutable evidence and separate mutable curation records.

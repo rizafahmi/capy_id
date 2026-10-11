@@ -270,7 +270,15 @@ test("run pages and challenge evidence exist without a SPA fallback", async (t) 
     await readFile(join(out, "gallery/challenge/index.html"), "utf8"),
     /Return only the HTML source/,
   );
-  assert.match(await readFile(join(out, "gallery/404.html"), "utf8"), /Run not found/);
+  const notFound = await readFile(join(out, "gallery/404.html"), "utf8");
+  assert.match(notFound, /<title>Run not found · Capyboard<\/title>/);
+  assert.match(notFound, /<body data-page="not-found">/);
+  assert.match(notFound, /<h1>Run not found<\/h1>/);
+  assert.match(notFound, /class="button" href="\/">Return to the gallery<\/a>/);
+  assert.match(notFound, /Development fixtures/);
+  assert.doesNotMatch(notFound, /<iframe|<style|astro-island/);
+  assert.equal((notFound.match(/<script\b/g) ?? []).length, 1);
+  assert.match(notFound, /<script type="module" src="\/assets\/app.js"><\/script>/);
 });
 test("run detail escapes content and keeps scripts external under the existing CSP", async (t) => {
   const { content, out } = await buildFixture(t);
@@ -643,6 +651,10 @@ test("an empty collection builds honest production and local galleries", async (
   const html = await readFile(join(out, "gallery/index.html"), "utf8");
   assert.match(html, /No experiments published yet/);
   assert.doesNotMatch(html, /Development fixtures|<iframe/);
+  assert.doesNotMatch(
+    await readFile(join(out, "gallery/404.html"), "utf8"),
+    /Development fixtures/,
+  );
   await buildSite({
     root: content,
     out,

@@ -12,17 +12,6 @@ import { measurementRows } from "./presentation.ts";
 import type { Entry, Ledger, Preview } from "./schema.ts";
 import { headerFile } from "./security.ts";
 
-export const escapeHtml = (value: unknown): string =>
-  String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-const e = escapeHtml;
-function page(title: string, body: string, fixtures: boolean, section: string): string {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="A curated, inspectable gallery of model responses to one creative coding challenge. Not a model leaderboard."><title>${e(title)} · Capyboard</title><link rel="icon" href="/assets/favicon.png" type="image/png"><link rel="preload" href="/assets/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/site.css"><script type="module" src="/assets/app.js"></script></head><body data-page="${e(section)}"><a class="skip" href="#main">Skip to content</a><header class="site-header"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">cb</span>capyboard<span class="brand-tag">/ experiments</span></a><nav aria-label="Main navigation"><a href="/" ${section === "gallery" ? 'aria-current="page"' : ""}>Gallery</a><a href="/challenge/" ${section === "challenge" ? 'aria-current="page"' : ""}>The challenge <span aria-hidden="true">↗</span></a></nav></header>${fixtures ? '<div class="development-banner" role="note">Development fixtures. These are test examples, not genuine model experiments.</div>' : ""}<main id="main">${body}</main><footer class="site-footer"><span>Showcase first. Inspect everything.</span><a href="/challenge/#limits">Interpretation and limitations</a></footer><div id="global-status" class="sr-only" role="status"></div></body></html>`;
-}
 const highlightUrl = (id: string, kind: string) => `/assets/highlights/${id}-${kind}.json`;
 function origin(value: string, development: boolean): string {
   let url: URL;
@@ -186,19 +175,11 @@ export async function buildSite(options: {
           runs: entries.map(({ run }) => ({ id: run.id, model: run.model })),
           fixtures,
         },
+        notFound: { fixtures },
         runs: runPages,
       },
       staging,
     });
-    await put(
-      "gallery/404.html",
-      page(
-        "Run not found",
-        '<section class="empty-state"><h1>Run not found</h1><p>This run is unknown or is no longer published. Its original evidence may remain in the curator\'s repository.</p><a class="button" href="/">Return to the gallery</a></section>',
-        fixtures,
-        "not-found",
-      ),
-    );
     await put("gallery/assets/runs.json", `${JSON.stringify(views)}\n`);
     await mkdir(join(staging, "gallery/assets"), { recursive: true });
     for (const file of ["app.js", "site.css"])
