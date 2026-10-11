@@ -3,8 +3,9 @@ interface Props {
   title: string;
   fixtures: boolean;
   section: "gallery" | "challenge" | "run" | "compare" | "not-found";
+  preloadImage?: string | undefined;
 }
-const { title, fixtures, section } = Astro.props;
+const { title, fixtures, section, preloadImage } = Astro.props;
 ---
 
 <!doctype html>
@@ -34,6 +35,9 @@ const { title, fixtures, section } = Astro.props;
         type="application/json"
         crossorigin
       />
+    )}
+    {preloadImage && (
+      <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />
     )}
     <link rel="stylesheet" href="/assets/site.css" />
     <script is:inline type="module" src="/assets/app.js"></script>

@@ -50,7 +50,12 @@ const timingNote =
       : "Timing was not recorded.";
 ---
 
-<Shell title={run.model.display_name} fixtures={fixtures} section="run">
+<Shell
+  title={run.model.display_name}
+  fixtures={fixtures}
+  section="run"
+  preloadImage={curation.thumbnail ? `/${curation.thumbnail.path}` : undefined}
+>
   <a class="back-link" href="/">
     ← All attempts
   </a>
