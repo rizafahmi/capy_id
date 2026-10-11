@@ -340,6 +340,7 @@
     color: var(--muted);
   }
   .gallery-controls {
+    contain: layout style;
     margin-bottom: 1.1rem;
     color: var(--muted);
     font-size: 0.85rem;
@@ -422,6 +423,7 @@
     }
   }
   .evidence-section {
+    contain: layout style;
     margin-top: 3rem;
   }
   .compare-selectors {
@@ -1200,6 +1202,7 @@
     }
   }
   .run-insights {
+    contain: layout style;
     margin-top: 3rem;
     padding: 2rem;
     border: 1px solid var(--border);
@@ -1263,6 +1266,7 @@
     font: 700 0.72rem / 1 var(--mono);
   }
   .evidence {
+    contain: layout style;
     border: 1px solid var(--line);
     border-radius: var(--radius-control);
     margin-bottom: 0.8rem;
