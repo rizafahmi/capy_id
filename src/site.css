@@ -1308,6 +1308,7 @@
     max-height: 70vh;
     background: #fff;
     color: #24292e;
+    contain: content;
   }
   .code-view.unwrapped {
     white-space: pre;
