@@ -289,6 +289,14 @@ function enableGallery() {
 }
 
 const previews = new Map();
+let resizeObserver = null;
+function ensureResizeObserver() {
+  if (resizeObserver || !previews.size) return;
+  const main = document.querySelector("main");
+  if (!main) return;
+  resizeObserver = new ResizeObserver(() => requestAnimationFrame(resizePreviews));
+  resizeObserver.observe(main);
+}
 function setupPreview(node) {
   const stage = node.querySelector(".preview-stage");
   const startButton = node.querySelector("[data-start]");
@@ -339,6 +347,7 @@ function setupPreview(node) {
   if (startButton) startButton.hidden = node.dataset.comparison === "true";
   const controller = { state, start, stop };
   previews.set(node, controller);
+  ensureResizeObserver();
   return controller;
 }
 function resizePreviews() {
@@ -451,6 +460,10 @@ async function enableComparison() {
   const render = () => {
     for (const controller of previews.values()) controller.stop();
     previews.clear();
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+      resizeObserver = null;
+    }
     const panels = document.querySelector("#compare-panels");
     panels.replaceChildren();
     const results = document.querySelector("#compare-results");
@@ -624,9 +637,10 @@ try {
   enableGallery();
   for (const node of document.querySelectorAll("[data-preview-id]")) setupPreview(node);
   await enableComparison();
-  resizePreviews();
-  const observer = new ResizeObserver(() => requestAnimationFrame(resizePreviews));
-  observer.observe(document.querySelector("main"));
+  if (previews.size) {
+    resizePreviews();
+    ensureResizeObserver();
+  }
 } catch {
   announce(
     "Application controls are unavailable. Static pages and preserved evidence links remain readable.",
