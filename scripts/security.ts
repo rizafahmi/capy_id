@@ -25,11 +25,13 @@ export function headerFile(kind: "gallery" | "preview", previewOrigin: string): 
     .map(([name, value]) => `  ${name}: ${value}`)
     .join("\n")}\n`;
   if (kind === "preview") return common;
-  return `${common}/assets/*
+  return `${common}/assets/bricolage-grotesque-latin.woff2
+  Cache-Control: public, max-age=31536000, immutable
+/assets/highlights/*
   Cache-Control: public, max-age=31536000, immutable
 /thumbnails/*
   Cache-Control: public, max-age=31536000, immutable
-/assets/runs.json
+/assets/*
   Cache-Control: public, max-age=0, must-revalidate
 /evidence/*
   Content-Type: text/plain; charset=utf-8
