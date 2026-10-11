@@ -55,18 +55,18 @@ function highlightedCode(source, tokens) {
       !/^#[\da-f]{6}$/i.test(token.dark)
     )
       throw new Error("Invalid highlighting ranges.");
-    fragment.append(document.createTextNode(source.slice(offset, token.offset)));
+    if (token.offset > offset)
+      fragment.append(document.createTextNode(source.slice(offset, token.offset)));
     const span = element(
       "span",
       source.slice(token.offset, token.offset + token.length),
       "syntax-token",
     );
-    span.style.setProperty("--syntax-light", token.light);
-    span.style.setProperty("--syntax-dark", token.dark);
+    span.style.cssText = `--syntax-light:${token.light};--syntax-dark:${token.dark}`;
     fragment.append(span);
     offset = token.offset + token.length;
   }
-  fragment.append(document.createTextNode(source.slice(offset)));
+  if (offset < source.length) fragment.append(document.createTextNode(source.slice(offset)));
   return fragment;
 }
 async function highlightCode(details, code, source) {
