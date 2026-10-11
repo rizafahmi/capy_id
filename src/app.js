@@ -467,20 +467,24 @@ async function enableComparison() {
   const form = document.querySelector("#compare-form");
   if (!form) return;
   const status = document.querySelector("#compare-status");
-  let entries;
-  try {
-    const response = await fetch("/assets/runs.json");
-    if (!response.ok) throw new Error("Run catalogue could not be loaded.");
-    entries = await response.json();
-  } catch (error) {
-    status.textContent = `${error.message} Open individual run pages to inspect evidence.`;
-    return;
-  }
-  const catalogue = new Map(entries.map((entry) => [entry.run.id, entry]));
   const left = form.elements.namedItem("left");
   const right = form.elements.namedItem("right");
   const both = document.querySelector("#run-both");
-  const render = () => {
+  let cataloguePromise = null;
+  const getCatalogue = () => {
+    if (!cataloguePromise) {
+      cataloguePromise = (async () => {
+        const response = await fetch("/assets/runs.json");
+        if (!response.ok) throw new Error("Run catalogue could not be loaded.");
+        const entries = await response.json();
+        return new Map(entries.map((entry) => [entry.run.id, entry]));
+      })();
+    }
+    return cataloguePromise;
+  };
+  left.addEventListener("focus", () => void getCatalogue(), { once: true });
+  right.addEventListener("focus", () => void getCatalogue(), { once: true });
+  const render = async () => {
     for (const controller of previews.values()) controller.stop();
     previews.clear();
     if (resizeObserver) {
@@ -499,9 +503,23 @@ async function enableComparison() {
     const notices = document.querySelector("#condition-notices");
     notices.replaceChildren();
     both.hidden = true;
+    if (!left.value || !right.value || left.value === right.value) {
+      status.textContent =
+        !left.value && !right.value
+          ? "Choose two distinct runs."
+          : "Choose two distinct published run IDs. Unknown or duplicate IDs cannot be compared.";
+      return;
+    }
+    let catalogue;
+    try {
+      catalogue = await getCatalogue();
+    } catch (error) {
+      status.textContent = `${error.message} Open individual run pages to inspect evidence.`;
+      return;
+    }
     const a = catalogue.get(left.value);
     const b = catalogue.get(right.value);
-    if (!a || !b || a.run.id === b.run.id) {
+    if (!a || !b) {
       status.textContent =
         "Choose two distinct published run IDs. Unknown or duplicate IDs cannot be compared.";
       return;
