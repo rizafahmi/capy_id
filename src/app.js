@@ -34,9 +34,11 @@ async function artifact(url, checksum) {
   }
   const bytes = await artifactCache.get(url);
   if (checksum && !verifiedChecksums.has(`${url}:${checksum}`)) {
-    const hash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))]
-      .map((value) => value.toString(16).padStart(2, "0"))
-      .join("");
+    const hashArray = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+    let hash = "";
+    for (let i = 0; i < hashArray.length; i++) {
+      hash += hashArray[i].toString(16).padStart(2, "0");
+    }
     if (hash !== checksum) {
       artifactCache.delete(url);
       throw new Error("Artifact checksum does not match the recorded evidence.");
