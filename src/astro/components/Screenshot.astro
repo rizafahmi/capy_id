@@ -3,8 +3,10 @@ import type { Entry } from "../../../scripts/schema.ts";
 
 interface Props {
   entry: Entry;
+  loading?: "lazy" | "eager" | undefined;
+  fetchpriority?: "high" | "auto" | "low" | undefined;
 }
-const { entry } = Astro.props;
+const { entry, loading = "lazy", fetchpriority } = Astro.props;
 ---
 
 {entry.curation.thumbnail ? (
@@ -12,7 +14,8 @@ const { entry } = Astro.props;
     src={`/${entry.curation.thumbnail.path}`}
     width="640"
     height="480"
-    loading="lazy"
+    loading={loading}
+    fetchpriority={fetchpriority}
     alt={`Screenshot of ${entry.run.model.display_name} output`}
   />
 ) : (

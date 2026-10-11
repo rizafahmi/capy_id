@@ -6,8 +6,10 @@ import Screenshot from "./Screenshot.astro";
 interface Props {
   entry: PublishedEntry;
   comparable: boolean;
+  loading?: "lazy" | "eager" | undefined;
+  fetchpriority?: "high" | "auto" | "low" | undefined;
 }
-const { entry, comparable } = Astro.props;
+const { entry, comparable, loading, fetchpriority } = Astro.props;
 const run = entry.run;
 const harness = run.generation.harness?.name ?? "Unknown harness";
 const effort = run.generation.harness?.effort;
@@ -42,7 +44,7 @@ const url = `/runs/${run.id}/`;
 >
   <a class="card-image" href={url}>
     <span class="sr-only">Inspect {run.model.display_name}</span>
-    <Screenshot entry={entry} />
+    <Screenshot entry={entry} loading={loading} fetchpriority={fetchpriority} />
   </a>
   <div class="card-body">
     <div class="card-meta">

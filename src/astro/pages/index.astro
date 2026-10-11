@@ -109,8 +109,13 @@ const comparable = entries.length > 1;
       </>
     )}
     <div class={`gallery-grid${entries.length === 1 ? " single-attempt" : ""}`}>
-      {entries.map((entry) => (
-        <RunCard entry={entry} comparable={comparable} />
+      {entries.map((entry, index) => (
+        <RunCard
+          entry={entry}
+          comparable={comparable}
+          loading={index < 2 ? "eager" : "lazy"}
+          fetchpriority={index === 0 ? "high" : undefined}
+        />
       ))}
     </div>
     <div id="empty-state" class="empty-state" hidden={entries.length > 0}>

@@ -53,6 +53,6 @@ const { entry, preview } = Astro.props;
       : "Evidence remains available."}
   </p>
   <div class="preview-stage">
-    <Screenshot entry={entry} />
+    <Screenshot entry={entry} loading="eager" fetchpriority="high" />
   </div>
 </section>
