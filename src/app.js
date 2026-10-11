@@ -205,7 +205,7 @@ function enableEvidence() {
         document.body.append(link);
         link.click();
         link.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
         artifactStatus(button, "Download started from the preserved original artifact.");
       } catch (error) {
         artifactStatus(button, error.message);
@@ -415,8 +415,6 @@ function comparePreview(entry) {
   const controls = element("div", undefined, "preview-controls");
   if (entry.preview.kind === "ready") {
     const openPreview = element("a", "Open preview in new tab", "preview-open");
-    const label = element("span", ` for ${entry.run.model.display_name}`, "sr-only");
-    openPreview.append(label);
     const arrow = element("span", " ↗");
     arrow.setAttribute("aria-hidden", "true");
     openPreview.append(arrow);
