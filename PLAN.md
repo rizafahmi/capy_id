@@ -2,11 +2,53 @@
 
 ## Astro migration
 
-Migrate one page type per verified slice. Start with run detail. Preserve visible output,
-vanilla browser controls, original evidence bytes, preview isolation, response headers,
-and safe build replacement. All gallery pages are migrated, including not-found.
-The preview-origin fallback remains separate. Dev-server integration and hot
-reloading remain a later slice.
+Migrate one page type per verified slice. Preserve visible output, vanilla browser
+controls, original evidence bytes, preview isolation, response headers, and safe
+build replacement. All gallery pages now use Astro. Native development rendering
+and source hot reload are integrated. Content watching remains a separate slice.
+
+### Native development-server slice
+
+- [x] Read the Principles section of the poteto-mode skill.
+- [x] Phase A: Frame. Limit this slice to source hot reload, validated startup, origin isolation, and owned-server lifecycle. Content changes still require restart. Done means live template, CSS, JavaScript, and asset edits reach an open browser in all three engines without weakening previews or production headers.
+- [x] Phase B: Design the workflow. Trace the existing validated build and managed shell. Compare a separate Astro child with the programmatic dev API. Use one owned process and Astro's documented stop API. How, architect, and independent-review delegation are skipped because subagents are not authorized.
+- [x] Phase C: Run the loop.
+- [x] Capture a failing live-update test in an isolated copy of the project. Do not edit genuine evidence or shared source files for the test.
+- [x] Share the typed validated page snapshot and Astro configuration. Keep static production builds and cache isolation intact.
+- [x] Integrate native Astro dev rendering, restricted file access, evidence headers, and source asset reloads. Keep previews on the existing isolated static server.
+- [x] Verify managed restart, shutdown, port conflicts, and failed-start cleanup against real servers.
+- [x] Phase D: Keep the audit trail. Record design choices and measured results in decisions.tsv.
+- [x] Phase E: Verify and hand back. Run formatting, lint, type checks, tooling tests, the three-engine acceptance suite, production generation, and dependency audit. Commits, pushes, deployment, and PR creation are skipped because they are not authorized.
+
+#### Native development throughput checkpoint
+
+- Blocking first steps. A real-browser failing update test precedes implementation. Inspect native Astro scripts before choosing the development CSP.
+- Independent workstreams. No delegated work. Static checks can run alongside independent build tests after source edits settle.
+- Shared mutable state. Browser update tests use a temporary project copy. Development page data and caches remain private to the managed process. Production builds retain separate child-process workspaces.
+- Smallest safe decomposition. Source hot reload is one verified slice. Validated content watching is a separate follow-up, not an unvalidated file watcher added here.
+
+#### Native development handoff
+
+Astro renders gallery pages live. Source assets retain their external URLs and
+reload the browser after copying. Content and curation remain validated snapshots
+until restart. Preview execution and static production generation are unchanged.
+`npm run test:e2e` includes the real managed-server integration test before the
+acceptance suite. `npm run check` remains independent of installed browsers.
+
+The source-update test failed against the original build-on-start server, then
+passed in all three engines. Native and static gallery, challenge, comparison,
+run-detail, and not-found screenshots match byte-for-byte in Chromium. Header
+verification caught Astro overriding Vite's header configuration. Moving headers
+to Astro's server configuration fixed actual 200 and 404 responses. WebKit's
+native form-control style violations match the static baseline without loosening
+CSP. Managed restart, both occupied ports, invalid evidence, and shutdown pass.
+
+Logs are in `.audit/astro-dev-check.txt`, `.audit/astro-dev-e2e.txt`, and
+`.audit/astro-dev-real.txt`. `tests/integration/astro-dev.test.ts` reruns the live
+update, parity, containment, and lifecycle evidence in an isolated project copy.
+Content watching, remote CI, deployed HTTPS verification, and independent review
+remain open. The unrelated `NOTES.md` is untouched. Suggested commit, not executed:
+`git commit -m "feat: integrate Astro development server and source reloads"`.
 
 ### First-slice checklist
 

@@ -289,6 +289,64 @@ reloading remain separate work. Remote CI, deployed HTTPS verification, and
 independent review remain unverified. No commit, push, or PR was performed.
 The unrelated `NOTES.md` was left untouched.
 
+## Native Astro development integration
+
+Astro now renders development gallery routes live. The managed shell still owns
+one process and separate gallery and preview origins. Content validation runs
+before either origin is ready. Content and curation edits require restart.
+
+- Formatting, lint, TypeScript, and Astro checks pass. All 57 tooling tests pass.
+  `npm run check` remains independent of browser installation, matching CI's order.
+- `npm run test:e2e` includes one managed-server integration test across Chromium,
+  Firefox, and WebKit, followed by all 132 acceptance tests without retries.
+- The integration test copies the project into a temporary directory with spaces.
+  It changes a shared template, CSS, JavaScript, and local assets. An already-open
+  browser receives each update without manual navigation. Asset addition and
+  deletion also reach actual HTTP responses.
+- Five Chromium screenshots compare native development with a static build.
+  Gallery, challenge, comparison, run detail, and not-found PNGs are byte-identical.
+  These checks live in the integration test rather than a local-only script.
+- Actual gallery 200 and 404 responses retain security headers. HMR adds only the
+  local WebSocket to `connect-src`. Inline script, inline style, and eval permissions
+  remain unchanged. Native preview HTML has no injected Astro or Vite code.
+- Preview and evidence response bodies match the original artifact bytes.
+  Evidence keeps plain-text MIME and `nosniff`. Private content and PID records
+  cannot be retrieved through normal routes or Vite filesystem and raw requests.
+- A curation edit remains absent from the live snapshot until restart. Restart
+  validates it and removes the withheld route and its published evidence.
+  Corrupted historical bytes prevent startup. Preparation failure leaves the
+  previous output unchanged.
+- Real managed restart and stop release both ports. Occupied gallery and preview
+  ports fail startup without changing the unmanaged listener. Partial startup
+  closes the other owned origin and removes its PID record.
+- Nine-attempt validation, local static production generation with separate HTTPS
+  origins, and dependency audit pass. There are zero known vulnerabilities.
+  The 100-run gallery shell remains 17,604 gzip bytes.
+- The managed server's default real collection renders seven published cards
+  without a fixture banner. Desktop and dark mobile screenshots were inspected.
+  The challenge remains readable without JavaScript.
+
+The failing baseline is `.audit/astro-dev-red.txt`. Final checks, browser results,
+production generation, validation, and audit are in `.audit/astro-dev-check.txt`,
+`.audit/astro-dev-e2e.txt`, `.audit/astro-dev-production.txt`,
+`.audit/astro-dev-validation.txt`, and `.audit/astro-dev-audit.txt`.
+`.audit/astro-dev-real.txt` records the real-content probe. Its images are
+`.audit/astro-dev-real-desktop.png` and `.audit/astro-dev-real-mobile.png`.
+
+Acceptance tests exposed missing gallery headers because Astro overrides Vite's
+header setting. Astro's `server.headers` now owns them. A strict-CSP WebKit probe
+also reported native form-control `style-src-attr` violations without app scripts,
+Vite, or author styles. The integration test compares these with the static
+baseline and rejects additional violations. It does not relax the policy.
+
+Direct source review found no new comments or suppressions. Active tooling
+language-server probes report no errors. Auxiliary rules flag intentional fixed
+loopback origins, catch-boundary `unknown`, and existing static-handler style
+hints. Astro's programmatic dev API remains experimental and version-pinned.
+Production still uses the isolated CLI build. Content watching, remote CI,
+deployment, and independent review remain unverified. Managed servers are stopped.
+No commit, push, or PR was performed. `NOTES.md` is untouched.
+
 ## Reproduce
 
 ```sh

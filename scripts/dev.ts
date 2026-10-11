@@ -1,8 +1,9 @@
-import { access, mkdir, mkdtemp, readFile } from "node:fs/promises";
-import { createServer } from "node:http";
+import { access, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { createServer, type Server } from "node:http";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
+import { serveAstro } from "./astro-dev.ts";
 import { buildSite } from "./build.ts";
 import { createContainmentFixtures, createFixtures } from "./fixtures.ts";
 import { type Ledger, ledgerSchema } from "./schema.ts";
@@ -41,40 +42,65 @@ if (values["test-fixtures"]) {
 }
 const out = resolve(values.out);
 await mkdir(join(out, ".."), { recursive: true });
-await buildSite({
+const pages = await buildSite({
   root,
   out,
   galleryOrigin: "http://127.0.0.1:4173",
   previewOrigin: "http://127.0.0.1:4174",
   development: true,
   priorIntegrity: await readWorkingTreeIntegrity(root),
+  render: "dev",
 });
-const servers = [
-  await serveStatic(join(out, "gallery"), 4173),
-  await serveStatic(join(out, "preview"), 4174),
-];
-if (values["test-fixtures"]) {
-  let attempts: string[] = [];
-  const trap = createServer((request, response) => {
-    if (request.url === "/attempts") {
-      response.setHeader("Content-Type", "application/json");
-      response.end(JSON.stringify(attempts));
-    } else if (request.url === "/reset") {
-      attempts = [];
-      response.end("reset");
-    } else {
-      attempts.push(request.url ?? "unknown");
-      response.end("A containment fixture reached this endpoint.");
-    }
-  });
-  await new Promise<void>((done, reject) => {
-    trap.once("error", reject);
-    trap.listen(4175, "127.0.0.1", done);
-  });
-  servers.push(trap);
+const workspace = await mkdtemp(join(tmpdir(), "capyboard-astro-dev-"));
+const servers: Server[] = [];
+let gallery: Awaited<ReturnType<typeof serveAstro>> | undefined;
+let stopping: Promise<void> | undefined;
+function stop(): Promise<void> {
+  stopping ??= (async () => {
+    await Promise.all([
+      gallery?.stop(),
+      ...servers.map(
+        (server) =>
+          new Promise<void>((done, reject) => {
+            server.close((error) => (error ? reject(error) : done()));
+            server.closeAllConnections();
+          }),
+      ),
+    ]);
+    await rm(workspace, { recursive: true, force: true });
+    if (values["test-fixtures"]) await rm(root, { recursive: true, force: true });
+  })();
+  return stopping;
 }
-process.stdout.write("Gallery http://127.0.0.1:4173\nPreview origin http://127.0.0.1:4174\n");
+try {
+  servers.push(await serveStatic(join(out, "preview"), 4174));
+  gallery = await serveAstro({ pages, workspace, out });
+  if (values["test-fixtures"]) {
+    let attempts: string[] = [];
+    const trap = createServer((request, response) => {
+      if (request.url === "/attempts") {
+        response.setHeader("Content-Type", "application/json");
+        response.end(JSON.stringify(attempts));
+      } else if (request.url === "/reset") {
+        attempts = [];
+        response.end("reset");
+      } else {
+        attempts.push(request.url ?? "unknown");
+        response.end("A containment fixture reached this endpoint.");
+      }
+    });
+    await new Promise<void>((done, reject) => {
+      trap.once("error", reject);
+      trap.listen(4175, "127.0.0.1", done);
+    });
+    servers.push(trap);
+  }
+  process.stdout.write("Gallery http://127.0.0.1:4173\nPreview origin http://127.0.0.1:4174\n");
+} catch (error) {
+  await stop();
+  throw error;
+}
 for (const signal of ["SIGINT", "SIGTERM"] satisfies NodeJS.Signals[])
   process.on(signal, () => {
-    for (const server of servers) server.close();
+    void stop();
   });

@@ -45,9 +45,15 @@ running browser tests. A crashed command may leave `.dev/lock`; remove that
 empty directory only after confirming no lifecycle command is still running.
 
 Use these commands rather than standalone `astro dev` or `astro build`. They run
-content validation and maintain both origins. The migration currently keeps
-the build-on-start development server. Restart it after template or content edits.
-Astro hot reloading is not wired into the two-origin server yet.
+content validation and maintain both origins. Astro renders gallery pages live.
+Template edits update open browsers. CSS, JavaScript, and local asset edits trigger
+a full page reload. Reloading resets filters and stops active previews.
+
+Restart after content, curation, tooling, or configuration edits. Development uses
+a validated content snapshot, not a live unvalidated collection. Its output contains
+prepared artifacts rather than deployable gallery HTML. Run `npm run build` before
+publishing. The development gallery permits its local HMR WebSocket. Preview and
+production security policies stay unchanged.
 
 ## Verify
 
@@ -57,10 +63,12 @@ npm run validate
 npm run test:e2e
 ```
 
-The browser suite covers Chromium, Firefox, and WebKit. It exercises actual
-generated routes, containment attempts, downloads, keyboard navigation,
-responsive layouts, and automated accessibility checks. Tests also build a
-100-run collection and check the compressed shell budget.
+The browser suite covers Chromium, Firefox, and WebKit. It first tests live source
+updates and managed server lifecycle in a temporary project copy. It then exercises
+Astro routes, containment attempts, downloads, keyboard navigation, responsive
+layouts, and automated accessibility checks. Static build tests cover generated
+routes and a 100-run collection's compressed shell budget. Stop development servers
+before `npm run test:e2e`; the integration tests use the same local ports.
 
 ## Publish another attempt
 
@@ -87,6 +95,8 @@ the generated response headers. Merely uploading HTML is not enough.
 - `scripts/build.ts` validates and stages both deployments, prepares page data,
   and copies original evidence and previews.
 - `scripts/astro-pages.ts` builds all gallery pages and the static 404 document inside the staging directory.
+- `scripts/astro-config.ts` shares the validated rendering configuration.
+- `scripts/astro-dev.ts` connects Astro development rendering to prepared artifacts and source reloads.
 - `src/astro/` contains Astro pages, layouts, and components.
 - `src/site.css` and `src/app.js` contain shared styles and vanilla browser controls.
 - `content/` contains immutable evidence and separate mutable curation records.

@@ -1,6 +1,7 @@
 import { cp, lstat, mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve, sep } from "node:path";
 import {
+  type AstroPages,
   buildAstroPages,
   type ChallengePrompt,
   type PublishedEntry,
@@ -42,7 +43,10 @@ export async function buildSite(options: {
   previewOrigin: string;
   development: boolean;
   priorIntegrity?: Ledger;
-}): Promise<void> {
+  render?: "static" | "dev";
+}): Promise<AstroPages> {
+  if (options.render === "dev" && !options.development)
+    throw new Error("Deferred rendering is only available for local development");
   const galleryOrigin = origin(options.galleryOrigin, options.development);
   const previewOrigin = origin(options.previewOrigin, options.development);
   if (galleryOrigin === previewOrigin)
@@ -167,19 +171,17 @@ export async function buildSite(options: {
       challenges.push({ ...challenge, prompt: utf8(bytes) });
       await put(`gallery/evidence/${challenge.prompt_path}`, bytes);
     }
-    await buildAstroPages({
-      pages: {
-        gallery: { entries: views.filter((entry) => !corrections.has(entry.run.id)), fixtures },
-        challenge: { challenges, fixtures },
-        comparison: {
-          runs: entries.map(({ run }) => ({ id: run.id, model: run.model })),
-          fixtures,
-        },
-        notFound: { fixtures },
-        runs: runPages,
+    const pages: AstroPages = {
+      gallery: { entries: views.filter((entry) => !corrections.has(entry.run.id)), fixtures },
+      challenge: { challenges, fixtures },
+      comparison: {
+        runs: entries.map(({ run }) => ({ id: run.id, model: run.model })),
+        fixtures,
       },
-      staging,
-    });
+      notFound: { fixtures },
+      runs: runPages,
+    };
+    if (options.render !== "dev") await buildAstroPages({ pages, staging });
     await put("gallery/assets/runs.json", `${JSON.stringify(views)}\n`);
     await mkdir(join(staging, "gallery/assets"), { recursive: true });
     for (const file of ["app.js", "site.css"])
@@ -196,6 +198,7 @@ export async function buildSite(options: {
     await put(".capyboard-build", "capyboard-generated-v1\n");
     if (prior) await rm(out, { recursive: true });
     await rename(staging, out);
+    return pages;
   } catch (error) {
     await rm(staging, { recursive: true, force: true });
     throw error;

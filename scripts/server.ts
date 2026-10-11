@@ -1,5 +1,5 @@
 import { readFile, stat } from "node:fs/promises";
-import { createServer } from "node:http";
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { extname, join, resolve, sep } from "node:path";
 
 type Rule = { path: string; headers: Record<string, string> };
@@ -27,10 +27,10 @@ const mime: Record<string, string> = {
   ".png": "image/png",
   ".webp": "image/webp",
 };
-export async function serveStatic(root: string, port: number) {
+export async function staticHandler(root: string) {
   const base = resolve(root);
   const rules = parseHeaders(await readFile(join(base, "_headers"), "utf8"));
-  const server = createServer(async (request, response) => {
+  return async (request: IncomingMessage, response: ServerResponse, next?: () => void) => {
     let path = "/";
     try {
       if (request.method !== "GET" && request.method !== "HEAD") {
@@ -59,11 +59,18 @@ export async function serveStatic(root: string, port: number) {
       response.writeHead(200, headers);
       response.end(request.method === "HEAD" ? undefined : bytes);
     } catch {
+      if (next) return next();
       const headers: Record<string, string> = { "Content-Type": "text/html; charset=utf-8" };
       for (const rule of rules) if (rule.path === "/*") Object.assign(headers, rule.headers);
       response.writeHead(404, headers);
       response.end(await readFile(join(base, "404.html")));
     }
+  };
+}
+export async function serveStatic(root: string, port: number) {
+  const handler = await staticHandler(root);
+  const server = createServer((request, response) => {
+    void handler(request, response);
   });
   await new Promise<void>((resolvePromise, reject) => {
     server.once("error", reject);

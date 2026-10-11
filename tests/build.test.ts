@@ -743,3 +743,57 @@ test("100 imported attempts fit the compressed shell budget and preserve model t
   assert.ok(bytes <= 200 * 1024, `Shell exceeds 200 KiB compressed: ${bytes}`);
   t.diagnostic(`100-run gallery HTML, CSS, and JS total ${bytes} bytes with gzip.`);
 });
+
+test("development preparation returns validated pages and original artifacts without static gallery HTML", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "capyboard-dev-preparation-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const content = join(root, "content");
+  await createFixtures(content);
+  const options = {
+    root: content,
+    out: join(root, "site"),
+    galleryOrigin: "http://127.0.0.1:4173",
+    previewOrigin: "http://127.0.0.1:4174",
+    development: true,
+    render: "dev",
+  } satisfies Parameters<typeof buildSite>[0];
+  await assert.rejects(
+    buildSite({ ...options, development: false }),
+    /Deferred rendering is only available for local development/,
+  );
+  const pages = await buildSite(options);
+  assert.equal(pages.gallery.entries.length, 5);
+  assert.equal(pages.runs.length, 5);
+  assert.equal(pages.challenge.challenges.length, 1);
+  assert.equal(pages.notFound.fixtures, true);
+  for (const path of [
+    "index.html",
+    "challenge/index.html",
+    "compare/index.html",
+    "404.html",
+    "runs/fixture-animation/index.html",
+  ])
+    await assert.rejects(readFile(join(options.out, "gallery", path)), { code: "ENOENT" });
+  const original = await readFile(join(content, "runs/fixture-animation/output.html.txt"));
+  assert.deepEqual(
+    await readFile(join(options.out, "gallery/evidence/runs/fixture-animation/output.html.txt")),
+    original,
+  );
+  assert.deepEqual(
+    await readFile(join(options.out, "preview/runs/fixture-animation/index.html")),
+    original,
+  );
+  assert.doesNotMatch(
+    await readFile(join(options.out, "gallery/_headers"), "utf8"),
+    /ws:\/\/|unsafe-inline/,
+  );
+  const ledger = ledgerSchema.parse(
+    JSON.parse(await readFile(join(content, "integrity.json"), "utf8")),
+  );
+  await writeFile(join(content, "runs/fixture-animation/output.html.txt"), "changed evidence");
+  await assert.rejects(buildSite({ ...options, priorIntegrity: ledger }), /hash|integrity|SHA/i);
+  assert.deepEqual(
+    await readFile(join(options.out, "preview/runs/fixture-animation/index.html")),
+    original,
+  );
+});

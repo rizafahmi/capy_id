@@ -16,7 +16,7 @@
     "build": "node scripts/cli.ts build",
     "fixtures": "node scripts/fixtures.ts",
     "dev": "node scripts/dev.ts",
-    "test:e2e": "playwright test",
+    "test:e2e": "node --test tests/integration/astro-dev.test.ts && playwright test",
     "screenshots": "node scripts/capture.ts",
     "verify:deployment": "node scripts/verify-deployment.ts",
     "check": "npm run typecheck && npm run lint && npm test"

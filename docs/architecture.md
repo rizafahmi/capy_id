@@ -16,9 +16,21 @@ Each build has its own staging workspace, data file, generated types, and separa
 
 Astro renders `/`, `/challenge/`, `/compare/`, `/runs/:id/`, and the gallery's `/404.html` with a shared shell. Run detail uses metadata, screenshot, preview, and artifact components. Gallery cards use `RunCard.astro`. The gallery and run previews share `Screenshot.astro`. Measurements use `scripts/presentation.ts` so the gallery and Astro detail page keep the same formatting. Content collections do not replace the cross-file integrity validator.
 
-The CLI boundary uses Astro's supported build command rather than its experimental programmatic build or Container APIs. It adds process startup per build but avoids mutable process-wide build state. The original build keeps output-directory safeguards and replaces the final deployment only after all generation succeeds.
+The production boundary uses Astro's supported build command rather than its experimental programmatic build or Container APIs. It adds process startup per build but avoids mutable process-wide build state. The original build keeps output-directory safeguards and replaces the final deployment only after all generation succeeds.
 
-Styles and the existing browser module remain external same-origin assets. There is no hydration framework, client router, or new browser runtime. Astro does not transform preserved evidence or preview HTML. Preview files and response headers remain the responsibility of existing tooling. The preview-origin 404 is a separate minimal document with no gallery assets or scripts. Local serving returns the origin's fallback with HTTP 404 and the applicable response policy. The development server still builds once at startup. Hot reloading requires a later two-origin development slice.
+Styles and the existing browser module remain external same-origin assets. There is no hydration framework, client router, or new production browser runtime. Astro does not transform preserved evidence or preview HTML. Preview files and response headers remain the responsibility of existing tooling. The preview-origin 404 is a separate minimal document with no gallery assets or scripts. Local serving returns the origin's fallback with HTTP 404 and the applicable response policy. Development rendering uses the separate local boundary described below.
+
+## Native development server
+
+`scripts/dev.ts` validates content and prepares original evidence, previews, catalogue data, and assets through `buildSite({ render: "dev" })`. This mode returns the same typed `AstroPages` snapshot without generating static gallery HTML. Production builds still render every page before replacement. Development output is not a deployable gallery.
+
+`scripts/astro-config.ts` shares the rendering configuration without changing parent-process environment variables. `scripts/astro-dev.ts` uses [Astro's programmatic dev API](https://docs.astro.build/en/reference/programmatic-reference/) to render gallery routes on port 4173. That API is experimental, so the pinned Astro version and real lifecycle tests are part of the contract. One process owns Astro and the separate static preview server on port 4174. A child CLI and proxy would add process and socket ownership without improving this local setup.
+
+Astro watches templates natively. A Vite watcher copies edits to the existing external CSS, JavaScript, and local assets, then reloads the page. Asset writes are serialized before broadcasting reloads. No framework transform touches evidence or preview HTML. Reloads reset browser controls and remove active previews. Content and curation changes require restart and validation. Tooling and configuration changes also require restart.
+
+The development gallery adds only `ws://127.0.0.1:4173` to its connection policy. Inline scripts, inline styles, and eval remain disallowed. Astro's dev toolbar is disabled. Headers belong in Astro's `server.headers`; its resolved server configuration overrides Vite's header setting. The shared static handler preserves evidence's plain-text MIME type and `nosniff`. Preview and production policies are unchanged.
+
+Vite file access is limited to source, tooling, and installed dependencies. Unpublished content, managed PID records, and private development caches are not public files. Development caches live in a temporary workspace. Managed stop uses Astro's stop API and closes only owned static servers. A failed start closes servers already opened and does not move to another port or signal an unmanaged listener. `scripts/dev-server.sh` retains its PID, process-start-time, command-identity, and lifecycle-lock checks.
 
 ## Four record boundaries
 
