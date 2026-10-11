@@ -415,6 +415,8 @@ function comparePreview(entry) {
   const controls = element("div", undefined, "preview-controls");
   if (entry.preview.kind === "ready") {
     const openPreview = element("a", "Open preview in new tab", "preview-open");
+    const label = element("span", ` for ${entry.run.model.display_name}`, "sr-only");
+    openPreview.append(label);
     const arrow = element("span", " ↗");
     arrow.setAttribute("aria-hidden", "true");
     openPreview.append(arrow);
