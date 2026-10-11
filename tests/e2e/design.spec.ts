@@ -112,6 +112,18 @@ test("detail hierarchy foregrounds usage and keeps provenance accessible", async
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
+test("curation observations have a prominent insight section", async ({ page }) => {
+  await page.goto("/runs/fixture-animation/");
+  await expect(page.getByRole("heading", { name: "What stands out" })).toBeVisible();
+  await expect(page.locator(".run-insights")).toContainText(
+    "Development fixture authored for application testing",
+  );
+  await expect(
+    page.getByText("Curation observations and capture conditions", { exact: true }),
+  ).toHaveCount(0);
+  await expect(page.getByText("Capture conditions", { exact: true })).toBeVisible();
+});
+
 for (const width of [360, 390, 768, 1024, 1440]) {
   test(`gallery hierarchy and controls fit at ${width}px`, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 844 });

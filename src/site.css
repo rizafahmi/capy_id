@@ -1163,6 +1163,10 @@
     color: var(--accent-ink);
   }
   @media (max-width: 1199px) {
+    .insight-heading {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.75rem;
+    }
     .run-summary {
       padding: 1.25rem;
     }
@@ -1184,6 +1188,69 @@
     .run-highlights > div:first-child dd {
       font-size: 2.75rem;
     }
+  }
+  .run-insights {
+    margin-top: 3rem;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    background: var(--surface);
+  }
+  .insight-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 2rem;
+    align-items: end;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .insight-heading .eyebrow {
+    margin-bottom: 0.5rem;
+  }
+  .insight-heading h2,
+  .insight-heading p {
+    margin-bottom: 0;
+  }
+  .insight-heading h2 {
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+  }
+  .insight-heading > p {
+    max-width: 34rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .insight-list {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: insight;
+  }
+  .insight-list li {
+    position: relative;
+    margin: 0;
+    padding: 1.2rem 0 1.2rem 2.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .insight-list li:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  .insight-list li::before {
+    position: absolute;
+    top: 1.3rem;
+    left: 0;
+    width: 1.65rem;
+    height: 1.65rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-ink);
+    content: counter(insight, decimal-leading-zero);
+    counter-increment: insight;
+    font: 700 0.72rem / 1 var(--mono);
   }
   .evidence {
     border: 1px solid var(--line);

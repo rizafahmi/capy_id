@@ -99,6 +99,25 @@ const timingNote =
       </details>
     </section>
   </div>
+  {curation.observations.length > 0 && (
+    <section class="run-insights" aria-labelledby="run-insights-title">
+      <div class="insight-heading">
+        <div>
+          <p class="eyebrow">Curator's read</p>
+          <h2 id="run-insights-title">What stands out</h2>
+        </div>
+        <p>
+          A detailed read of this attempt's approach, distinctive choices, and
+          lessons for future runs.
+        </p>
+      </div>
+      <ul class="insight-list">
+        {curation.observations.map((observation) => (
+          <li>{observation}</li>
+        ))}
+      </ul>
+    </section>
+  )}
   <section class="evidence-section">
     <div class="collection-heading">
       <h2>Inspect the evidence</h2>
@@ -167,17 +186,12 @@ const timingNote =
       </div>
     </details>
     <details class="evidence">
-      <summary>Curation observations and capture conditions</summary>
+      <summary>Capture conditions</summary>
       <div class="evidence-body">
-        <ul>
-          {curation.observations.map((observation) => (
-            <li>{observation}</li>
-          ))}
-        </ul>
         <pre tabindex="0">{JSON.stringify(curation.thumbnail, null, 2)}</pre>
         <p>
-          These are observations, not scores. Null capture metadata means
-          unknown.
+          The curator's read above contains observations, not scores. Null
+          capture metadata means unknown.
         </p>
       </div>
     </details>
