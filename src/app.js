@@ -243,6 +243,7 @@ function enableGallery() {
   }));
   const selected = new Map();
   const prefetchedUrls = new Set();
+  const prefetchedPages = new Set();
   const tray = document.querySelector(".comparison-tray");
   const search = filters.elements.namedItem("search");
   const provider = filters.elements.namedItem("provider");
@@ -312,6 +313,18 @@ function enableGallery() {
     }
   };
   for (const card of cards) {
+    const prefetchCard = () => {
+      const href = card.querySelector(".inspect-link")?.getAttribute("href");
+      if (href && !prefetchedPages.has(href)) {
+        prefetchedPages.add(href);
+        const prefetch = element("link");
+        prefetch.rel = "prefetch";
+        prefetch.href = href;
+        document.head.append(prefetch);
+      }
+    };
+    card.addEventListener("pointerenter", prefetchCard, { once: true });
+    card.addEventListener("focusin", prefetchCard, { once: true });
     const input = card.querySelector("[data-select]");
     input.closest("label").hidden = false;
     input.addEventListener("change", () => {
