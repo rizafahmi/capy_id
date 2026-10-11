@@ -242,6 +242,7 @@ function enableGallery() {
     provider: card.dataset.provider,
   }));
   const selected = new Map();
+  const prefetchedUrls = new Set();
   const tray = document.querySelector(".comparison-tray");
   const search = filters.elements.namedItem("search");
   const provider = filters.elements.namedItem("provider");
@@ -295,8 +296,16 @@ function enableGallery() {
     link.setAttribute("aria-disabled", String(selected.size !== 2));
     if (selected.size === 2) {
       const [left, right] = [...selected.keys()];
-      link.href = `/compare/?${new URLSearchParams({ left, right })}`;
+      const compareUrl = `/compare/?${new URLSearchParams({ left, right })}`;
+      link.href = compareUrl;
       link.removeAttribute("tabindex");
+      if (!prefetchedUrls.has(compareUrl)) {
+        prefetchedUrls.add(compareUrl);
+        const prefetch = element("link");
+        prefetch.rel = "prefetch";
+        prefetch.href = compareUrl;
+        document.head.append(prefetch);
+      }
     } else {
       link.removeAttribute("href");
       link.tabIndex = -1;
