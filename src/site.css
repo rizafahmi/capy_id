@@ -577,6 +577,7 @@
     margin-bottom: 0.5rem;
   }
   .compare-table {
+    contain: layout style;
     width: 100%;
     table-layout: fixed;
     border-collapse: collapse;
@@ -1254,6 +1255,7 @@
     background: var(--surface);
   }
   .insight-heading {
+    contain: layout style;
     display: grid;
     grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
     gap: 2rem;
@@ -1277,6 +1279,7 @@
     font-size: 0.95rem;
   }
   .insight-list {
+    contain: layout style;
     display: grid;
     gap: 0;
     margin: 0;
