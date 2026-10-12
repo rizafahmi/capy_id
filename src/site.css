@@ -460,6 +460,10 @@
     align-items: end;
     gap: 1rem;
   }
+  .compare-selectors label,
+  .compare-selectors button {
+    contain: layout style;
+  }
   body[data-page="compare"] main {
     min-height: 100vh;
   }
@@ -514,6 +518,7 @@
     font-size: 0.8rem;
   }
   .compare-panels {
+    contain: layout style;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0 1.5rem;
@@ -1446,6 +1451,7 @@
     margin-top: 1.5rem;
   }
   #run-both {
+    contain: layout style;
     margin-top: 0.8rem;
   }
 }
