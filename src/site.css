@@ -73,6 +73,7 @@
   }
   button,
   .button {
+    contain: layout style;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -112,6 +113,7 @@
   }
   input,
   select {
+    contain: layout style;
     min-width: 0;
     width: 100%;
     min-height: 48px;
@@ -127,6 +129,7 @@
     opacity: 1;
   }
   input[type="checkbox"] {
+    contain: layout style;
     width: 20px;
     min-height: 20px;
     height: 20px;
@@ -134,6 +137,7 @@
     accent-color: var(--accent-ink);
   }
   label {
+    contain: layout style;
     font-size: 0.85rem;
     font-weight: 550;
     color: var(--muted);
