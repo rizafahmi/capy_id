@@ -567,6 +567,7 @@
     font-weight: 650;
   }
   .compare-panel .preview-controls {
+    contain: layout style;
     margin-top: 0.65rem;
   }
   .compare-panel .preview-open {
@@ -577,10 +578,12 @@
     font-size: 0.85rem;
   }
   .compare-panel .viewport-label {
+    contain: layout style;
     margin: 0;
     margin-left: auto;
   }
   .compare-panel .preview-status {
+    contain: layout style;
     margin: 0;
   }
   .compare-evidence {
@@ -1264,9 +1267,11 @@
   .run-output .preview-controls,
   .run-output .viewport-label,
   .run-output .preview-controls .notice {
+    contain: layout style;
     margin: 0;
   }
   .run-output .preview-status {
+    contain: layout style;
     margin: 0.65rem 0 1rem;
   }
   .preview-policy {
