@@ -282,6 +282,9 @@
     gap: 3rem;
     padding: 2rem 0 2.25rem;
   }
+  .hero-copy {
+    contain: layout style;
+  }
   .hero h1 {
     margin: 0.6rem 0 0.85rem;
     font-size: clamp(2.15rem, 4vw, 3.25rem);
@@ -1408,6 +1411,16 @@
 }
 
 @layer motion {
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
   @media (prefers-reduced-motion: no-preference) {
     button,
     .button,
