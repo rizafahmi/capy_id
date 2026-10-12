@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capybara Hoverboard Cruise</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:#050816;
+  overflow:hidden;
+  font-family:ui-rounded,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:#fff;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.stage{
+  position:fixed;inset:0;overflow:hidden;
+  background:#050816;
+  cursor:crosshair;
+}
+/* SKY */
+.sky{
+  position:absolute;inset:0 0 28% 0;
+  background:
+    radial-gradient(1200px 600px at 78% 18%, rgba(255,255,255,.18), transparent 60%),
+    radial-gradient(900px 500px at 20% 10%, rgba(122,90,255,.35), transparent 60%),
+    linear-gradient(180deg,#040614 0%,#0b103a 22%,#2a1660 42%,#6b237e 58%,#c8436b 70%,#ff7a4a 78%,#ffb14e 84%,#ffcf7a 86%);
+}
+.stars{position:absolute;inset:0 0 28% 0;overflow:hidden}
+.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle var(--tw) ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:1;transform:scale(1.2)}}
+.moon{
+  position:absolute;top:7%;right:10%;width:110px;height:110px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #fffbe8 0%, #fff3c4 28%, #f3d98b 55%, #d9b86a 100%);
+  box-shadow:0 0 40px 12px rgba(255,240,190,.45),0 0 120px 40px rgba(255,200,120,.25),0 0 220px 80px rgba(150,90,255,.2);
+  animation:moonFloat 7s ease-in-out infinite;
+}
+.moon::after{
+  content:"";position:absolute;inset:12px;border-radius:50%;
+  background:
+    radial-gradient(circle at 30% 35%, rgba(0,0,0,.12) 0 10px, transparent 11px),
+    radial-gradient(circle at 62% 55%, rgba(0,0,0,.1) 0 14px, transparent 15px),
+    radial-gradient(circle at 45% 70%, rgba(0,0,0,.08) 0 8px, transparent 9px);
+}
+@keyframes moonFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.cloud{position:absolute;background:rgba(255,255,255,.9);border-radius:999px;filter:blur(.2px);opacity:.85}
+.cloud::before,.cloud::after{content:"";position:absolute;background:inherit;border-radius:50%}
+.cloud.c1{top:16%;left:-180px;width:150px;height:34px;animation:drift 38s linear infinite}
+.cloud.c1::before{width:60px;height:60px;left:18px;top:-28px}
+.cloud.c1::after{width:44px;height:44px;left:78px;top:-20px}
+.cloud.c2{top:28%;left:-220px;width:200px;height:28px;opacity:.55;animation:drift 55s linear infinite  -12s}
+.cloud.c2::before{width:70px;height:70px;left:30px;top:-32px}
+.cloud.c2::after{width:52px;height:52px;left:105px;top:-22px}
+.cloud.c3{top:10%;left:-200px;width:120px;height:26px;opacity:.7;animation:drift 45s linear infinite -25s}
+.cloud.c3::before{width:50px;height:50px;left:15px;top:-22px}
+.cloud.c3::after{width:36px;height:36px;left:62px;top:-14px}
+.cloud.c4{top:38%;left:-260px;width:260px;height:22px;opacity:.35;animation:drift 70s linear infinite -5s}
+.cloud.c4::before{width:80px;height:60px;left:40px;top:-26px}
+.cloud.c4::after{width:60px;height:50px;left:130px;top:-20px}
+@keyframes drift{to{transform:translateX(calc(100vw + 500px))}}
+/* mountains + city */
+.mountains{position:absolute;left:0;right:0;bottom:28%;height:22%;pointer-events:none}
+.city{position:absolute;left:0;right:0;bottom:27.5%;height:14%;display:flex;align-items:flex-end;gap:4px;padding:0 2vw;opacity:.95;pointer-events:none}
+.bldg{background:linear-gradient(180deg,#151b3f,#080b22);border-radius:4px 4px 0 0;position:relative;border:1px solid rgba(255,255,255,.08);border-bottom:none;overflow:hidden}
+.bldg::after{
+  content:"";position:absolute;inset:8px 6px 6px 6px;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,220,120,.9) 0 4px, transparent 4px 10px),
+    repeating-linear-gradient(90deg, rgba(255,220,120,.9) 0 4px, transparent 4px 10px);
+  background-blend-mode:screen;
+  opacity:.55;
+  mask-image:linear-gradient(180deg,black,black);
+}
+.bldg:nth-child(odd)::after{opacity:.35}
+.bldg.blink::after{animation:winBlink 2.8s steps(2) infinite}
+@keyframes winBlink{0%,88%{opacity:.55}90%,94%{opacity:.15}96%,100%{opacity:.55}}
+/* ground */
+.ground{position:absolute;left:-10%;right:-10%;bottom:-5%;height:34%;background:#070a1f;overflow:hidden;transform:perspective(600px) rotateX(0deg);border-top:1px solid rgba(255,255,255,.15)}
+.ground::before{
+  content:"";position:absolute;inset:-40% 0 0 0;
+  background:
+    linear-gradient(180deg, #ff5e7a 0%, #b84dff 18%, #1a0f3a 35%, #070a1f 60%),
+    radial-gradient(800px 160px at 50% 0%, rgba(255,120,80,.6), transparent 70%);
+  background-blend-mode:screen;
+}
+.grid{
+  position:absolute;inset:-20% -10% 0 -10%;
+  background:
+    linear-gradient(transparent 0 96%, rgba(0,255,255,.7) 96% 100%),
+    linear-gradient(90deg, transparent 0 98%, rgba(255,45,150,.7) 98% 100%);
+  background-size:60px 38px;
+  transform:perspective(520px) rotateX(62deg) scale(1.2);
+  transform-origin:50% 0%;
+  animation:gridMove 1.1s linear infinite;
+  filter:drop-shadow(0 0 8px rgba(0,255,255,.6));
+  opacity:.9;
+}
+@keyframes gridMove{to{background-position:0 38px,0 0}}
+.ground-glow{
+  position:absolute;left:50%;top:-6px;transform:translateX(-50%);
+  width:min(720px,80vw);height:70px;
+  background:radial-gradient(closest-side, rgba(0,255,255,.55), rgba(255,45,200,.25), transparent 70%);
+  filter:blur(10px);animation:glowPulse 2.6s ease-in-out infinite;
+}
+@keyframes glowPulse{0%,100%{opacity:.7;transform:translateX(-50%) scaleX(1)}50%{opacity:1;transform:translateX(-50%) scaleX(1.08)}}
+/* canvas fx */
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+/* HERO */
+.hero-wrap{
+  position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);
+  width:min(760px,94vw);
+  aspect-ratio:760/500;
+  pointer-events:none;
+  will-change:transform;
+}
+.float-group{
+  position:absolute;inset:0;
+  animation:hoverBob 2.8s ease-in-out infinite;
+  will-change:transform;
+  filter:drop-shadow(0 18px 28px rgba(0,0,0,.45));
+}
+@keyframes hoverBob{
+  0%,100%{transform:translateY(0) rotate(-1.2deg)}
+  25%{transform:translateY(-12px) rotate(.6deg)}
+  50%{transform:translateY(-20px) rotate(1.6deg)}
+  75%{transform:translateY(-8px) rotate(-.4deg)}
+}
+.hero-shadow{
+  position:absolute;left:50%;bottom:6%;width:52%;height:28px;transform:translateX(-50%);
+  background:radial-gradient(closest-side, rgba(0,255,255,.65), rgba(255,0,150,.25) 45%, transparent 72%);
+  filter:blur(8px);
+  animation:shadowPulse 2.8s ease-in-out infinite;
+}
+@keyframes shadowPulse{0%,100%{transform:translateX(-50%) scaleX(1);opacity:.8}50%{transform:translateX(-50%) scaleX(.78);opacity:.5}}
+svg.hero{width:100%;height:100%;overflow:visible}
+/* SVG internal animations */
+.rider{transform-box:fill-box;transform-origin:50% 90%;animation:breathe 2.8s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.015,1.03)}}
+.head{transform-box:fill-box;transform-origin:20% 80%;animation:headBob 2.8s ease-in-out infinite}
+@keyframes headBob{0%,100%{transform:rotate(-2deg) translateY(0)}50%{transform:rotate(2.5deg) translateY(-4px)}}
+.leg-front{transform-box:fill-box;transform-origin:50% 10%;animation:legShift 2.8s ease-in-out infinite}
+.leg-back{transform-box:fill-box;transform-origin:50% 10%;animation:legShift 2.8s ease-in-out infinite reverse}
+@keyframes legShift{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.scarf-tail{transform-box:fill-box;transform-origin:100% 50%;animation:scarfWave 1.1s ease-in-out infinite alternate}
+.scarf-tail2{transform-box:fill-box;transform-origin:100% 50%;animation:scarfWave2 1.4s ease-in-out infinite alternate}
+@keyframes scarfWave{from{transform:rotate(-6deg) skewY(-4deg) scaleX(1)}to{transform:rotate(8deg) skewY(6deg) scaleX(1.06)}}
+@keyframes scarfWave2{from{transform:rotate(5deg) translateY(-2px)}to{transform:rotate(-7deg) translateY(3px)}}
+.ear-front{transform-box:fill-box;transform-origin:50% 100%;animation:earWiggle 5.2s ease-in-out infinite}
+@keyframes earWiggle{0%,88%,100%{transform:rotate(0)}90%{transform:rotate(-18deg)}92%{transform:rotate(10deg)}94%{transform:rotate(-6deg)}}
+.eye{transform-box:fill-box;transform-origin:center;transition:transform .08s}
+.eye.blink{transform:scaleY(.08)}
+.beam{transform-box:fill-box;transform-origin:50% 0%;animation:beamFlick 0.35s ease-in-out infinite alternate}
+.beam.b2{animation-delay:.12s;animation-duration:.28s}
+@keyframes beamFlick{from{opacity:.55;transform:scaleY(.9) scaleX(1)}to{opacity:1;transform:scaleY(1.08) scaleX(1.04)}}
+.rep-glow{animation:repPulse .5s ease-in-out infinite alternate}
+.rep-glow.r2{animation-delay:.18s}
+@keyframes repPulse{from{opacity:.7}to{opacity:1}}
+.board-neon{animation:neonPulse 1.6s ease-in-out infinite}
+@keyframes neonPulse{0%,100%{opacity:.85}50%{opacity:1}}
+.goggle-shine{animation:shineSlide 3.2s ease-in-out infinite}
+@keyframes shineSlide{0%,100%{transform:translateX(0);opacity:.9}50%{transform:translateX(10px);opacity:.4}}
+.speedline{position:absolute;height:3px;border-radius:999px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.9));opacity:0;pointer-events:none}
+/* HUD */
+.hud{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:22px 24px}
+.top{display:flex;justify-content:space-between;align-items:flex-start}
+.logo{line-height:1}
+.logo h1{font-size:clamp(22px,3.6vw,36px);letter-spacing:.14em;font-weight:900;font-style:italic;text-shadow:0 0 18px rgba(0,255,255,.8),0 0 40px rgba(255,0,150,.6),0 2px 0 #000}
+.logo h1 span{background:linear-gradient(90deg,#00f5ff,#ff2d96,#ffcf3a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo p{margin-top:6px;font-size:11px;letter-spacing:.32em;opacity:.85}
+.badge{pointer-events:auto;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);border:1px solid rgba(0,255,255,.35);border-radius:999px;padding:8px 14px;font-size:12px;letter-spacing:.18em;display:flex;align-items:center;gap:8px;box-shadow:0 0 18px rgba(0,255,255,.25)}
+.dot{width:9px;height:9px;border-radius:50%;background:#00ff9d;box-shadow:0 0 10px #00ff9d;animation:repPulse .8s alternate infinite}
+.bottom{display:flex;justify-content:center;flex-direction:column;align-items:center;gap:12px}
+.hint{font-size:12px;letter-spacing:.22em;opacity:.8;background:rgba(0,0,0,.4);padding:8px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.15)}
+.meter{width:min(420px,70vw);height:10px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);overflow:hidden;position:relative}
+.meter-fill{height:100%;width:20%;border-radius:999px;background:linear-gradient(90deg,#00f5ff,#7a5aff,#ff2d96,#ff9a3a);box-shadow:0 0 12px rgba(0,255,255,.8);transition:width .15s}
+.boost-ring{position:absolute;left:50%;top:46%;width:min(560px,78vw);aspect-ratio:1.6;border-radius:50%;border:2px dashed rgba(0,255,255,.0);transform:translate(-50%,-42%);pointer-events:none}
+body.boosting .boost-ring{border-color:rgba(0,255,255,.5);animation:spinRing 1.2s linear infinite}
+@keyframes spinRing{to{transform:translate(-50%,-42%) rotate(8deg) scale(1.04)}}
+body.boosting .float-group{animation-duration:1.1s}
+body.boosting .grid{animation-duration:.35s}
+@media (prefers-reduced-motion:reduce){
+  .float-group,.grid,.cloud{animation-duration:6s}
+}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="sky"></div>
+  <div class="stars" id="stars"></div>
+  <div class="moon"></div>
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="cloud c3"></div>
+  <div class="cloud c4"></div>
+
+  <svg class="mountains" viewBox="0 0 1440 220" preserveAspectRatio="none" style="position:absolute;left:0;right:0;bottom:28%;width:100%;height:22%;display:block">
+    <path d="M0,180 L120,90 L220,150 L340,60 L480,150 L600,85 L730,170 L860,70 L990,150 L1120,80 L1250,155 L1350,95 L1440,160 L1440,220 L0,220 Z" fill="#1a1440" opacity=".95"/>
+    <path d="M0,200 L150,130 L300,180 L450,120 L650,190 L800,135 L1000,190 L1150,130 L1300,185 L1440,140 L1440,220 L0,220 Z" fill="#0e0b2a"/>
+  </svg>
+
+  <div class="city" id="city"></div>
+
+  <div class="ground">
+    <div class="ground-glow"></div>
+    <div class="grid"></div>
+  </div>
+
+  <canvas id="fx"></canvas>
+
+  <div class="boost-ring"></div>
+
+  <div class="hero-wrap" id="heroWrap">
+    <div class="float-group" id="floatGroup">
+      <svg class="hero" viewBox="0 0 760 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Capybara riding a hoverboard">
+        <defs>
+          <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#c99a68"/>
+            <stop offset="28%" stop-color="#ab7a4a"/>
+            <stop offset="70%" stop-color="#8d5a33"/>
+            <stop offset="100%" stop-color="#6f4224"/>
+          </linearGradient>
+          <linearGradient id="muzzleGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#d6ab76"/>
+            <stop offset="100%" stop-color="#9c6a3e"/>
+          </linearGradient>
+          <linearGradient id="boardGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#2b3358"/>
+            <stop offset="45%" stop-color="#121832"/>
+            <stop offset="100%" stop-color="#070a1d"/>
+          </linearGradient>
+          <linearGradient id="neonGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#00f5ff"/>
+            <stop offset="50%" stop-color="#7a5aff"/>
+            <stop offset="100%" stop-color="#ff2d96"/>
+          </linearGradient>
+          <linearGradient id="beamGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#00f5ff" stop-opacity=".95"/>
+            <stop offset="100%" stop-color="#00f5ff" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="beamGrad2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ff2d96" stop-opacity=".95"/>
+            <stop offset="100%" stop-color="#ff2d96" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="lensGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#bffcff"/>
+            <stop offset="35%" stop-color="#00e5ff"/>
+            <stop offset="100%" stop-color="#005a7a"/>
+          </linearGradient>
+          <linearGradient id="scarfGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#ff3b30"/>
+            <stop offset="55%" stop-color="#ff7a2a"/>
+            <stop offset="100%" stop-color="#ffcf3a"/>
+          </linearGradient>
+          <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="blur8" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="10"/>
+          </filter>
+        </defs>
+
+        <!-- ground reflection -->
+        <ellipse cx="380" cy="452" rx="190" ry="22" fill="#00f5ff" opacity=".22" filter="url(#blur8)"/>
+        <ellipse cx="380" cy="450" rx="120" ry="12" fill="#ff2d96" opacity=".28" filter="url(#blur8)"/>
+
+        <!-- thruster beams -->
+        <g opacity=".9">
+          <polygon class="beam" points="235,392 275,392 265,452 245,452" fill="url(#beamGrad)"/>
+          <polygon class="beam b2" points="485,392 525,392 515,452 495,452" fill="url(#beamGrad2)"/>
+          <ellipse class="rep-glow" cx="255" cy="452" rx="28" ry="8" fill="#00f5ff" opacity=".8" filter="url(#soft)"/>
+          <ellipse class="rep-glow r2" cx="505" cy="452" rx="28" ry="8" fill="#ff2d96" opacity=".8" filter="url(#soft)"/>
+        </g>
+
+        <!-- hoverboard -->
+        <g class="board-tilt">
+          <!-- repulsor pods -->
+          <g>
+            <rect x="205" y="365" width="100" height="32" rx="14" fill="#0a0f28" stroke="#00f5ff" stroke-width="2"/>
+            <rect x="215" y="372" width="80" height="10" rx="5" fill="#00f5ff" opacity=".9"/>
+            <circle cx="225" cy="381" r="4" fill="#fff"/>
+            <rect x="455" y="365" width="100" height="32" rx="14" fill="#0a0f28" stroke="#ff2d96" stroke-width="2"/>
+            <rect x="465" y="372" width="80" height="10" rx="5" fill="#ff2d96" opacity=".9"/>
+            <circle cx="535" cy="381" r="4" fill="#fff"/>
+          </g>
+          <!-- deck -->
+          <g filter="url(#soft)">
+            <path d="M130,345 Q130,328 155,328 L560,328 Q600,328 615,310 Q620,304 628,308 Q634,312 628,322 L610,352 Q602,368 575,368 L155,368 Q130,368 130,345 Z" fill="url(#boardGrad)" stroke="#1e274f" stroke-width="2"/>
+            <!-- neon underside -->
+            <rect class="board-neon" x="132" y="357" width="442" height="8" rx="4" fill="url(#neonGrad)"/>
+            <!-- top grip -->
+            <rect x="155" y="333" width="400" height="10" rx="5" fill="#ffffff" opacity=".14"/>
+            <circle cx="175" cy="348" r="4" fill="#00f5ff"/>
+            <circle cx="195" cy="348" r="4" fill="#1a1f3a" stroke="#00f5ff" stroke-width="1.2"/>
+            <circle cx="565" cy="348" r="4" fill="#ff2d96"/>
+            <!-- nose light -->
+            <ellipse cx="620" cy="322" rx="6" ry="8" fill="#ffcf3a"/>
+            <ellipse cx="620" cy="322" rx="12" ry="14" fill="#ff9a3a" opacity=".35"/>
+          </g>
+        </g>
+
+        <!-- RIDER -->
+        <g class="rider">
+          <!-- scarf tails behind -->
+          <g>
+            <path class="scarf-tail2" d="M352,228 C300,220 250,230 200,250 C230,255 240,265 210,278 C260,280 310,270 358,244 Z" fill="#c62a1e"/>
+            <path class="scarf-tail" d="M360,214 C300,195 235,195 170,220 C210,228 220,240 185,255 C240,260 310,248 368,232 Z" fill="url(#scarfGrad)" stroke="#7a150e" stroke-width="2" stroke-linejoin="round"/>
+            <path class="scarf-tail" d="M280,210 L292,234 M235,212 L247,238" stroke="#7a150e" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+          </g>
+
+          <!-- far legs (darker) -->
+          <g opacity=".9">
+            <rect x="235" y="285" width="32" height="70" rx="14" fill="#5e3720"/>
+            <ellipse cx="251" cy="358" rx="22" ry="10" fill="#3a2212"/>
+            <rect x="425" y="285" width="32" height="70" rx="14" fill="#5e3720"/>
+            <ellipse cx="441" cy="358" rx="22" ry="10" fill="#3a2212"/>
+          </g>
+
+          <!-- body -->
+          <ellipse cx="360" cy="265" rx="135" ry="72" fill="url(#bodyGrad)" stroke="#4a2b16" stroke-width="3"/>
+          <!-- belly + back shading -->
+          <ellipse cx="360" cy="290" rx="95" ry="34" fill="#e2b985" opacity=".55"/>
+          <path d="M245,230 Q300,200 380,205 Q450,210 480,245" fill="none" stroke="#5a3720" stroke-width="3" stroke-linecap="round" opacity=".35"/>
+          <g stroke="#5a3720" stroke-width="2.5" stroke-linecap="round" opacity=".25">
+            <path d="M270,250 q10,8 20,0"/>
+            <path d="M300,262 q10,8 20,0"/>
+            <path d="M330,268 q10,8 20,0"/>
+            <path d="M270,278 q10,8 20,0"/>
+            <path d="M305,282 q10,8 20,0"/>
+          </g>
+          <!-- haunch -->
+          <ellipse cx="270" cy="285" rx="42" ry="38" fill="#7a4e2e" opacity=".55"/>
+
+          <!-- near legs -->
+          <g class="leg-back">
+            <rect x="265" y="295" width="36" height="62" rx="15" fill="#8d5a33" stroke="#4a2b16" stroke-width="2.5"/>
+            <ellipse cx="283" cy="360" rx="24" ry="11" fill="#2e1e12"/>
+            <ellipse cx="287" cy="356" rx="10" ry="4" fill="#5a3720"/>
+          </g>
+          <g class="leg-front">
+            <rect x="445" y="295" width="36" height="62" rx="15" fill="#8d5a33" stroke="#4a2b16" stroke-width="2.5"/>
+            <ellipse cx="463" cy="360" rx="24" ry="11" fill="#2e1e12"/>
+            <ellipse cx="467" cy="356" rx="10" ry="4" fill="#5a3720"/>
+          </g>
+
+          <!-- scarf around neck -->
+          <g>
+            <ellipse cx="400" cy="232" rx="32" ry="22" fill="#ff5a2a" stroke="#7a150e" stroke-width="2.5"/>
+            <ellipse cx="400" cy="228" rx="18" ry="12" fill="#ffcf3a" opacity=".9"/>
+            <circle cx="410" cy="244" r="10" fill="#c62a1e" stroke="#7a150e" stroke-width="2"/>
+          </g>
+
+          <!-- HEAD -->
+          <g class="head">
+            <!-- back ear -->
+            <ellipse cx="395" cy="148" rx="16" ry="18" fill="#6f4224" stroke="#3a2212" stroke-width="2.5"/>
+            <!-- head base -->
+            <rect x="395" y="145" width="115" height="112" rx="32" fill="url(#bodyGrad)" stroke="#4a2b16" stroke-width="3"/>
+            <!-- snout -->
+            <rect x="474" y="164" width="102" height="84" rx="22" fill="url(#muzzleGrad)" stroke="#4a2b16" stroke-width="3"/>
+            <!-- snout top bridge (capy nose high) -->
+            <ellipse cx="540" cy="168" rx="26" ry="12" fill="#d6ab76" opacity=".8"/>
+            <!-- nose -->
+            <ellipse cx="558" cy="172" rx="13" ry="9" fill="#211209"/>
+            <ellipse cx="554" cy="170" rx="4" ry="3" fill="#ffffff" opacity=".35"/>
+            <circle cx="563" cy="172" r="2.5" fill="#000"/>
+            <!-- mouth + smile -->
+            <path d="M522,224 Q545,228 562,218 M522,224 Q515,232 505,233" fill="none" stroke="#3a2212" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="502" cy="216" r="3" fill="#3a2212" opacity=".6"/>
+            <!-- nostril shading -->
+            <ellipse cx="530" cy="190" rx="3" ry="5" fill="#4a2b16" opacity=".4"/>
+            <!-- eye -->
+            <g id="eyeGroup" class="eye">
+              <ellipse cx="452" cy="192" rx="11" ry="12" fill="#1a0f08"/>
+              <circle cx="455" cy="188" r="4" fill="#fff"/>
+              <circle cx="449" cy="195" r="1.8" fill="#7df9ff" opacity=".9"/>
+            </g>
+            <!-- blush -->
+            <ellipse cx="478" cy="213" rx="10" ry="6" fill="#ff8a7a" opacity=".35"/>
+            <!-- front ear -->
+            <g class="ear-front">
+              <ellipse cx="418" cy="136" rx="15" ry="17" fill="#8d5a33" stroke="#3a2212" stroke-width="2.5"/>
+              <ellipse cx="418" cy="139" rx="7" ry="9" fill="#4a2b16"/>
+            </g>
+            <!-- goggles on forehead -->
+            <g>
+              <rect x="395" y="148" width="115" height="16" rx="8" fill="#11142a" opacity=".95"/>
+              <g>
+                <rect x="408" y="124" width="62" height="44" rx="14" fill="#11142a" stroke="#00f5ff" stroke-width="2.5"/>
+                <rect x="414" y="130" width="50" height="32" rx="10" fill="url(#lensGrad)"/>
+                <rect class="goggle-shine" x="420" y="133" width="10" height="26" rx="5" fill="#fff" opacity=".8"/>
+                <rect x="428" y="130" width="36" height="8" rx="4" fill="#fff" opacity=".35"/>
+              </g>
+            </g>
+            <!-- forehead fur tuft -->
+            <path d="M430,145 q6,-12 12,0 q6,-12 12,0" fill="none" stroke="#4a2b16" stroke-width="2.5" stroke-linecap="round"/>
+          </g>
+        </g>
+
+        <!-- sparkles on board -->
+        <g fill="#fff">
+          <circle cx="180" cy="342" r="2.2" opacity=".9"><animate attributeName="opacity" values=".9;.1;.9" dur="0.9s" repeatCount="indefinite"/></circle>
+          <circle cx="540" cy="340" r="2.2" opacity=".9"><animate attributeName="opacity" values=".2;.9;.2" dur="0.7s" repeatCount="indefinite"/></circle>
+          <circle cx="350" cy="362" r="1.8" opacity=".8"><animate attributeName="opacity" values=".8;.2;.8" dur="1.1s" repeatCount="indefinite"/></circle>
+        </g>
+      </svg>
+    </div>
+    <div class="hero-shadow"></div>
+  </div>
+
+  <div class="hud">
+    <div class="top">
+      <div class="logo">
+        <h1><span>CAPY</span> // HOVER</h1>
+        <p>SUNSET CRUISE • 2077</p>
+      </div>
+      <div class="badge"><span class="dot"></span><span id="status">CRUISING</span></div>
+    </div>
+    <div class="bottom">
+      <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
+      <div class="hint">MOVE MOUSE TO STEER • CLICK / SPACE TO BOOST</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var stage = document.getElementById('stage');
+  var starsBox = document.getElementById('stars');
+  var city = document.getElementById('city');
+  var canvas = document.getElementById('fx');
+  var ctx = canvas.getContext('2d');
+  var eye = document.getElementById('eyeGroup');
+  var floatGroup = document.getElementById('floatGroup');
+  var heroWrap = document.getElementById('heroWrap');
+  var meterFill = document.getElementById('meterFill');
+  var statusEl = document.getElementById('status');
+
+  // stars
+  var starCount = 110;
+  for(var i=0;i<starCount;i++){
+    var s=document.createElement('div');
+    s.className='star';
+    var sz = Math.random()*2.4+0.8;
+    s.style.width=sz+'px';s.style.height=sz+'px';
+    s.style.left=(Math.random()*100)+'%';
+    s.style.top=(Math.random()*100)+'%';
+    s.style.setProperty('--tw',(Math.random()*3+1.5)+'s');
+    s.style.animationDelay=(Math.random()*3)+'s';
+    if(Math.random()<.18){s.style.background='#7df9ff';s.style.boxShadow='0 0 8px #7df9ff';}
+    if(Math.random()<.12){s.style.background='#ffb14e';s.style.boxShadow='0 0 8px #ffb14e';}
+    starsBox.appendChild(s);
+  }
+  // city buildings
+  var widths=[46,62,38,74,52,88,44,66,58,40,70,48,60,36,80,54,62,44];
+  widths.forEach(function(w,i){
+    var b=document.createElement('div');
+    b.className='bldg'+(i%3===0?' blink':'');
+    b.style.width=w+'px';
+    b.style.height=(40+Math.abs(Math.sin(i*1.7))*95+Math.random()*30)+'px';
+    city.appendChild(b);
+  });
+
+  // canvas sizing
+  var W=0,H=0,DPR=1;
+  function resize(){
+    DPR=Math.min(window.devicePixelRatio||1,2);
+    W=stage.clientWidth;H=stage.clientHeight;
+    canvas.width=W*DPR;canvas.height=H*DPR;
+    canvas.style.width=W+'px';canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize',resize);resize();
+
+  var mouseX=0.5, mouseY=0.5, targetX=0.5, targetY=0.5;
+  var boost=0, boostTarget=0;
+  window.addEventListener('pointermove',function(e){
+    targetX=e.clientX/window.innerWidth;
+    targetY=e.clientY/window.innerHeight;
+  });
+  function startBoost(){boostTarget=1;document.body.classList.add('boosting');statusEl.textContent='BOOST!!';}
+  function endBoost(){boostTarget=0;document.body.classList.remove('boosting');statusEl.textContent='CRUISING';}
+  window.addEventListener('pointerdown',startBoost);
+  window.addEventListener('pointerup',endBoost);
+  window.addEventListener('keydown',function(e){if(e.code==='Space'){e.preventDefault();startBoost();}});
+  window.addEventListener('keyup',function(e){if(e.code==='Space')endBoost();});
+
+  // blink loop
+  (function blinkLoop(){
+    setTimeout(function(){
+      eye.classList.add('blink');
+      setTimeout(function(){eye.classList.remove('blink');},130);
+      // double blink sometimes
+      if(Math.random()<.18){
+        setTimeout(function(){
+          eye.classList.add('blink');
+          setTimeout(function(){eye.classList.remove('blink');},120);
+        },220);
+      }
+      setTimeout(blinkLoop, 2200+Math.random()*2600);
+    }, 1800+Math.random()*2000);
+  })();
+
+  // particles
+  var sparks=[], dust=[], lines=[];
+  for(var d=0;d<45;d++){
+    dust.push({x:Math.random(),y:Math.random(),r:Math.random()*2+0.6,s:Math.random()*0.0006+0.0002,o:Math.random()*.6+.2,ph:Math.random()*6.28});
+  }
+  function heroAnchor(){
+    var r=heroWrap.getBoundingClientRect();
+    var sr=stage.getBoundingClientRect();
+    return {
+      x1:r.left-sr.left+r.width*0.335,
+      x2:r.left-sr.left+r.width*0.665,
+      y:r.top-sr.top+r.height*0.74
+    };
+  }
+  function spawnSpark(a, big){
+    var fromLeft = Math.random()<.5;
+    var bx = fromLeft? a.x1 : a.x2;
+    var hue = fromLeft? 185+Math.random()*15 : 315+Math.random()*20;
+    sparks.push({
+      x:bx+(Math.random()-.5)*18,
+      y:a.y+(Math.random()-.5)*8,
+      vx:(Math.random()-.5)*1.2 -1.2 -boost*4,
+      vy:Math.random()*2.2+0.8+boost*1.5,
+      life:1,
+      decay:0.015+Math.random()*0.02,
+      size:(big?3:1.5)+Math.random()*2.5+boost*1.5,
+      hue:hue,
+      wob:Math.random()*6.28
+    });
+  }
+
+  var t=0;
+  function frame(){
+    t+=0.016;
+    mouseX += (targetX-mouseX)*0.06;
+    mouseY += (targetY-mouseY)*0.06;
+    boost += (boostTarget-boost)*0.08;
+
+    // parallax + steer
+    var px=(mouseX-0.5), py=(mouseY-0.5);
+    heroWrap.style.transform='translate(calc(-50% + '+(px*36)+'px), calc(-50% + '+(py*22 - boost*26)+'px)) rotate('+(px*4)+'deg)';
+    starsBox.style.transform='translate('+(px*-14)+'px,'+(py*-8)+'px)';
+    city.style.transform='translateX('+(px*-22 - boost*10)+'px)';
+    document.querySelector('.moon').style.transform='translate('+(px*-20)+'px,'+(py*-12)+'px)';
+
+    // eye follow
+    if(eye) eye.style.translate=((px*6)+'px '+ (py*4)+'px)';
+
+    meterFill.style.width=(18+boost*82)+'%';
+    statusEl.textContent = boost>0.5?'BOOST!!':(boost>0.15?'CHARGING':'CRUISING');
+
+    var a=heroAnchor();
+    var rate = 2+Math.floor(boost*10);
+    for(var k=0;k<rate;k++) spawnSpark(a, boost>0.4);
+    if(sparks.length>420) sparks.splice(0,sparks.length-420);
+
+    // speedlines
+    if((boost>0.3||Math.abs(px)>0.28) && Math.random()<.5){
+      lines.push({x:W*0.9+Math.random()*80,y:Math.random()*H*0.8+H*0.05,len:80+Math.random()*160+boost*200,v:12+Math.random()*10+boost*22,o:.5});
+    }
+
+    ctx.clearRect(0,0,W,H);
+
+    // dust / fireflies
+    ctx.save();
+    for(var i=0;i<dust.length;i++){
+      var p=dust[i];
+      p.y-=p.s*(1+boost*4);
+      p.x-=p.s*0.6*(1+boost*6)+px*0.0008;
+      if(p.y<-0.05){p.y=1.05;p.x=Math.random();}
+      if(p.x<-0.05)p.x=1.05;
+      var dx=p.x*W, dy=p.y*H;
+      var tw=.4+.6*Math.abs(Math.sin(t*2+p.ph));
+      ctx.globalAlpha=p.o*tw;
+      ctx.fillStyle= i%4===0 ? '#7df9ff' : (i%5===0?'#ffb14e':'#ffffff');
+      ctx.beginPath();ctx.arc(dx,dy,p.r,0,6.283);ctx.fill();
+    }
+    ctx.restore();
+
+    // thruster sparks
+    for(var j=sparks.length-1;j>=0;j--){
+      var sp=sparks[j];
+      sp.x+=sp.vx+Math.sin(t*10+sp.wob)*0.6;
+      sp.y+=sp.vy;
+      sp.vy*=0.985; sp.vx*=0.985;
+      sp.life-=sp.decay;
+      if(sp.life<=0){sparks.splice(j,1);continue;}
+      var alpha=Math.max(0,sp.life);
+      ctx.globalAlpha=alpha;
+      // glow
+      ctx.fillStyle='hsla('+sp.hue+',100%,65%,'+(alpha*0.35)+')';
+      ctx.beginPath();ctx.arc(sp.x,sp.y,sp.size*2.4,0,6.283);ctx.fill();
+      ctx.fillStyle='hsl('+sp.hue+',100%,'+(70+alpha*20)+'%)';
+      ctx.beginPath();ctx.arc(sp.x,sp.y,sp.size*alpha+0.4,0,6.283);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,'+(alpha*0.9)+')';
+      ctx.beginPath();ctx.arc(sp.x,sp.y,Math.max(0.4,sp.size*alpha*0.35),0,6.283);ctx.fill();
+    }
+    ctx.globalAlpha=1;
+
+    // speed lines
+    ctx.save();
+    ctx.lineCap='round';
+    for(var l=lines.length-1;l>=0;l--){
+      var L=lines[l];
+      L.x-=L.v*(1+boost*1.2);
+      L.o-=0.02;
+      if(L.o<=0||L.x+L.len<0){lines.splice(l,1);continue;}
+      var grad=ctx.createLinearGradient(L.x,0,L.x+L.len,0);
+      grad.addColorStop(0,'rgba(255,255,255,0)');
+      grad.addColorStop(1,'rgba(255,255,255,'+L.o+')');
+      ctx.strokeStyle=grad;
+      ctx.lineWidth=2+(boost*1.5);
+      ctx.beginPath();ctx.moveTo(L.x,L.y);ctx.lineTo(L.x+L.len,L.y);ctx.stroke();
+    }
+    ctx.restore();
+
+    // hover glow flicker under board drawn on canvas for extra life
+    var gx=(a.x1+a.x2)/2, gy=a.y+52;
+    var gr=90+Math.sin(t*7)*8+boost*30;
+    var rg=ctx.createRadialGradient(gx,gy,0,gx,gy,gr*1.6);
+    rg.addColorStop(0,'rgba(0,255,255,'+(0.22+boost*0.25)+')');
+    rg.addColorStop(0.5,'rgba(255,45,150,'+(0.12+boost*0.15)+')');
+    rg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=rg;
+    ctx.fillRect(gx-gr*1.6,gy-20,gr*3.2,70);
+
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
+</body>
+</html>

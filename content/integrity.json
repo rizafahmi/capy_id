@@ -244,6 +244,22 @@
     "runs/agy-e9058521-5ac1-4a93-a946-a11b395640fb-capybara-hoverboard-v1/transcript.json": {
       "sha256": "c55942291e1c19a2982d4a8f1ac2c3ac63f15a899d31092aadfbc438466233d0",
       "size_bytes": 1826
+    },
+    "runs/pi-01a1325c-8b2b-71f3-94c2-e752d9cf55b7-capybara-hoverboard-v1/run.json": {
+      "sha256": "6fa3d329684bf379d24de941bebd6d5e889406dea665dc17493b003b32d56e57",
+      "size_bytes": 1746
+    },
+    "runs/pi-01a1325c-8b2b-71f3-94c2-e752d9cf55b7-capybara-hoverboard-v1/response.txt": {
+      "sha256": "d721b0880e2d658b8639785143f5890d541fdcfd77a6bcd57c666644f01bf8e1",
+      "size_bytes": 31716
+    },
+    "runs/pi-01a1325c-8b2b-71f3-94c2-e752d9cf55b7-capybara-hoverboard-v1/transcript.json": {
+      "sha256": "c81c27520473717c1dfdd4d4520d4a8f4f1ed27f1252372412e50cf3cd44cde1",
+      "size_bytes": 34383
+    },
+    "runs/pi-01a1325c-8b2b-71f3-94c2-e752d9cf55b7-capybara-hoverboard-v1/output.html.txt": {
+      "sha256": "d721b0880e2d658b8639785143f5890d541fdcfd77a6bcd57c666644f01bf8e1",
+      "size_bytes": 31716
     }
   }
 }
