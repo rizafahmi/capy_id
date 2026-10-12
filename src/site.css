@@ -551,6 +551,7 @@
     overflow-wrap: anywhere;
   }
   .compare-identity {
+    contain: layout style;
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem 0.85rem;
@@ -566,6 +567,7 @@
     margin-top: 0.65rem;
   }
   .compare-panel .preview-open {
+    contain: layout style;
     display: inline-flex;
     align-items: center;
     min-height: 44px;
@@ -913,6 +915,7 @@
     text-decoration: none;
   }
   .card-date {
+    contain: layout style;
     overflow-wrap: anywhere;
     font-size: 0.72rem;
     color: var(--muted);
