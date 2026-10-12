@@ -1200,6 +1200,7 @@
     padding: 1.75rem;
   }
   .run-summary h2 {
+    contain: layout style;
     margin-bottom: 1.5rem;
     font-size: 1rem;
   }
@@ -1258,6 +1259,7 @@
     padding-top: 1.15rem;
   }
   .run-summary h3 {
+    contain: layout style;
     margin-bottom: 0.75rem;
     font:
       600 0.8rem / 1.5 system-ui,
@@ -1345,6 +1347,7 @@
     margin-bottom: 0;
   }
   .insight-heading h2 {
+    contain: layout style;
     font-size: clamp(1.7rem, 3vw, 2.4rem);
   }
   .insight-heading > p {
@@ -1362,6 +1365,7 @@
     counter-reset: insight;
   }
   .insight-list li {
+    contain: layout;
     position: relative;
     margin: 0;
     padding: 1.2rem 0 1.2rem 2.75rem;
