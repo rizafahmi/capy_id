@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "id": "agy-5ef17ce4-44c5-4d41-8e84-ebf25ed93d3c-capybara-hoverboard-v1",
+  "challenge_id": "capybara-hoverboard-v1",
+  "series_id": "agy-series-5ef17ce4-44c5-4d41-8e84-ebf25ed93d3c",
+  "attempt_number": 1,
+  "provider": "google-vertex",
+  "model": {
+    "display_name": "gpt-oss-120b-medium",
+    "identifier": "gpt-oss-120b-medium",
+    "identifier_kind": "unknown"
+  },
+  "generated_at": "2026-10-12T13:13:03Z",
+  "generation": {
+    "mode": "tool-assisted",
+    "interface": "coding-agent",
+    "tools_used": "yes",
+    "harness": {
+      "name": "Antigravity CLI",
+      "version": "1.3.3",
+      "effort": "medium"
+    },
+    "metrics": {
+      "time": {
+        "kind": "model",
+        "duration_ms": 10721
+      },
+      "tokens": {
+        "input": 9428,
+        "cached": 2112,
+        "output": 2113,
+        "total": 13653
+      }
+    }
+  },
+  "instructions": {
+    "prompt_path": "challenges/capybara-hoverboard-v1/prompt.txt",
+    "prompt_sha256": "e6b955ce7c23afabd2adf2115467e7b6c213ac2cab2a7596886ca71ad827fe1c",
+    "transcript_path": "runs/agy-5ef17ce4-44c5-4d41-8e84-ebf25ed93d3c-capybara-hoverboard-v1/transcript.json"
+  },
+  "artifacts": {
+    "response": {
+      "path": "runs/agy-5ef17ce4-44c5-4d41-8e84-ebf25ed93d3c-capybara-hoverboard-v1/response.txt",
+      "sha256": "c7e7a79879e090d337be85702aeab3199450361c6dc473a46c605309a720052a",
+      "size_bytes": 2176
+    },
+    "html": {
+      "path": "runs/agy-5ef17ce4-44c5-4d41-8e84-ebf25ed93d3c-capybara-hoverboard-v1/output.html.txt",
+      "sha256": "c7e7a79879e090d337be85702aeab3199450361c6dc473a46c605309a720052a",
+      "size_bytes": 2176,
+      "extraction": {
+        "start_byte": 0,
+        "end_byte_exclusive": 2176
+      }
+    }
+  }
+}
