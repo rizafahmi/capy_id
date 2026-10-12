@@ -18,6 +18,12 @@ export const runDateFormat = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 });
 
+export const compareOptionDateFormat = new Intl.DateTimeFormat("en-GB", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: "UTC",
+});
+
 export function measurementRows(run: Run): MeasurementRows {
   const metrics = run.generation.metrics;
   const time = metrics?.time;

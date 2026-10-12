@@ -1,14 +1,10 @@
 ---
 import type { AstroPages } from "../../../scripts/astro-pages.ts";
+import { compareOptionDateFormat } from "../../../scripts/presentation.ts";
 import Shell from "../layouts/Shell.astro";
 
 declare const __CAPYBOARD_ASTRO_PAGES__: AstroPages;
 const { runs, fixtures } = __CAPYBOARD_ASTRO_PAGES__.comparison;
-const dates = new Intl.DateTimeFormat("en-GB", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "UTC",
-});
 ---
 
 <Shell title="Compare" fixtures={fixtures} section="compare">
@@ -30,7 +26,7 @@ const dates = new Intl.DateTimeFormat("en-GB", {
             <option value="">Select a run</option>
             {runs.map((run) => (
               <option value={run.id}>
-                {`${run.model.display_name} · ${run.generation.harness?.effort ?? "unknown"} effort · Attempt ${run.attempt_number} · ${run.generated_at ? `${dates.format(new Date(run.generated_at))} UTC` : run.id}`}
+                {`${run.model.display_name} · ${run.generation.harness?.effort ?? "unknown"} effort · Attempt ${run.attempt_number} · ${run.generated_at ? `${compareOptionDateFormat.format(new Date(run.generated_at))} UTC` : run.id}`}
               </option>
             ))}
           </select>

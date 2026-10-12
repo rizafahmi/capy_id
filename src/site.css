@@ -1037,6 +1037,7 @@
     overflow-wrap: anywhere;
   }
   .metadata {
+    contain: layout style;
     display: grid;
     gap: 0.75rem;
     font-size: 0.8rem;
