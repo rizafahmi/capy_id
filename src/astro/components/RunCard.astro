@@ -1,5 +1,6 @@
 ---
 import type { PublishedEntry } from "../../../scripts/astro-pages.ts";
+import { runDateFormat } from "../../../scripts/presentation.ts";
 import Metadata from "./Metadata.astro";
 import Screenshot from "./Screenshot.astro";
 
@@ -19,12 +20,7 @@ const effortLabel =
     : `${effort.charAt(0).toUpperCase()}${effort.slice(1)} effort`;
 const [time, , , , total] = entry.measurementRows;
 const generated = run.generated_at
-  ? new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      timeZone: "UTC",
-    }).format(new Date(run.generated_at))
+  ? runDateFormat.format(new Date(run.generated_at))
   : "Unknown date";
 const state = !run.artifacts.html
   ? "No runnable HTML returned"

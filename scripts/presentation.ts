@@ -9,16 +9,24 @@ export type MeasurementRows = [
   total: MetadataPair,
 ];
 
+const numberFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 });
+
+export const runDateFormat = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
 export function measurementRows(run: Run): MeasurementRows {
   const metrics = run.generation.metrics;
   const time = metrics?.time;
-  const numbers = new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 });
   const count = (value: number | null | undefined) =>
-    value == null ? "Unknown" : numbers.format(value);
+    value == null ? "Unknown" : numberFormat.format(value);
   return [
     [
       time ? (time.kind === "model" ? "Model time" : "Elapsed time") : "Time",
-      time ? `${numbers.format(time.duration_ms / 1000)} s` : "Unknown",
+      time ? `${numberFormat.format(time.duration_ms / 1000)} s` : "Unknown",
     ],
     ["Input tokens", count(metrics?.tokens.input)],
     ["Cached tokens", count(metrics?.tokens.cached)],
