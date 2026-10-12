@@ -896,6 +896,7 @@
     font-weight: 650;
   }
   .card-bottom {
+    contain: layout style;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -911,6 +912,7 @@
     color: var(--muted);
   }
   .selection {
+    contain: layout style;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -962,6 +964,7 @@
   }
   .comparison-tray {
     contain: layout style;
+    will-change: transform;
     position: sticky;
     bottom: 1rem;
     z-index: var(--layer-tray);
@@ -981,6 +984,7 @@
     font-weight: 650;
   }
   .comparison-tray ul {
+    contain: layout style;
     display: flex;
     flex-wrap: wrap;
     gap: 0.7rem;
