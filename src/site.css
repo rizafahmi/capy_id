@@ -838,6 +838,7 @@
     object-fit: contain;
   }
   .card-meta {
+    contain: layout style;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -850,6 +851,7 @@
     font-size: 0.72rem;
   }
   .mode-badge {
+    contain: layout style;
     padding: 0.3rem 0.6rem;
     background: var(--accent-soft);
     border-radius: 999px;
@@ -861,6 +863,7 @@
     padding: 1.25rem;
   }
   .card-title {
+    contain: layout style;
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
@@ -874,6 +877,7 @@
     overflow-wrap: anywhere;
   }
   .card-effort {
+    contain: layout style;
     margin: 0;
     color: var(--muted);
     font-size: 0.75rem;
