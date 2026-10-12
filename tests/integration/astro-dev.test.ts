@@ -113,6 +113,13 @@ test("managed Astro development reloads source edits in every browser and stops 
       const baselineMessages = [...new Set(violations)];
       violations.length = 0;
       if (name === "chromium") {
+        const capture = async () => {
+          await page.evaluate(async () => {
+            await document.fonts.ready;
+            await Promise.all(Array.from(document.images, (image) => image.decode()));
+          });
+          return page.screenshot({ animations: "disabled" });
+        };
         for (const path of [
           "/",
           "/challenge/",
@@ -121,15 +128,9 @@ test("managed Astro development reloads source edits in every browser and stops 
           "/runs/missing/",
         ]) {
           await page.goto(`${baselineOrigin}${path}`);
-          await expect.poll(() => page.evaluate(() => document.fonts.status)).toBe("loaded");
-          const before = await page.screenshot({ animations: "disabled" });
+          const before = await capture();
           await page.goto(`http://127.0.0.1:4173${path}`);
-          await expect.poll(() => page.evaluate(() => document.fonts.status)).toBe("loaded");
-          assert.deepEqual(
-            await page.screenshot({ animations: "disabled" }),
-            before,
-            `Native dev differs from static ${path}`,
-          );
+          assert.ok((await capture()).equals(before), `Native dev differs from static ${path}`);
         }
       }
       const response = await page.goto("http://127.0.0.1:4173/");
