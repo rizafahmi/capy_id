@@ -505,6 +505,7 @@
     line-height: 1.5;
   }
   .compare-differences {
+    contain: layout style;
     font-weight: 650;
   }
   .compare-toolbar {
@@ -583,6 +584,7 @@
     margin: 0;
   }
   .compare-evidence {
+    contain: layout style;
     width: fit-content;
     display: inline-flex;
     align-items: center;
@@ -596,6 +598,7 @@
     border-top: 1px solid var(--line);
   }
   .compare-measurements h2 {
+    contain: layout style;
     margin-bottom: 0.5rem;
   }
   .compare-table {
@@ -628,6 +631,7 @@
     font-size: 0.75rem;
   }
   .compare-table .comparison-difference {
+    contain: layout style;
     background: var(--accent-soft);
   }
   .compare-table .comparison-difference th:first-child {
