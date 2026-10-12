@@ -200,6 +200,22 @@
     "runs/pi-01a1295b-0f9d-7006-ae9f-104c2b4499c1/output.html.txt": {
       "sha256": "a47b1b04b046da1db99403aed8f2ae29448c6ae05aeff6a10711c76baa4d2f38",
       "size_bytes": 56907
+    },
+    "runs/agy-9716c6ed-b142-495a-9a4d-234569ea329e-capybara-hoverboard-v1/run.json": {
+      "sha256": "22dc5288a7493cc129524a72dd2014bff2203d692687e26f015e084dbbf047ab",
+      "size_bytes": 1705
+    },
+    "runs/agy-9716c6ed-b142-495a-9a4d-234569ea329e-capybara-hoverboard-v1/response.txt": {
+      "sha256": "43434250f41d7cf1829761de55eca743a43614a5bfb96275a48a443a8b8c9589",
+      "size_bytes": 49019
+    },
+    "runs/agy-9716c6ed-b142-495a-9a4d-234569ea329e-capybara-hoverboard-v1/transcript.json": {
+      "sha256": "19a54c866239565940d9b31207964d3461ebcc716918108488f1d87ac908b91c",
+      "size_bytes": 53310
+    },
+    "runs/agy-9716c6ed-b142-495a-9a4d-234569ea329e-capybara-hoverboard-v1/output.html.txt": {
+      "sha256": "43434250f41d7cf1829761de55eca743a43614a5bfb96275a48a443a8b8c9589",
+      "size_bytes": 49019
     }
   }
 }

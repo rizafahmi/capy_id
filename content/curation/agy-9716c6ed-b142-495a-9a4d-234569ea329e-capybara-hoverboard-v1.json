@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "run_id": "agy-9716c6ed-b142-495a-9a4d-234569ea329e-capybara-hoverboard-v1",
+  "published_at": "2026-10-12T13:08:21Z",
+  "visible": true,
+  "preview_allowed": true,
+  "preview_disabled_reason": null,
+  "observations": [
+    "The agent began with an SVG concept and then pivoted to a detailed Canvas implementation.",
+    "The final 1,613-line HTML artifact contains a synthwave scene with a capybara, hoverboard effects, particles, city scenery, responsive sizing, and keyboard, pointer, and button controls.",
+    "The agent iteratively rendered screenshots, reviewed visual changes, checked the DOM, validated JavaScript syntax, and removed temporary test files.",
+    "The response is self-contained and contains no external libraries, image assets, font imports, network calls, or audio references.",
+    "The artifact uses Math.random for scene and particle generation, so some visual details vary between reloads.",
+    "The recorded token usage is 3,163,198 total tokens, including 2,811,068 cached tokens; model time is unavailable because assistant duration measurements were not present."
+  ],
+  "series_publication_complete": true,
+  "series_incomplete_reason": null,
+  "thumbnail": {
+    "path": "thumbnails/agy-9716c6ed-b142-495a-9a4d-234569ea329e-capybara-hoverboard-v1.png",
+    "viewport": {
+      "width": 640,
+      "height": 480
+    },
+    "capture_delay_ms": 1000,
+    "browser_version": "156.0.8078.4",
+    "preview_policy_version": "restricted-html-v1"
+  }
+}
