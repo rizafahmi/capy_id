@@ -9,7 +9,7 @@
   date -u +%Y-%m-%dT%H:%M:%SZ >"$ATTEMPT/started-at.txt"
   PROMPT="$(<"$REPO/content/challenges/capybara-hoverboard-v1/prompt.txt")"$'\n'
   cd "$ATTEMPT/workspace"
-  pi --print --model openai-codex/gpt-6-luna --thinking low \
+  pi --print --model meta/muse-spark-1.3-contributor --thinking max \
     --no-approve --no-extensions --no-mcp --no-skills \
     --no-prompt-templates --no-context-files --no-themes \
     --tools read,bash,edit,write --session-dir "$ATTEMPT/sessions" \
