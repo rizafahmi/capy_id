@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "run_id": "agy-e9058521-5ac1-4a93-a946-a11b395640fb-capybara-hoverboard-v1",
+  "published_at": null,
+  "visible": false,
+  "preview_allowed": false,
+  "preview_disabled_reason": "Not yet reviewed for execution.",
+  "observations": [
+    "The saved response is a prose status report, not HTML source, so the importer correctly recorded no runnable HTML artifact.",
+    "The response describes a canvas-based scene with a capybara, hoverboard glow, scarf motion, particles, speed lines, stars, clouds, a moon, and a scrolling cityscape.",
+    "The session used a file-writing tool and an open command, but the transcript records no actual visual inspection result; the rendering claims remain unverified.",
+    "Recorded usage totals 74,677 tokens, including 40,197 cached tokens; model time and harness effort were unavailable."
+  ],
+  "series_publication_complete": false,
+  "series_incomplete_reason": null,
+  "thumbnail": null
+}

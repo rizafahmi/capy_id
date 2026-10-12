@@ -232,6 +232,18 @@
     "runs/agy-5ef17ce4-44c5-4d41-8e84-ebf25ed93d3c-capybara-hoverboard-v1/output.html.txt": {
       "sha256": "c7e7a79879e090d337be85702aeab3199450361c6dc473a46c605309a720052a",
       "size_bytes": 2176
+    },
+    "runs/agy-e9058521-5ac1-4a93-a946-a11b395640fb-capybara-hoverboard-v1/run.json": {
+      "sha256": "b9f41bcdb8d83ae7c3b13daeef689d95bbfb67c4bf4fb7f40f6434a76f6b158e",
+      "size_bytes": 1396
+    },
+    "runs/agy-e9058521-5ac1-4a93-a946-a11b395640fb-capybara-hoverboard-v1/response.txt": {
+      "sha256": "d38b56fbd653eb0338ba9f1b540fc31f3ab01bc81059cefb3ca2c2e4ce1989f6",
+      "size_bytes": 1074
+    },
+    "runs/agy-e9058521-5ac1-4a93-a946-a11b395640fb-capybara-hoverboard-v1/transcript.json": {
+      "sha256": "c55942291e1c19a2982d4a8f1ac2c3ac63f15a899d31092aadfbc438466233d0",
+      "size_bytes": 1826
     }
   }
 }

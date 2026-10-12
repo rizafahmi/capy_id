@@ -1,0 +1,17 @@
+The file is ready at [index.html](file:///Users/riza/capyboard-attempts/20261012T132340Z/workspace/index.html). Let me open it to verify it renders properly.
+Your **Capyboard** is live! Here's what's in the scene:
+
+- **Capybara** — drawn in canvas with a rounded body, detailed head (snout, nose, nostrils, eye with shine, ears, whiskers), fur texture, and a little tail
+- **Red scarf** blowing in the wind with physics-like wave animation
+- **Hoverboard** — sleek sci-fi board with a pulsing cyan underglow
+- **Animated elements**:
+  - Gentle bobbing + slight tilt as the capybara hovers
+  - Glowing particle trail streaming behind the board
+  - Speed lines for a sense of motion
+  - Whiskers and fur tufts waving in the breeze
+  - Scarf tails fluttering
+  - Twinkling stars, drifting clouds, a glowing moon
+  - Scrolling cityscape silhouette with lit windows
+  - Ground reflection glow beneath the board
+
+Everything is self-contained in the single [index.html](file:///Users/riza/capyboard-attempts/20261012T132340Z/workspace/index.html) — no external dependencies.
