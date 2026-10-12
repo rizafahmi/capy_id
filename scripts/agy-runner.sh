@@ -13,7 +13,6 @@
   cd "$ATTEMPT/workspace"
   agy \
     --model "$AGY_MODEL" \
-    --effort low \
     --dangerously-skip-permissions \
     --disable-slash-commands \
     --log-file "$ATTEMPT/agy.log" \
