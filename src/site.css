@@ -173,6 +173,7 @@
     line-height: 1.65;
   }
   pre {
+    contain: layout paint;
     max-width: 100%;
     overflow: auto;
     padding: 1.25rem;
@@ -198,6 +199,7 @@
   .eyebrow,
   .section-label,
   .checksum {
+    contain: layout style;
     font-size: 0.8rem;
     font-weight: 550;
     line-height: 1.6;
