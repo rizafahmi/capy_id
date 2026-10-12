@@ -1214,10 +1214,12 @@
     display: block;
   }
   .token-breakdown dt {
+    contain: layout style;
     margin-bottom: 0.35rem;
     font-size: 0.72rem;
   }
   .token-breakdown dd {
+    contain: layout style;
     font-size: 1rem;
     font-weight: 650;
   }
@@ -1228,13 +1230,16 @@
     font-variant-numeric: tabular-nums;
   }
   .run-highlights > div {
+    contain: layout style;
     display: block;
   }
   .run-highlights dt {
+    contain: layout style;
     margin-bottom: 0.25rem;
     font-size: 0.85rem;
   }
   .run-highlights dd {
+    contain: layout style;
     font-family: var(--display);
     font-size: 2rem;
     line-height: 1.1;
