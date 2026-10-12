@@ -952,6 +952,7 @@
     cursor: pointer;
   }
   .placeholder {
+    contain: layout style;
     display: grid;
     align-content: center;
     justify-items: center;
@@ -971,6 +972,7 @@
     font-size: 0.8rem;
   }
   .placeholder-mark {
+    contain: layout style;
     display: grid;
     place-items: center;
     width: 64px;
@@ -1112,6 +1114,7 @@
     overflow-wrap: anywhere;
   }
   .notice {
+    contain: layout style;
     padding: 0.85rem 1rem;
     background: var(--accent-soft);
     border-left: 3px solid var(--accent-ink);
@@ -1124,6 +1127,7 @@
     margin-top: 1.25rem;
   }
   .run-overview {
+    contain: layout style;
     padding: 1.1rem 0 1.5rem;
   }
   .run-overview .eyebrow {
