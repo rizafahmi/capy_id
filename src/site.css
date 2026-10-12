@@ -1300,6 +1300,7 @@
     overflow: hidden;
   }
   .evidence summary {
+    contain: layout style;
     min-height: 52px;
     padding: 1rem 1.25rem;
     cursor: pointer;
@@ -1311,6 +1312,7 @@
     background: var(--raised);
   }
   .evidence-body {
+    contain: layout style;
     padding: 1.25rem;
     min-width: 0;
   }
@@ -1328,6 +1330,9 @@
     contain: layout style;
     justify-content: space-between;
     gap: 1rem;
+  }
+  .code-actions {
+    contain: layout style;
   }
   .code-language {
     font: 0.75rem / 1.5 var(--mono);
