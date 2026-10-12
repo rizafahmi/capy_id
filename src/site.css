@@ -697,9 +697,14 @@
     margin-block: 3rem;
   }
   .prose h2 {
+    contain: layout style;
     margin-top: 2.5rem;
   }
+  .prose p {
+    contain: layout style;
+  }
   .prose li {
+    contain: layout;
     margin-bottom: 0.6rem;
   }
   @media (max-width: 1023px) {
