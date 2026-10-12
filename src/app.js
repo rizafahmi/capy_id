@@ -245,19 +245,30 @@ function enableGallery() {
   const prefetchedUrls = new Set();
   const prefetchedPages = new Set();
   const tray = document.querySelector(".comparison-tray");
+  const status = document.querySelector("#results-status");
+  const emptyState = document.querySelector("#empty-state");
+  const selectionCount = document.querySelector("#selection-count");
+  const selectedList = document.querySelector("#selected-runs");
+  const compareLink = document.querySelector("#compare-link");
   const search = filters.elements.namedItem("search");
   const provider = filters.elements.namedItem("provider");
   const sort = filters.elements.namedItem("sort");
   const reset = document.querySelector("[data-reset]");
+  const formReset = filters.querySelector("[type='reset']");
   reset.hidden = false;
+  let currentSort = null;
   const update = () => {
     const query = search.value.toLowerCase().trim();
     let count = 0;
-    cardItems.sort((a, b) => {
-      const primary =
-        sort.value === "name" ? nameCollator.compare(a.name, b.name) : b.timestamp - a.timestamp;
-      return primary || a.id.localeCompare(b.id, "en");
-    });
+    if (sort.value !== currentSort) {
+      currentSort = sort.value;
+      cardItems.sort((a, b) => {
+        const primary =
+          sort.value === "name" ? nameCollator.compare(a.name, b.name) : b.timestamp - a.timestamp;
+        return primary || a.id.localeCompare(b.id, "en");
+      });
+      grid.append(...cardItems.map((item) => item.card));
+    }
     for (const item of cardItems) {
       const hidden = !(
         (!provider.value || item.provider === provider.value) &&
@@ -266,19 +277,16 @@ function enableGallery() {
       if (item.card.hidden !== hidden) item.card.hidden = hidden;
       if (!hidden) count++;
     }
-    grid.append(...cardItems.map((item) => item.card));
     const filtered = query !== "" || provider.value !== "";
-    filters.querySelector("[type='reset']").hidden = !filtered && sort.value === "newest";
-    const status = document.querySelector("#results-status");
+    formReset.hidden = !filtered && sort.value === "newest";
     status.hidden = !filtered;
     status.textContent = `${count} of ${cardItems.length} attempts`;
-    document.querySelector("#empty-state").hidden = count !== 0;
+    emptyState.hidden = count !== 0;
   };
   const updateSelection = () => {
     tray.hidden = selected.size === 0;
-    document.querySelector("#selection-count").textContent = `${selected.size} of 2 selected`;
-    const list = document.querySelector("#selected-runs");
-    list.replaceChildren();
+    selectionCount.textContent = `${selected.size} of 2 selected`;
+    selectedList.replaceChildren();
     for (const [id, name] of selected) {
       const item = element("li", name);
       const remove = element("button", "×");
@@ -291,15 +299,14 @@ function enableGallery() {
         updateSelection();
       });
       item.append(remove);
-      list.append(item);
+      selectedList.append(item);
     }
-    const link = document.querySelector("#compare-link");
-    link.setAttribute("aria-disabled", String(selected.size !== 2));
+    compareLink.setAttribute("aria-disabled", String(selected.size !== 2));
     if (selected.size === 2) {
       const [left, right] = [...selected.keys()];
       const compareUrl = `/compare/?${new URLSearchParams({ left, right })}`;
-      link.href = compareUrl;
-      link.removeAttribute("tabindex");
+      compareLink.href = compareUrl;
+      compareLink.removeAttribute("tabindex");
       if (!prefetchedUrls.has(compareUrl)) {
         prefetchedUrls.add(compareUrl);
         const prefetch = element("link");
@@ -308,8 +315,8 @@ function enableGallery() {
         document.head.append(prefetch);
       }
     } else {
-      link.removeAttribute("href");
-      link.tabIndex = -1;
+      compareLink.removeAttribute("href");
+      compareLink.tabIndex = -1;
     }
   };
   for (const card of cards) {
