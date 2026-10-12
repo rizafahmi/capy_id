@@ -799,6 +799,7 @@
     outline-offset: 3px;
   }
   .card-image {
+    contain: layout paint;
     text-decoration: none;
     display: block;
     position: relative;
@@ -832,6 +833,7 @@
     font-size: 0.68rem;
   }
   .card-body {
+    contain: layout style;
     padding: 1.25rem;
   }
   .card-title {
