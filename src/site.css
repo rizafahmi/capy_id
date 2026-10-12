@@ -506,6 +506,7 @@
     min-width: 0;
   }
   .compare-attempt {
+    contain: layout style;
     padding-block: 0 0.65rem;
   }
   .compare-attempt-name {
@@ -1013,6 +1014,7 @@
     color: var(--muted);
   }
   .preview {
+    contain: layout style;
     min-width: 0;
   }
   .preview-stage {
@@ -1047,6 +1049,7 @@
   }
   .preview-status,
   .viewport-label {
+    contain: layout style;
     font-size: 0.75rem;
     line-height: 1.7;
     color: var(--muted);
@@ -1193,6 +1196,7 @@
     margin: 0.65rem 0 1rem;
   }
   .preview-policy {
+    contain: layout style;
     margin-top: 1rem;
     color: var(--muted);
     font-size: 0.75rem;
