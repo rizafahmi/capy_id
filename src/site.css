@@ -390,6 +390,7 @@
     }
   }
   .run-heading {
+    contain: layout style;
     padding: 2.5rem 0 1.5rem;
   }
   .run-heading h1 {
@@ -403,6 +404,7 @@
     gap: 3rem;
   }
   .run-output {
+    contain: layout style;
     grid-area: output;
   }
   .run-summary {
@@ -414,6 +416,7 @@
     min-width: 0;
   }
   .conditions {
+    contain: layout style;
     padding: 1.5rem;
     background: var(--raised);
     border-radius: var(--radius-panel);
@@ -637,6 +640,7 @@
     contain: layout style;
   }
   .prose {
+    contain: layout style;
     max-width: 780px;
     margin-block: 3rem;
   }
