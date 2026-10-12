@@ -364,6 +364,7 @@
     font-size: 0.85rem;
   }
   .gallery-controls summary {
+    contain: layout style;
     width: fit-content;
     min-height: 44px;
     padding-block: 0.65rem;
@@ -373,6 +374,7 @@
     color: var(--accent-ink);
   }
   .filters {
+    contain: layout style;
     display: grid;
     grid-template-columns: minmax(180px, 1fr) minmax(130px, 0.5fr) minmax(130px, 0.5fr) auto;
     gap: 1rem;
@@ -380,6 +382,10 @@
     padding: 1.2rem;
     background: var(--raised);
     border-radius: var(--radius-panel);
+  }
+  .filters label,
+  .filters button {
+    contain: layout style;
   }
   .gallery-grid {
     display: grid;
