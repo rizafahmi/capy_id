@@ -250,9 +250,10 @@ function enableEvidence() {
 }
 
 function enableGallery() {
-  const filters = document.querySelector(".filters");
-  if (!filters) return;
-  filters.closest(".gallery-controls").hidden = false;
+  const filterTemplate = document.querySelector("[data-gallery-filters]");
+  if (!filterTemplate) return;
+  const controls = filterTemplate.closest(".gallery-controls");
+  const filters = filterTemplate.content.querySelector(".filters");
   const cards = [...document.querySelectorAll("[data-card]")];
   const grid = document.querySelector(".gallery-grid");
   const cardItems = cards.map((card) => ({
@@ -370,10 +371,29 @@ function enableGallery() {
     });
   }
   filters.addEventListener("input", update);
-  filters.addEventListener("submit", (event) => event.preventDefault());
+  filters.addEventListener("submit", (event) => {
+    event.preventDefault();
+    update();
+    if (event.agentInvoked && typeof event.respondWith === "function") {
+      filters.closest(".gallery-controls").open = true;
+      const attempts = cardItems
+        .filter((item) => !item.card.hidden)
+        .map((item) => ({
+          id: item.id,
+          name: item.name,
+          provider: item.provider,
+          url: item.card.querySelector(".inspect-link").href,
+        }));
+      event.respondWith(
+        Promise.resolve({ count: attempts.length, total: cardItems.length, attempts }),
+      );
+    }
+  });
   filters.addEventListener("reset", () => setTimeout(update, 0));
   reset.addEventListener("click", () => filters.reset());
   update();
+  filterTemplate.replaceWith(filters);
+  controls.hidden = false;
 }
 
 const previews = new Map();

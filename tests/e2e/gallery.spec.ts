@@ -9,6 +9,21 @@ import { animationHtml, fixtureMetadata } from "../../scripts/fixtures.ts";
 import { curationSchema } from "../../scripts/schema.ts";
 import { serveStatic } from "../../scripts/server.ts";
 
+test("gallery form submission applies filters without navigation", async ({ page }) => {
+  await page.goto("/");
+  await page.getByText("Filter and sort", { exact: true }).click();
+  await page.locator(".filters").evaluate((form) => {
+    if (!(form instanceof HTMLFormElement)) throw new Error("Expected the gallery form");
+    const search = form.elements.namedItem("search");
+    if (!(search instanceof HTMLInputElement)) throw new Error("Expected the search input");
+    search.value = "FIXTURE-ANIMATION";
+    form.requestSubmit();
+  });
+  await expect(page.locator("[data-card]:visible")).toHaveCount(1);
+  await expect(page.locator("#results-status")).toHaveText("1 of 6 attempts");
+  await expect(page).toHaveURL("/");
+});
+
 test("gallery and comparison keep hostile-looking metadata as text and preserve values", async ({
   page,
 }) => {

@@ -4,6 +4,11 @@
     "allowImportingTsExtensions": true,
     "types": ["astro/client", "node"]
   },
-  "include": [".astro/types.d.ts", "src/astro/**/*.astro", "scripts/**/*.ts"],
+  "include": [
+    ".astro/types.d.ts",
+    "src/astro/**/*.astro",
+    "src/astro/**/*.d.ts",
+    "scripts/**/*.ts"
+  ],
   "exclude": ["dist", ".test-site", "node_modules"]
 }

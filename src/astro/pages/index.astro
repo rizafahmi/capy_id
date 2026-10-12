@@ -71,38 +71,52 @@ const comparable = entries.length > 1;
       <>
         <details class="gallery-controls" hidden>
           <summary>Filter and sort</summary>
-          <form class="filters">
-            <label>
-              Search models
-              <input
-                name="search"
-                type="search"
-                placeholder="Name, identifier, or provider"
-                autocomplete="off"
-                spellcheck="false"
-                autocapitalize="none"
-              />
-            </label>
-            <label>
-              Provider
-              <select name="provider">
-                <option value="">All providers</option>
-                {providers.map((provider) => (
-                  <option>{provider}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Sort by
-              <select name="sort">
-                <option value="newest">Newest first</option>
-                <option value="name">Model name</option>
-              </select>
-            </label>
-            <button type="reset" class="secondary" hidden>
-              Reset
-            </button>
-          </form>
+          <template data-gallery-filters>
+            <form
+              class="filters"
+              toolname="filter_gallery"
+              tooldescription="Filter and sort the gallery of model attempts. Returns matching attempt names, providers, and inspection links. Omitted parameters keep their current values."
+              toolautosubmit
+            >
+              <label>
+                Search models
+                <input
+                  name="search"
+                  toolparamdescription="A case-insensitive substring of the model name, identifier, or provider. Whitespace is trimmed. Use an empty string to clear the search."
+                  type="search"
+                  placeholder="Name, identifier, or provider"
+                  autocomplete="off"
+                  spellcheck="false"
+                  autocapitalize="none"
+                />
+              </label>
+              <label>
+                Provider
+                <select
+                  name="provider"
+                  toolparamdescription="Limit attempts to this provider. Use an empty string for all providers."
+                >
+                  <option value="">All providers</option>
+                  {providers.map((provider) => (
+                    <option>{provider}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Sort by
+                <select
+                  name="sort"
+                  toolparamdescription="Order attempts by newest generation date or model name."
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="name">Model name</option>
+                </select>
+              </label>
+              <button type="reset" class="secondary" hidden>
+                Reset
+              </button>
+            </form>
+          </template>
         </details>
         <p id="results-status" class="results-status" role="status" hidden>
           {entries.length} attempts
