@@ -736,7 +736,7 @@ async function enableComparison() {
 function enableNavigationPrefetch() {
   const prefetchedRoutes = new Set();
   const navLinks = document.querySelectorAll(
-    'nav a[href^="/"], a.text-link[href^="/"], a.back-link[href^="/"]',
+    'nav a[href^="/"], a.text-link[href^="/"], a.back-link[href^="/"], a.button[href^="/"]',
   );
   for (const anchor of navLinks) {
     const prefetch = () => {

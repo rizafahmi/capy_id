@@ -274,6 +274,12 @@
     min-height: 65vh;
     padding-bottom: 4rem;
   }
+  body[data-page="not-found"] main {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
   .hero {
     contain: layout style;
     display: grid;
