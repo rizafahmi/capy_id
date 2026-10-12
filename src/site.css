@@ -210,6 +210,7 @@
     overflow-wrap: anywhere;
   }
   .sr-only {
+    contain: strict;
     position: absolute;
     width: 1px;
     height: 1px;
@@ -221,6 +222,7 @@
     border: 0;
   }
   .skip {
+    contain: layout style;
     position: fixed;
     top: -100px;
     left: 1rem;
@@ -1229,6 +1231,7 @@
       sans-serif;
   }
   .metric-note {
+    contain: layout style;
     margin: 1.25rem 0 0;
     color: var(--muted);
     font-size: 0.75rem;
