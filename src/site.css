@@ -328,6 +328,7 @@
     text-align: center;
   }
   .collection-heading {
+    contain: layout style;
     margin-bottom: 1.1rem;
   }
   .collection-heading h2 {
