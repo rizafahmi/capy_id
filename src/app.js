@@ -21,6 +21,18 @@ const compareDateFormat = new Intl.DateTimeFormat("en-US", {
   hourCycle: "h23",
   timeZone: "UTC",
 });
+const provenanceFields = [
+  ["Run ID", (entry) => entry.run.id],
+  ["Provider", (entry) => entry.run.provider],
+  ["Model identifier", (entry) => entry.run.model.identifier],
+  ["Generated", (entry) => entry.run.generated_at ?? "Unknown"],
+  ["Harness", (entry) => entry.run.generation.harness?.name ?? "Unknown"],
+  ["Harness version", (entry) => entry.run.generation.harness?.version ?? "Unknown"],
+  ["Generation mode", (entry) => entry.run.generation.mode],
+  ["Interface", (entry) => entry.run.generation.interface],
+  ["Tools used", (entry) => entry.run.generation.tools_used],
+  ["Challenge", (entry) => entry.run.challenge_id],
+];
 const artifactCache = new Map();
 const verifiedChecksums = new Set();
 async function artifact(url, checksum) {
@@ -507,6 +519,7 @@ function comparisonTable(caption, rows) {
   }
   head.append(headings);
   const body = element("tbody");
+  const rowElements = [];
   for (const [label, left, right] of rows) {
     const different =
       left !== right && ![left, right].some((value) => ["Unknown", "Not recorded"].includes(value));
@@ -514,8 +527,9 @@ function comparisonTable(caption, rows) {
     const heading = element("th", label);
     heading.scope = "row";
     row.append(heading, element("td", left), element("td", right));
-    body.append(row);
+    rowElements.push(row);
   }
+  body.append(...rowElements);
   table.append(head, body);
   return table;
 }
@@ -526,6 +540,10 @@ async function enableComparison() {
   const left = form.elements.namedItem("left");
   const right = form.elements.namedItem("right");
   const both = document.querySelector("#run-both");
+  const panels = document.querySelector("#compare-panels");
+  const results = document.querySelector("#compare-results");
+  const metrics = document.querySelector("#compare-metrics");
+  const notices = document.querySelector("#condition-notices");
   let cataloguePromise = null;
   const getCatalogue = () => {
     if (!cataloguePromise) {
@@ -550,22 +568,10 @@ async function enableComparison() {
   const renderProvenance = () => {
     if (!provenanceDetails?.open || !currentComparison || generation.hasChildNodes()) return;
     const [a, b] = currentComparison;
-    const provenance = [
-      ["Run ID", (entry) => entry.run.id],
-      ["Provider", (entry) => entry.run.provider],
-      ["Model identifier", (entry) => entry.run.model.identifier],
-      ["Generated", (entry) => entry.run.generated_at ?? "Unknown"],
-      ["Harness", (entry) => entry.run.generation.harness?.name ?? "Unknown"],
-      ["Harness version", (entry) => entry.run.generation.harness?.version ?? "Unknown"],
-      ["Generation mode", (entry) => entry.run.generation.mode],
-      ["Interface", (entry) => entry.run.generation.interface],
-      ["Tools used", (entry) => entry.run.generation.tools_used],
-      ["Challenge", (entry) => entry.run.challenge_id],
-    ];
     generation.append(
       comparisonTable(
         "Generation details and provenance",
-        provenance.map(([label, value]) => [label, value(a), value(b)]),
+        provenanceFields.map(([label, value]) => [label, value(a), value(b)]),
       ),
     );
   };
@@ -577,15 +583,11 @@ async function enableComparison() {
       resizeObserver.disconnect();
       resizeObserver = null;
     }
-    const panels = document.querySelector("#compare-panels");
     panels.replaceChildren();
-    const results = document.querySelector("#compare-results");
     results.hidden = true;
-    const metrics = document.querySelector("#compare-metrics");
     metrics.replaceChildren();
     currentComparison = null;
     generation.replaceChildren();
-    const notices = document.querySelector("#condition-notices");
     notices.replaceChildren();
     both.hidden = true;
     if (!left.value || !right.value || left.value === right.value) {
