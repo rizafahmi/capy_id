@@ -612,6 +612,7 @@
   }
   .compare-table th,
   .compare-table td {
+    contain: layout style;
     width: 38%;
     padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--line);
@@ -620,6 +621,7 @@
     overflow-wrap: anywhere;
   }
   .compare-table th:first-child {
+    contain: layout style;
     width: 24%;
     padding-left: 0;
   }
@@ -628,6 +630,7 @@
     color: var(--muted);
   }
   .compare-table thead th {
+    contain: layout style;
     font-size: 0.75rem;
   }
   .compare-table .comparison-difference {
