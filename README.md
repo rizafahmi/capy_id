@@ -52,7 +52,13 @@ running.
 Use these commands rather than standalone `astro dev` or `astro build`. They run
 content validation and maintain both origins. Astro renders gallery pages live.
 Template edits update open browsers. CSS, JavaScript, and local asset edits
-trigger a full page reload. Reloading resets filters and stops active previews.
+trigger a full page reload. Reloading restores filters from the URL and stops
+active previews.
+
+The gallery can filter by search text, provider, exact model identifier, recorded
+effort (including unknown), and generation mode. It can also sort by name or
+newest attempt. Copy the address to share the current view. These controls use
+browser JavaScript; without it, every published attempt remains browsable.
 
 Restart after tooling or configuration edits. Content and curation changes
 trigger a debounced validated rebuild. Invalid changes leave the last good

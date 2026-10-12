@@ -384,7 +384,7 @@
   .filters {
     contain: layout style;
     display: grid;
-    grid-template-columns: minmax(180px, 1fr) minmax(130px, 0.5fr) minmax(130px, 0.5fr) auto;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1rem;
     align-items: end;
     padding: 1.2rem;
@@ -395,6 +395,44 @@
   .filters button {
     contain: layout style;
   }
+  .filters label:first-child {
+    grid-column: span 2;
+  }
+  .filters button {
+    justify-self: end;
+  }
+  .filter-feedback {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    margin-block: 0.75rem;
+  }
+  .filter-feedback[hidden] {
+    display: none;
+  }
+  .active-filters {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+  }
+  .filter-feedback button {
+    contain: none;
+    flex: none;
+    min-height: 44px;
+    padding: 0 0.25rem;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: var(--accent-ink);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    white-space: nowrap;
+  }
+  .filter-feedback button:hover {
+    color: var(--accent-ink);
+  }
   .gallery-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -403,6 +441,11 @@
   }
   .gallery-grid.single-attempt {
     grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .filters {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
   }
   @media (min-width: 768px) {
     .single-attempt .card {
@@ -767,6 +810,9 @@
     .filters label:first-child,
     .filters button {
       grid-column: 1 / -1;
+    }
+    .filters button {
+      justify-self: stretch;
     }
     .gallery-grid,
     .compare-panels,

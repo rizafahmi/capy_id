@@ -124,6 +124,23 @@ test("curation observations have a prominent insight section", async ({ page }) 
   await expect(page.getByText("Capture conditions", { exact: true })).toBeVisible();
 });
 
+for (const width of [360, 768, 1280]) {
+  test(`active gallery filters remain readable at ${width}px`, async ({ page }, info) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/?model=fixture-animation&effort=low&mode=one-shot");
+    await expect(page.locator(".active-filters")).toContainText("Effort: Low");
+    await expect(page.getByRole("button", { name: "Clear filters" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    const button = await page.getByRole("button", { name: "Clear filters" }).boundingBox();
+    expect(button?.width).toBeGreaterThan(80);
+    expect((button?.x ?? width) + (button?.width ?? 0)).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: info.outputPath(`active-filters-${width}.png`), fullPage: true });
+  });
+}
+
 for (const width of [360, 390, 768, 1024, 1440]) {
   test(`gallery hierarchy and controls fit at ${width}px`, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 844 });

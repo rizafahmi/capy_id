@@ -9,6 +9,122 @@ import { animationHtml, fixtureMetadata } from "../../scripts/fixtures.ts";
 import { curationSchema } from "../../scripts/schema.ts";
 import { serveStatic } from "../../scripts/server.ts";
 
+test("gallery restores a shareable model and effort filter and handles history", async ({
+  page,
+}) => {
+  await page.goto("/?model=fixture-animation&effort=low&sort=name#attempts");
+  await expect(page.getByRole("combobox", { name: "Model", exact: true })).toHaveValue(
+    "fixture-animation",
+  );
+  await expect(page.getByRole("combobox", { name: "Effort", exact: true })).toHaveValue("low");
+  await expect(page.locator("[data-card]:visible")).toHaveCount(1);
+  await expect(page.locator(".active-filters")).toContainText("Model: animation");
+  await expect(page.locator(".active-filters")).toContainText("Effort: Low");
+  await expect(page.locator("#results-status")).toHaveText("1 of 6 attempts");
+  await page.getByRole("combobox", { name: "Effort", exact: true }).selectOption("unknown");
+  await expect(page.getByText("No matching attempts", { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/model=fixture-animation&effort=unknown&sort=name#attempts$/);
+  await page.goBack();
+  await expect(page.getByRole("combobox", { name: "Effort", exact: true })).toHaveValue("low");
+  await expect(page.locator("[data-card]:visible")).toHaveCount(1);
+  await page.getByRole("button", { name: "Clear filters" }).click();
+  await expect(page).toHaveURL("/#attempts");
+  await expect(page.locator("[data-card]:visible")).toHaveCount(6);
+  await expect(page.locator(".active-filters")).not.toBeVisible();
+  await expect(page.locator("#results-status")).not.toBeVisible();
+});
+
+test("invalid URL filters are ignored and search creates a shareable URL", async ({ page }) => {
+  await page.goto(
+    "/?campaign=launch&model=not-published&effort=bogus&mode=bogus&provider=bogus&sort=bogus",
+  );
+  await expect(page).toHaveURL("/?campaign=launch");
+  await expect(page.locator("[data-card]:visible")).toHaveCount(6);
+  await expect(page.locator('.filters [name="model"]')).toHaveValue("");
+  await page.getByText("Filter and sort", { exact: true }).click();
+  await page.getByLabel("Search models").fill("FIXTURE-ANIMATION");
+  await expect(page).toHaveURL("/?campaign=launch&search=FIXTURE-ANIMATION");
+  await page.reload();
+  await expect(page.getByLabel("Search models")).toHaveValue("FIXTURE-ANIMATION");
+  await expect(page.locator("[data-card]:visible")).toHaveCount(1);
+  await page.getByRole("button", { name: "Reset", exact: true }).click();
+  await expect(page).toHaveURL("/?campaign=launch");
+});
+
+test("model, effort, and mode filters combine using published metadata", async ({ page }) => {
+  const root = await mkdtemp(join(tmpdir(), "capyboard-facets-"));
+  const content = join(root, "content");
+  try {
+    await initializeContent(content);
+    const prompt = await readFile(
+      join(content, "challenges/capybara-hoverboard-v1/prompt.txt"),
+      "utf8",
+    );
+    for (const [id, model, effort, mode] of [
+      ["fixture-a-low", "model-a", "low", "one-shot"],
+      ["fixture-a-high", "model-a", "high", "tool-assisted"],
+      ["fixture-b-unknown", "model-b", null, "tool-assisted"],
+    ] as const) {
+      const metadata = fixtureMetadata(id);
+      const run = await importRun({
+        root: content,
+        metadata: {
+          ...metadata,
+          model: { ...metadata.model, display_name: model, identifier: model },
+          generation: {
+            ...metadata.generation,
+            mode,
+            tools_used: mode === "tool-assisted" ? "yes" : "no",
+            harness: { ...metadata.generation.harness, effort },
+          },
+        },
+        response: Buffer.from("No HTML returned."),
+        transcript: { schema_version: 1, turns: [{ role: "user", content: prompt }] },
+      });
+      const path = join(content, `curation/${run.id}.json`);
+      const curation = curationSchema.parse(JSON.parse(await readFile(path, "utf8")));
+      await writeFile(
+        path,
+        jsonBytes({ ...curation, visible: true, published_at: "2026-10-10T00:00:00Z" }),
+      );
+    }
+    const out = join(root, "site");
+    await buildSite({
+      root: content,
+      out,
+      galleryOrigin: "http://127.0.0.1:4173",
+      previewOrigin: "http://127.0.0.1:4174",
+      development: true,
+    });
+    const server = await serveStatic(join(out, "gallery"), 0);
+    try {
+      const address = server.address();
+      if (!address || typeof address === "string") throw new Error("No gallery server address");
+      await page.goto(
+        `http://127.0.0.1:${address.port}/?model=model-a&effort=high&mode=tool-assisted`,
+      );
+      await expect(page.locator("[data-card]:visible")).toHaveCount(1);
+      await expect(page.locator("[data-card='fixture-a-high']")).toBeVisible();
+      await expect(page.locator(".active-filters")).toContainText("Mode: Tool-assisted");
+      await expect(
+        page.getByRole("combobox", { name: "Model", exact: true }).locator("option"),
+      ).toHaveCount(3);
+      await page.getByRole("combobox", { name: "Effort", exact: true }).selectOption("unknown");
+      await expect(page.getByText("No matching attempts", { exact: true })).toBeVisible();
+      await page.getByRole("combobox", { name: "Model", exact: true }).selectOption("model-b");
+      await expect(page.locator("[data-card='fixture-b-unknown']")).toBeVisible();
+      await expect(page.locator("#results-status")).toHaveText("1 of 3 attempts");
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        server.close((error) => (error ? reject(error) : resolve()));
+        server.closeAllConnections();
+      });
+    }
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("gallery form submission applies filters without navigation", async ({ page }) => {
   await page.goto("/");
   await page.getByText("Filter and sort", { exact: true }).click();
@@ -21,7 +137,7 @@ test("gallery form submission applies filters without navigation", async ({ page
   });
   await expect(page.locator("[data-card]:visible")).toHaveCount(1);
   await expect(page.locator("#results-status")).toHaveText("1 of 6 attempts");
-  await expect(page).toHaveURL("/");
+  await expect(page).toHaveURL("/?search=FIXTURE-ANIMATION");
 });
 
 test("gallery and comparison keep hostile-looking metadata as text and preserve values", async ({

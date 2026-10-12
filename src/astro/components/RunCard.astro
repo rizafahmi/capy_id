@@ -36,6 +36,8 @@ const url = `/runs/${run.id}/`;
   data-provider={run.provider}
   data-name={run.model.display_name}
   data-identifier={run.model.identifier}
+  data-effort={effort ?? "unknown"}
+  data-mode={run.generation.mode}
   data-date={run.generated_at ?? ""}
 >
   <a class="card-image" href={url}>

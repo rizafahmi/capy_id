@@ -8,6 +8,30 @@ const { entries, fixtures } = __CAPYBOARD_ASTRO_PAGES__.gallery;
 const providers = [
   ...new Set(entries.map((entry) => entry.run.provider)),
 ].sort();
+const models = [
+  ...new Map(
+    entries.map(({ run }) => [run.model.identifier, run.model.display_name]),
+  ).entries(),
+].sort(
+  (a, b) => a[1].localeCompare(b[1], "en") || a[0].localeCompare(b[0], "en"),
+);
+const efforts = [
+  "off",
+  "minimal",
+  "low",
+  "medium",
+  "high",
+  "xhigh",
+  "max",
+].filter((effort) =>
+  entries.some(({ run }) => run.generation.harness?.effort === effort),
+);
+const unknownEffort = entries.some(
+  ({ run }) => run.generation.harness?.effort == null,
+);
+const modes = ["one-shot", "revised", "tool-assisted", "unknown"].filter(
+  (mode) => entries.some(({ run }) => run.generation.mode === mode),
+);
 const comparable = entries.length > 1;
 ---
 
@@ -75,7 +99,7 @@ const comparable = entries.length > 1;
             <form
               class="filters"
               toolname="filter_gallery"
-              tooldescription="Filter and sort the gallery of model attempts. Returns matching attempt names, providers, and inspection links. Omitted parameters keep their current values."
+              tooldescription="Filter and sort model attempts by search, provider, exact model identifier, recorded effort, and generation mode. Returns matching attempt names, providers, and inspection links. Omitted parameters keep their current values."
               toolautosubmit
             >
               <label>
@@ -103,6 +127,47 @@ const comparable = entries.length > 1;
                 </select>
               </label>
               <label>
+                Model
+                <select
+                  name="model"
+                  toolparamdescription="Select an exact model identifier, or leave empty to include all models."
+                >
+                  <option value="">All models</option>
+                  {models.map(([identifier, name]) => (
+                    <option value={identifier}>{name}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Effort
+                <select
+                  name="effort"
+                  toolparamdescription="Filter by recorded harness effort. Levels are not equivalent across providers. Unknown means effort was not recorded."
+                >
+                  <option value="">All effort levels</option>
+                  {efforts.map((effort) => (
+                    <option value={effort}>
+                      {effort.charAt(0).toUpperCase() + effort.slice(1)}
+                    </option>
+                  ))}
+                  {unknownEffort && <option value="unknown">Unknown</option>}
+                </select>
+              </label>
+              <label>
+                Generation mode
+                <select
+                  name="mode"
+                  toolparamdescription="Filter by the recorded generation mode."
+                >
+                  <option value="">All modes</option>
+                  {modes.map((mode) => (
+                    <option value={mode}>
+                      {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
                 Sort by
                 <select
                   name="sort"
@@ -118,6 +183,12 @@ const comparable = entries.length > 1;
             </form>
           </template>
         </details>
+        <div class="filter-feedback" hidden>
+          <p class="active-filters"></p>
+          <button type="button" class="text-link" data-clear-filters>
+            Clear filters
+          </button>
+        </div>
         <p id="results-status" class="results-status" role="status" hidden>
           {entries.length} attempts
         </p>

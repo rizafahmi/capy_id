@@ -265,6 +265,9 @@ function enableGallery() {
       (value ?? "").toLowerCase(),
     ),
     provider: card.dataset.provider,
+    model: card.dataset.identifier,
+    effort: card.dataset.effort,
+    mode: card.dataset.mode,
   }));
   const selected = new Map();
   const prefetchedUrls = new Set();
@@ -277,7 +280,40 @@ function enableGallery() {
   const compareLink = document.querySelector("#compare-link");
   const search = filters.elements.namedItem("search");
   const provider = filters.elements.namedItem("provider");
+  const model = filters.elements.namedItem("model");
+  const effort = filters.elements.namedItem("effort");
+  const mode = filters.elements.namedItem("mode");
   const sort = filters.elements.namedItem("sort");
+  const fields = { search, provider, model, effort, mode, sort };
+  const feedback = document.querySelector(".filter-feedback");
+  const activeFilters = feedback.querySelector(".active-filters");
+  const clearFilters = feedback.querySelector("[data-clear-filters]");
+  const restoreUrl = () => {
+    const params = new URLSearchParams(location.search);
+    for (const [key, field] of Object.entries(fields)) {
+      const value = params.get(key) ?? "";
+      if (field instanceof HTMLSelectElement) {
+        const fallback = key === "sort" ? "newest" : "";
+        field.value = [...field.options].some((option) => option.value === value)
+          ? value
+          : fallback;
+      } else field.value = value;
+    }
+    controls.open = Object.entries(fields).some(
+      ([key, field]) => field.value !== (key === "sort" ? "newest" : ""),
+    );
+  };
+  const syncUrl = (method) => {
+    const params = new URLSearchParams(location.search);
+    for (const key of Object.keys(fields)) params.delete(key);
+    for (const [key, field] of Object.entries(fields)) {
+      const value = key === "search" ? field.value.trim() : field.value;
+      if (value && (key !== "sort" || value !== "newest")) params.set(key, value);
+    }
+    const href = `${location.pathname}${params.size ? `?${params}` : ""}${location.hash}`;
+    if (href !== `${location.pathname}${location.search}${location.hash}`)
+      history[method](null, "", href);
+  };
   const reset = document.querySelector("[data-reset]");
   const formReset = filters.querySelector("[type='reset']");
   reset.hidden = false;
@@ -297,13 +333,30 @@ function enableGallery() {
     for (const item of cardItems) {
       const hidden = !(
         (!provider.value || item.provider === provider.value) &&
+        (!model.value || item.model === model.value) &&
+        (!effort.value || item.effort === effort.value) &&
+        (!mode.value || item.mode === mode.value) &&
         (!query || item.searchable.some((value) => value.includes(query)))
       );
       if (item.card.hidden !== hidden) item.card.hidden = hidden;
       if (!hidden) count++;
     }
-    const filtered = query !== "" || provider.value !== "";
-    formReset.hidden = !filtered && sort.value === "newest";
+    const selections = [];
+    if (query) selections.push(`Search: ${search.value.trim()}`);
+    for (const [label, field] of [
+      ["Provider", provider],
+      ["Model", model],
+      ["Effort", effort],
+      ["Mode", mode],
+    ]) {
+      if (field.value) selections.push(`${label}: ${field.selectedOptions[0].textContent.trim()}`);
+    }
+    if (sort.value !== "newest")
+      selections.push(`Sort: ${sort.selectedOptions[0].textContent.trim()}`);
+    const filtered = selections.length > 0;
+    formReset.hidden = !filtered;
+    feedback.hidden = !filtered;
+    activeFilters.textContent = selections.join(" · ");
     status.hidden = !filtered;
     status.textContent = `${count} of ${cardItems.length} attempts`;
     emptyState.hidden = count !== 0;
@@ -370,12 +423,24 @@ function enableGallery() {
       updateSelection();
     });
   }
-  filters.addEventListener("input", update);
+  restoreUrl();
+  syncUrl("replaceState");
+  filters.addEventListener("input", (event) => {
+    if (event.target !== search) return;
+    update();
+    syncUrl("replaceState");
+  });
+  filters.addEventListener("change", (event) => {
+    if (event.target === search) return;
+    update();
+    syncUrl("pushState");
+  });
   filters.addEventListener("submit", (event) => {
     event.preventDefault();
     update();
+    syncUrl(event.agentInvoked ? "pushState" : "replaceState");
     if (event.agentInvoked && typeof event.respondWith === "function") {
-      filters.closest(".gallery-controls").open = true;
+      controls.open = true;
       const attempts = cardItems
         .filter((item) => !item.card.hidden)
         .map((item) => ({
@@ -389,8 +454,18 @@ function enableGallery() {
       );
     }
   });
-  filters.addEventListener("reset", () => setTimeout(update, 0));
+  filters.addEventListener("reset", () =>
+    setTimeout(() => {
+      update();
+      syncUrl("pushState");
+    }, 0),
+  );
   reset.addEventListener("click", () => filters.reset());
+  clearFilters.addEventListener("click", () => filters.reset());
+  window.addEventListener("popstate", () => {
+    restoreUrl();
+    update();
+  });
   update();
   filterTemplate.replaceWith(filters);
   controls.hidden = false;

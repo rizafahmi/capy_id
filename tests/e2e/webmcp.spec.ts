@@ -28,6 +28,19 @@ test.describe("native WebMCP gallery tools", () => {
         properties: {
           search: { type: "string", description: expect.stringContaining("case-insensitive") },
           provider: { enum: ["", "Development fixture"] },
+          model: {
+            enum: [
+              "",
+              "fixture-animation",
+              "fixture-broken",
+              "fixture-containment",
+              "fixture-disabled",
+              "fixture-no-html",
+              "fixture-unknown",
+            ],
+          },
+          effort: { enum: ["", "low", "unknown"] },
+          mode: { enum: ["", "one-shot"] },
           sort: { enum: ["newest", "name"] },
         },
       },
@@ -90,6 +103,18 @@ test.describe("native WebMCP gallery tools", () => {
       "fixture-unknown",
     );
     await expect(page.locator("#results-status")).not.toBeVisible();
+  });
+
+  test("agent model and effort choices share the gallery URL with the UI", async ({ page }) => {
+    await page.goto("/");
+    const result = await page.webmcp.callTool(
+      "filter_gallery",
+      { model: "fixture-animation", effort: "low", mode: "one-shot" },
+      { timeout: 5000 },
+    );
+    expect(result).toMatchObject({ count: 1, total: 6, attempts: [{ id: "fixture-animation" }] });
+    await expect(page).toHaveURL("/?model=fixture-animation&effort=low&mode=one-shot");
+    await expect(page.locator("[data-card]:visible")).toHaveCount(1);
   });
 
   test("does not register an unusable tool without JavaScript", async ({ browser }) => {
