@@ -259,6 +259,7 @@
     font-size: 0.85rem;
   }
   .site-header nav a {
+    contain: layout style;
     text-decoration: none;
     padding: 0.7rem 1rem;
     border-radius: 999px;
@@ -752,6 +753,7 @@
 
 @layer components {
   .brand {
+    contain: layout style;
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -761,6 +763,7 @@
     font-size: 1.25rem;
   }
   .brand-mark {
+    contain: layout style;
     display: inline-grid;
     place-items: center;
     width: 34px;
@@ -771,6 +774,7 @@
     font: 750 0.85rem var(--display);
   }
   .brand-tag {
+    contain: layout style;
     color: var(--muted);
     font:
       0.72rem system-ui,
