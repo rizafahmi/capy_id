@@ -1157,6 +1157,7 @@
     margin: 1.25rem 0 0;
   }
   .run-context {
+    contain: layout style;
     display: flex;
     flex-wrap: wrap;
     gap: 0.7rem 2rem;
@@ -1181,6 +1182,7 @@
     font-size: 1rem;
   }
   .token-breakdown {
+    contain: layout style;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.75rem;
     margin: 0;
@@ -1198,6 +1200,7 @@
     font-weight: 650;
   }
   .run-highlights {
+    contain: layout style;
     gap: 1.25rem;
     margin: 0 0 1.5rem;
     font-variant-numeric: tabular-nums;
