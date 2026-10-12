@@ -447,6 +447,7 @@
     margin-top: 0.75rem;
   }
   .compare-heading {
+    contain: layout style;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -461,6 +462,12 @@
   .compare-heading p {
     margin-bottom: 0;
   }
+  #compare-form {
+    contain: layout style;
+  }
+  .compare-notices {
+    contain: layout style;
+  }
   .compare-notices .notice {
     margin-top: 0.65rem;
     padding-block: 0.65rem;
@@ -473,6 +480,7 @@
     font-weight: 650;
   }
   .compare-toolbar {
+    contain: layout style;
     display: flex;
     align-items: center;
     justify-content: space-between;
