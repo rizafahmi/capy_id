@@ -8,6 +8,7 @@ const element = (tag, text, className) => {
   if (className) node.className = className;
   return node;
 };
+const byteToHex = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, "0"));
 const utf8Decoder = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 const nameCollator = new Intl.Collator("en", { sensitivity: "base" });
 const compareDateFormat = new Intl.DateTimeFormat("en-US", {
@@ -37,7 +38,7 @@ async function artifact(url, checksum) {
     const hashArray = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
     let hash = "";
     for (let i = 0; i < hashArray.length; i++) {
-      hash += hashArray[i].toString(16).padStart(2, "0");
+      hash += byteToHex[hashArray[i]];
     }
     if (hash !== checksum) {
       artifactCache.delete(url);
@@ -92,10 +93,21 @@ function highlightedCode(source, tokens) {
   if (offset < source.length) fragment.append(document.createTextNode(source.slice(offset)));
   return fragment;
 }
+const highlightCache = new Map();
+async function fetchHighlights(url) {
+  if (!highlightCache.has(url)) {
+    const request = (async () => {
+      const response = await fetch(url, { credentials: "omit" });
+      if (!response.ok) throw new Error("Highlighting could not be loaded.");
+      return response.json();
+    })();
+    highlightCache.set(url, request);
+    request.catch(() => highlightCache.delete(url));
+  }
+  return highlightCache.get(url);
+}
 async function highlightCode(details, code, source) {
-  const response = await fetch(details.dataset.highlightUrl, { credentials: "omit" });
-  if (!response.ok) throw new Error("Highlighting could not be loaded.");
-  const data = await response.json();
+  const data = await fetchHighlights(details.dataset.highlightUrl);
   if (data.sha256 !== details.dataset.sha256)
     throw new Error("Highlighting does not match this artifact.");
   validateTokens(source, data.tokens);
