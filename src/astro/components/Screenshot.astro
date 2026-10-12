@@ -16,6 +16,7 @@ const { entry, loading = "lazy", fetchpriority } = Astro.props;
     height="480"
     loading={loading}
     fetchpriority={fetchpriority}
+    decoding="async"
     alt={`Screenshot of ${entry.run.model.display_name} output`}
   />
 ) : (
