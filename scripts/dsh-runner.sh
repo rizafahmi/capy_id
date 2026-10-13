@@ -8,7 +8,7 @@
   mkdir -p "$HOME/capyboard-attempts"
   mkdir "$ATTEMPT" "$ATTEMPT/workspace"
   printf 'Evidence folder: %s\n' "$ATTEMPT"
-  pnpm --dir "$DSH_ROOT" exec node "$DSH_ROOT/apps/cli/src/bin.ts" --version >"$ATTEMPT/dsh-version.txt"
+  pnpm --dir "$DSH_ROOT" exec node "$DSH_ROOT/apps/cli/lib/bin.js" --version >"$ATTEMPT/dsh-version.txt"
   date -u +%Y-%m-%dT%H:%M:%SZ >"$ATTEMPT/started-at.txt"
   PROMPT="$(<"$REPO/content/challenges/capybara-hoverboard-v1/prompt.txt")"$'\n'
   cd "$ATTEMPT/workspace"
@@ -18,7 +18,7 @@
   DSH_STATUS=0
   printf '%s' "$PROMPT" |
     pnpm --dir "$DSH_ROOT" exec sh -c \
-      "cd \"\$DSH_WORKSPACE\" && exec node \"\$DSH_ROOT/apps/cli/src/bin.ts\" headless --json -" \
+      "cd \"\$DSH_WORKSPACE\" && exec node \"\$DSH_ROOT/apps/cli/lib/bin.js\" headless --json -" \
     >"$ATTEMPT/events.jsonl" \
     2>"$ATTEMPT/diagnostics.txt" || DSH_STATUS=$?
   node - "$ATTEMPT/events.jsonl" "$ATTEMPT/response.txt" "$ATTEMPT/usage.json" "$ATTEMPT/cost.json" <<'NODE'
