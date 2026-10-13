@@ -203,13 +203,20 @@ test("time and token measurements are readable in gallery, detail and comparison
   }
   await page.goto("/compare/?left=fixture-animation&right=fixture-unknown");
   const metrics = page.getByRole("table", { name: "Recorded metrics" });
-  for (const [label, value] of expected) {
+  for (const [label, value] of [...expected, ["Cost (USD)", "Unknown"] as const]) {
     const row = metrics.getByRole("row").filter({
       has: page.getByRole("rowheader", { name: label, exact: true }),
     });
     await expect(row.getByRole("cell").first()).toHaveText(value);
   }
-  for (const label of ["Time", "Input tokens", "Cached tokens", "Output tokens", "Total tokens"]) {
+  for (const label of [
+    "Time",
+    "Input tokens",
+    "Cached tokens",
+    "Output tokens",
+    "Total tokens",
+    "Cost (USD)",
+  ]) {
     const row = metrics.getByRole("row").filter({
       has: page.getByRole("rowheader", { name: label, exact: true }),
     });

@@ -445,6 +445,7 @@ test("run conditions expose harness and effort without sampling controls", async
         metrics: {
           time: { kind: "model", duration_ms: 17222 },
           tokens: { input: 1262, cached: 100, output: 2464, total: 3926 },
+          cost: 0.27,
         },
       },
     },
@@ -476,6 +477,7 @@ test("run conditions expose harness and effort without sampling controls", async
   for (const page of [gallery, html]) {
     assert.match(page, /<dt>Model time<\/dt><dd>17\.222 s<\/dd>/);
     assert.match(page, /<dt>Total tokens<\/dt><dd>3,926<\/dd>/);
+    assert.match(page, /<dt>Cost \(USD\)<\/dt><dd>\$0\.27<\/dd>/);
   }
   assert.doesNotMatch(
     gallery,
@@ -493,6 +495,7 @@ test("run conditions expose harness and effort without sampling controls", async
       ["Cached tokens", "100"],
       ["Output tokens", "2,464"],
       ["Total tokens", "3,926"],
+      ["Cost (USD)", "$0.27"],
     ],
   );
   assert.doesNotMatch(

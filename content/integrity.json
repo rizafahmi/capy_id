@@ -260,6 +260,22 @@
     "runs/pi-01a1325c-8b2b-71f3-94c2-e752d9cf55b7-capybara-hoverboard-v1/output.html.txt": {
       "sha256": "d721b0880e2d658b8639785143f5890d541fdcfd77a6bcd57c666644f01bf8e1",
       "size_bytes": 31716
+    },
+    "runs/pi-01a1325c-8b2b-71f3-94c2-e752d9cf55b7-capybara-hoverboard-v1-cost/run.json": {
+      "sha256": "fbb9d45dff0603364af6762f9b89123ac45257740303255cb1933039c8e3a897",
+      "size_bytes": 1961
+    },
+    "runs/pi-01a1325c-8b2b-71f3-94c2-e752d9cf55b7-capybara-hoverboard-v1-cost/response.txt": {
+      "sha256": "d721b0880e2d658b8639785143f5890d541fdcfd77a6bcd57c666644f01bf8e1",
+      "size_bytes": 31716
+    },
+    "runs/pi-01a1325c-8b2b-71f3-94c2-e752d9cf55b7-capybara-hoverboard-v1-cost/transcript.json": {
+      "sha256": "c81c27520473717c1dfdd4d4520d4a8f4f1ed27f1252372412e50cf3cd44cde1",
+      "size_bytes": 34383
+    },
+    "runs/pi-01a1325c-8b2b-71f3-94c2-e752d9cf55b7-capybara-hoverboard-v1-cost/output.html.txt": {
+      "sha256": "d721b0880e2d658b8639785143f5890d541fdcfd77a6bcd57c666644f01bf8e1",
+      "size_bytes": 31716
     }
   }
 }

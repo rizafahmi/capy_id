@@ -22,7 +22,9 @@ export function getStaticPaths() {
 
 const { entry, preview, correction, fixtures } = Astro.props;
 const { run, curation, transcript } = entry;
-const [time, input, cached, output, total] = measurementRows(run);
+const [time, input, cached, output, total, cost] = measurementRows(run);
+const summaryMeasurements =
+  run.generation.metrics?.cost == null ? [total, time] : [total, time, cost];
 const context: MetadataPair[] = [
   ["Harness", run.generation.harness?.name ?? "Unknown"],
   ["Version", run.generation.harness?.version ?? "Unknown"],
@@ -79,7 +81,7 @@ const timingNote =
     <aside class="conditions run-summary" aria-labelledby="run-summary-title">
       <h2 id="run-summary-title">Run summary</h2>
       <Metadata
-        pairs={[total, time]}
+        pairs={summaryMeasurements}
         className={`run-highlights${total[1] === "Unknown" ? " measurements-unknown" : ""}`}
       />
       <h3>Token breakdown</h3>

@@ -101,6 +101,7 @@ test("comparison prioritizes aligned outputs before metrics and expandable prove
     "Cached tokens",
     "Output tokens",
     "Total tokens",
+    "Cost (USD)",
   ]);
   await expect(
     metrics.getByRole("row", { name: "Model time 17.222 s Not recorded", exact: true }),

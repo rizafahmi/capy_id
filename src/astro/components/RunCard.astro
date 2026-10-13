@@ -18,7 +18,9 @@ const effortLabel =
   effort == null
     ? "Effort unknown"
     : `${effort.charAt(0).toUpperCase()}${effort.slice(1)} effort`;
-const [time, , , , total] = entry.measurementRows;
+const [time, , , , total, cost] = entry.measurementRows;
+const cardMeasurements =
+  run.generation.metrics?.cost == null ? [time, total] : [time, total, cost];
 const generated = run.generated_at
   ? runDateFormat.format(new Date(run.generated_at))
   : "Unknown date";
@@ -63,7 +65,7 @@ const url = `/runs/${run.id}/`;
         generated
       )}
     </p>
-    <Metadata pairs={[time, total]} className="card-measurements" />
+    <Metadata pairs={cardMeasurements} className="card-measurements" />
     <p class="card-state">{state}</p>
     <div class="card-bottom">
       <a class="text-link inspect-link" href={url}>
