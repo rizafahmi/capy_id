@@ -26,7 +26,7 @@ const { runs, fixtures } = __CAPYBOARD_ASTRO_PAGES__.comparison;
             <option value="">Select a run</option>
             {runs.map((run) => (
               <option value={run.id}>
-                {`${run.model.display_name} · ${run.generation.harness?.effort ?? "unknown"} effort · Attempt ${run.attempt_number} · ${run.generated_at ? `${compareOptionDateFormat.format(new Date(run.generated_at))} UTC` : run.id}`}
+                {`${run.model.display_name} · ${run.generation.harness?.name ?? "Harness unknown"} · ${run.generation.harness?.effort ?? "unknown"} effort · Attempt ${run.attempt_number} · ${run.generated_at ? `${compareOptionDateFormat.format(new Date(run.generated_at))} UTC` : run.id}`}
               </option>
             ))}
           </select>
@@ -54,6 +54,17 @@ const { runs, fixtures } = __CAPYBOARD_ASTRO_PAGES__.comparison;
   </div>
   <div id="compare-results" hidden>
     <div id="compare-panels" class="compare-panels"></div>
+    <section
+      class="compare-measurements"
+      aria-labelledby="compare-settings-title"
+    >
+      <h2 id="compare-settings-title">Harness and generation settings</h2>
+      <p class="muted">
+        Compare the recorded setup behind each output. Highlighted rows differ.
+        Unknown values were not recorded.
+      </p>
+      <div id="compare-settings"></div>
+    </section>
     <section
       class="compare-measurements"
       aria-labelledby="compare-metrics-title"

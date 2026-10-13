@@ -21,16 +21,19 @@ const compareDateFormat = new Intl.DateTimeFormat("en-US", {
   hourCycle: "h23",
   timeZone: "UTC",
 });
+const generationFields = [
+  ["Harness", (entry) => entry.run.generation.harness?.name ?? "Unknown"],
+  ["Harness version", (entry) => entry.run.generation.harness?.version ?? "Unknown"],
+  ["Effort", (entry) => entry.run.generation.harness?.effort ?? "Unknown"],
+  ["Generation mode", (entry) => entry.run.generation.mode],
+  ["Interface", (entry) => entry.run.generation.interface],
+  ["Tools used", (entry) => entry.run.generation.tools_used],
+];
 const provenanceFields = [
   ["Run ID", (entry) => entry.run.id],
   ["Provider", (entry) => entry.run.provider],
   ["Model identifier", (entry) => entry.run.model.identifier],
   ["Generated", (entry) => entry.run.generated_at ?? "Unknown"],
-  ["Harness", (entry) => entry.run.generation.harness?.name ?? "Unknown"],
-  ["Harness version", (entry) => entry.run.generation.harness?.version ?? "Unknown"],
-  ["Generation mode", (entry) => entry.run.generation.mode],
-  ["Interface", (entry) => entry.run.generation.interface],
-  ["Tools used", (entry) => entry.run.generation.tools_used],
   ["Challenge", (entry) => entry.run.challenge_id],
 ];
 const artifactCache = new Map();
@@ -593,12 +596,12 @@ function comparePreview(entry) {
   node.append(stage, controls, status);
   return node;
 }
-function comparisonTable(caption, rows) {
+function comparisonTable(caption, rows, fieldLabel = "Measurement") {
   const table = element("table", undefined, "compare-table");
   table.append(element("caption", caption, "sr-only"));
   const head = element("thead");
   const headings = element("tr");
-  for (const label of ["Measurement", "Left attempt", "Right attempt"]) {
+  for (const label of [fieldLabel, "Left attempt", "Right attempt"]) {
     const cell = element("th", label);
     cell.scope = "col";
     headings.append(cell);
@@ -629,6 +632,7 @@ async function enableComparison() {
   const panels = document.querySelector("#compare-panels");
   const results = document.querySelector("#compare-results");
   const metrics = document.querySelector("#compare-metrics");
+  const settings = document.querySelector("#compare-settings");
   const notices = document.querySelector("#condition-notices");
   let cataloguePromise = null;
   const getCatalogue = () => {
@@ -672,6 +676,7 @@ async function enableComparison() {
     panels.replaceChildren();
     results.hidden = true;
     metrics.replaceChildren();
+    settings.replaceChildren();
     currentComparison = null;
     generation.replaceChildren();
     notices.replaceChildren();
@@ -767,6 +772,14 @@ async function enableComparison() {
         ),
         title,
       );
+      const harness = entry.run.generation.harness;
+      identity.prepend(
+        element(
+          "strong",
+          `${harness?.name ?? "Harness unknown"} · ${harness?.version ?? "Version unknown"}`,
+          "compare-harness",
+        ),
+      );
       header.append(name, identity);
       const preview = comparePreview(entry);
       const link = element("a", "Inspect full evidence ↗", "compare-evidence");
@@ -788,6 +801,13 @@ async function enableComparison() {
       else rows.push([label, value, "Not recorded"], [rightLabel, "Not recorded", rightValue]);
     }
     metrics.append(comparisonTable("Recorded metrics", rows));
+    settings.append(
+      comparisonTable(
+        "Harness and generation settings",
+        generationFields.map(([label, value]) => [label, value(a), value(b)]),
+        "Setting",
+      ),
+    );
     currentComparison = [a, b];
     if (provenanceDetails?.open) renderProvenance();
     results.hidden = false;

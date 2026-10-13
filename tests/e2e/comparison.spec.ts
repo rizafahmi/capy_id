@@ -130,17 +130,111 @@ test("comparison prioritizes aligned outputs before metrics and expandable prove
   await expect(page.locator(".compare-panel")).toHaveCount(0);
 });
 
+test("comparison exposes harness settings and refreshes missing metadata with the selected runs", async ({
+  page,
+}) => {
+  await page.route("**/assets/runs.json", async (route) => {
+    const response = await route.fetch();
+    const entries = await response.json();
+    for (const entry of entries) {
+      if (entry.run.id === "fixture-broken") {
+        entry.run.generation.harness = {
+          name: "Alternate harness",
+          version: "2.0",
+          effort: "high",
+        };
+        entry.run.generation.mode = "tool-assisted";
+        entry.run.generation.interface = "coding-agent";
+        entry.run.generation.tools_used = "yes";
+      }
+      if (entry.run.id === "fixture-unknown") delete entry.run.generation.harness;
+      if (entry.run.id === "fixture-no-html") entry.run.generation.harness.version = null;
+    }
+    await route.fulfill({ response, json: entries });
+  });
+  await page.goto("/compare/?left=fixture-animation&right=fixture-broken");
+  const settings = page.getByRole("table", {
+    name: "Harness and generation settings",
+    exact: true,
+  });
+  await expect(settings).toBeVisible();
+  await expect(settings.getByRole("columnheader")).toHaveText([
+    "Setting",
+    "Left attempt",
+    "Right attempt",
+  ]);
+  await expect(settings.getByRole("row")).toHaveText([
+    "SettingLeft attemptRight attempt",
+    "HarnessDevelopment harnessAlternate harness",
+    "Harness versiontest2.0",
+    "Effortlowhigh",
+    "Generation modeone-shottool-assisted",
+    "Interfaceothercoding-agent",
+    "Tools usednoyes",
+  ]);
+  await expect(settings.locator(".comparison-difference")).toHaveCount(6);
+  await expect(page.locator(".compare-panel").first().locator(".compare-harness")).toHaveText(
+    "Development harness · test",
+  );
+  await expect(page.locator(".compare-panel").last().locator(".compare-harness")).toHaveText(
+    "Alternate harness · 2.0",
+  );
+  await expect(page.locator('#compare-form option[value="fixture-animation"]')).toHaveText([
+    /animation · Development harness · low effort/,
+    /animation · Development harness · low effort/,
+  ]);
+  await expect(page.locator("#compare-provenance")).not.toHaveAttribute("open", "");
+  await page
+    .getByRole("combobox", { name: "Right run", exact: true })
+    .selectOption("fixture-unknown");
+  await expect(
+    settings.getByRole("row", { name: "Harness Development harness Unknown", exact: true }),
+  ).toBeVisible();
+  await expect(
+    settings.getByRole("row", { name: "Harness version test Unknown", exact: true }),
+  ).toBeVisible();
+  await expect(
+    settings.getByRole("row", { name: "Effort low Unknown", exact: true }),
+  ).toBeVisible();
+  await expect(settings.locator(".comparison-difference")).toHaveCount(0);
+  await expect(page.locator(".compare-panel").last().locator(".compare-harness")).toHaveText(
+    "Harness unknown · Version unknown",
+  );
+  await page.goBack();
+  await expect(
+    settings.getByRole("row", {
+      name: "Harness Development harness Alternate harness",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole("combobox", { name: "Right run", exact: true })
+    .selectOption("fixture-no-html");
+  await expect(
+    settings.getByRole("row", { name: "Harness version test Unknown", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".compare-panel").last().locator(".compare-harness")).toHaveText(
+    "Development harness · Version unknown",
+  );
+  await page
+    .getByRole("combobox", { name: "Right run", exact: true })
+    .selectOption("fixture-animation");
+  await expect(settings).toHaveCount(0);
+});
+
 test("comparison has labeled required selectors and a native GET fallback without JavaScript", async ({
   browser,
+  baseURL,
 }, info) => {
-  const context = await browser.newContext({ javaScriptEnabled: false });
+  if (!baseURL) throw new Error("Comparison tests require a configured base URL.");
+  const context = await browser.newContext({ javaScriptEnabled: false, baseURL });
   try {
     const page = await context.newPage();
     for (const colorScheme of ["light", "dark"] as const) {
       await page.emulateMedia({ colorScheme, reducedMotion: "reduce" });
       for (const width of [360, 768, 1366]) {
         await page.setViewportSize({ width, height: 768 });
-        await page.goto("http://127.0.0.1:4173/compare/");
+        await page.goto("/compare/");
         await expect(page.locator("#compare-form")).toHaveAttribute("method", "get");
         await expect(page.locator("#compare-form")).toHaveAttribute("action", "/compare/");
         for (const side of ["Left", "Right"]) {
@@ -182,7 +276,7 @@ test("comparison has labeled required selectors and a native GET fallback withou
     await page.getByRole("button", { name: "Compare", exact: true }).click();
     expect((await navigation).method()).toBe("GET");
     await expect(page).toHaveURL(
-      "http://127.0.0.1:4173/compare/?left=fixture-animation&right=fixture-unknown",
+      `${baseURL}/compare/?left=fixture-animation&right=fixture-unknown`,
     );
     await expect(page.locator("iframe")).toHaveCount(0);
     await page.getByRole("link", { name: "← All attempts", exact: true }).click();
