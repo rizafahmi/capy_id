@@ -19,6 +19,17 @@ test("imports preserve recorded timing and token counts without recomputing tota
   assert.deepEqual(parseMetrics(metrics).metrics, metrics);
 });
 
+test("metrics preserve optional dashboard cost values", () => {
+  const metrics = {
+    time: { kind: "model", duration_ms: 17222 },
+    tokens: { input: 1262, cached: 100, output: 2464, total: 3926 },
+    cost: 0.42,
+  };
+  assert.deepEqual(parseMetrics(metrics).metrics, metrics);
+  assert.equal(parseMetrics({ ...metrics, cost: null }).metrics?.cost, null);
+  assert.equal(parseMetrics({ ...metrics, cost: undefined }).metrics?.cost, undefined);
+});
+
 test("measurements distinguish missing data, measured zero, and elapsed time", () => {
   for (const metrics of [
     { time: null, tokens: { input: null, cached: null, output: null, total: null } },
@@ -46,4 +57,6 @@ test("imports reject invalid time kinds and negative, fractional, or unsafe meas
         parseMetrics({ ...metrics, tokens: { ...metrics.tokens, [key]: value } }),
       );
   }
+  for (const value of [-1, Number.POSITIVE_INFINITY])
+    assert.throws(() => parseMetrics({ ...metrics, cost: value }));
 });

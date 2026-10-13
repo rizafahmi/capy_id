@@ -233,6 +233,17 @@
                 "total"
               ],
               "additionalProperties": false
+            },
+            "cost": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           },
           "required": [

@@ -73,6 +73,7 @@ const runObject = z.strictObject({
           output: z.number().int().nonnegative().nullable(),
           total: z.number().int().nonnegative().nullable(),
         }),
+        cost: z.number().nonnegative().nullable().optional(),
       })
       .optional(),
     settings: settings.optional(),
