@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "id": "pi-01a13428-91a4-73e0-bb65-7ae074cb59a7-capybara-hoverboard-v1",
+  "challenge_id": "capybara-hoverboard-v1",
+  "series_id": "pi-series-01a13428-91a4-73e0-bb65-7ae074cb59a7",
+  "attempt_number": 1,
+  "provider": "deepseek",
+  "model": {
+    "display_name": "deepseek-flash",
+    "identifier": "deepseek-flash",
+    "identifier_kind": "unknown"
+  },
+  "generated_at": "2026-10-13T07:27:16.389Z",
+  "generation": {
+    "mode": "tool-assisted",
+    "interface": "coding-agent",
+    "tools_used": "yes",
+    "harness": {
+      "name": "Pi",
+      "version": "1.1.0",
+      "effort": "high"
+    },
+    "metrics": {
+      "time": {
+        "kind": "model",
+        "duration_ms": 96369
+      },
+      "tokens": {
+        "input": 9949,
+        "cached": 66176,
+        "output": 22483,
+        "total": 98608
+      }
+    }
+  },
+  "instructions": {
+    "prompt_path": "challenges/capybara-hoverboard-v1/prompt.txt",
+    "prompt_sha256": "e6b955ce7c23afabd2adf2115467e7b6c213ac2cab2a7596886ca71ad827fe1c",
+    "transcript_path": "runs/pi-01a13428-91a4-73e0-bb65-7ae074cb59a7-capybara-hoverboard-v1/transcript.json"
+  },
+  "artifacts": {
+    "response": {
+      "path": "runs/pi-01a13428-91a4-73e0-bb65-7ae074cb59a7-capybara-hoverboard-v1/response.txt",
+      "sha256": "4c0fc24365f0897ef2622e74465a61fac94355254bb2adcb9e332e7c62db2e01",
+      "size_bytes": 20355
+    },
+    "html": {
+      "path": "runs/pi-01a13428-91a4-73e0-bb65-7ae074cb59a7-capybara-hoverboard-v1/output.html.txt",
+      "sha256": "4c0fc24365f0897ef2622e74465a61fac94355254bb2adcb9e332e7c62db2e01",
+      "size_bytes": 20355,
+      "extraction": {
+        "start_byte": 0,
+        "end_byte_exclusive": 20355
+      }
+    }
+  }
+}
