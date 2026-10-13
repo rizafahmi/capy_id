@@ -49,17 +49,17 @@ Founder validation plan: show the MVP to 15 developers who regularly try coding 
 
 These are proposed defaults for this handoff, not previously confirmed technology requirements.
 
-| Concern | Decision |
-| --- | --- |
-| Public application | HTML, CSS, and vanilla JavaScript |
-| Content | Version-controlled JSON and text artifacts |
-| Build tooling | Small Node.js static-generation and validation scripts |
-| Deployment | HTTPS static hosting with deep links and configurable response headers; separate gallery and preview origins |
-| Dependencies | Prefer built-in APIs; development-only browser testing is allowed |
-| Visual direction | Dark, high-contrast, minimalist gallery; monospace labels; restrained accent |
-| Language | English |
-| Theme | One dark theme; no theme selector |
-| Data changes | Founder adds records locally, validates, rebuilds, deploys |
+| Concern            | Decision                                                                                                     |
+| ------------------ | ------------------------------------------------------------------------------------------------------------ |
+| Public application | HTML, CSS, and vanilla JavaScript                                                                            |
+| Content            | Version-controlled JSON and text artifacts                                                                   |
+| Build tooling      | Small Node.js static-generation and validation scripts                                                       |
+| Deployment         | HTTPS static hosting with deep links and configurable response headers; separate gallery and preview origins |
+| Dependencies       | Prefer built-in APIs; development-only browser testing is allowed                                            |
+| Visual direction   | Dark, high-contrast, minimalist gallery; monospace labels; restrained accent                                 |
+| Language           | English                                                                                                      |
+| Theme              | One dark theme; no theme selector                                                                            |
+| Data changes       | Founder adds records locally, validates, rebuilds, deploys                                                   |
 
 Generate real HTML pages for run and challenge routes. Avoid requiring a special SPA fallback. Bundle application assets with the gallery; no third-party CDN dependency. The preview origin serves only generated, restricted preview pages and carries no application credentials. Both origins are static deployments; neither needs a runtime backend. JavaScript powers filtering, copying, comparison controls, and opt-in previews. Basic navigation and evidence remain readable without it.
 
@@ -97,12 +97,12 @@ Additional attempts are separate runs with a shared series identifier and an att
 
 ## 6. Information architecture and journeys
 
-| Route | Purpose |
-| --- | --- |
-| `/` | Gallery and short explanation |
-| `/runs/<run-id>/` | One run: preview and evidence |
-| `/compare/?left=<run-id>&right=<run-id>` | Two-run comparison |
-| `/challenge/` | Fixed prompt, protocol, and interpretation limits |
+| Route                                    | Purpose                                           |
+| ---------------------------------------- | ------------------------------------------------- |
+| `/`                                      | Gallery and short explanation                     |
+| `/runs/<run-id>/`                        | One run: preview and evidence                     |
+| `/compare/?left=<run-id>&right=<run-id>` | Two-run comparison                                |
+| `/challenge/`                            | Fixed prompt, protocol, and interpretation limits |
 
 ### Browse and inspect
 
@@ -305,16 +305,16 @@ Verify the current stable Chromium, Firefox, and WebKit browser engines availabl
 
 These tests validate Capyboard itself. They are not CapyLab evaluations of model quality.
 
-| Area | Required verification |
-| --- | --- |
-| Content integrity | Duplicate IDs, missing files, changed prior hashes, invalid enums/dates, and path traversal fail validation |
-| Evidence preservation | Imported response and extracted HTML checksums match downloaded bytes; source strings cannot inject host markup |
-| Gallery | Exact metadata filters, sorting, zero results, empty collection, and non-execution of card content |
-| Detail | Direct load/refresh, copy fallback, downloads, start/stop/restart, missing HTML, disabled preview, and source retrieval errors |
-| Comparison | Pair persists in URL; invalid/duplicate IDs recover; viewport sizes match; condition notices render |
-| Containment | Fixtures attempting parent DOM access, top navigation, popups, form submission, fetch, and remote image/script loading are blocked |
-| Deployment | Source routes serve plain text with `nosniff`; host security headers are present; run deep links resolve |
-| Accessibility | Keyboard journey from gallery to evidence and Stop control; focus visibility; contrast; responsive overflow checks |
+| Area                  | Required verification                                                                                                              |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Content integrity     | Duplicate IDs, missing files, changed prior hashes, invalid enums/dates, and path traversal fail validation                        |
+| Evidence preservation | Imported response and extracted HTML checksums match downloaded bytes; source strings cannot inject host markup                    |
+| Gallery               | Exact metadata filters, sorting, zero results, empty collection, and non-execution of card content                                 |
+| Detail                | Direct load/refresh, copy fallback, downloads, start/stop/restart, missing HTML, disabled preview, and source retrieval errors     |
+| Comparison            | Pair persists in URL; invalid/duplicate IDs recover; viewport sizes match; condition notices render                                |
+| Containment           | Fixtures attempting parent DOM access, top navigation, popups, form submission, fetch, and remote image/script loading are blocked |
+| Deployment            | Source routes serve plain text with `nosniff`; host security headers are present; run deep links resolve                           |
+| Accessibility         | Keyboard journey from gallery to evidence and Stop control; focus visibility; contrast; responsive overflow checks                 |
 
 Use clearly labelled, deterministic development fixtures: a valid animation, a broken HTML/JavaScript result, a response with no HTML, incomplete provenance, and a disabled preview. Add targeted malicious fixtures for containment checks. Do not run uncontrolled infinite-loop fixtures in a user's interactive browser; resource containment limitations are documented rather than falsely certified.
 
@@ -338,14 +338,14 @@ Public launch additionally requires at least three genuine attempts from three i
 
 Preserve the following extension points without implementing their interfaces or infrastructure now:
 
-| Later capability | Foundation preserved in MVP |
-| --- | --- |
-| Automated browser checks | Original artifact bytes, hashes, challenge version, separate preview policy |
-| Repeated-run reliability | One record per attempt, series and attempt numbers, publication disclosure |
+| Later capability         | Foundation preserved in MVP                                                   |
+| ------------------------ | ----------------------------------------------------------------------------- |
+| Automated browser checks | Original artifact bytes, hashes, challenge version, separate preview policy   |
+| Repeated-run reliability | One record per attempt, series and attempt numbers, publication disclosure    |
 | Reproducible evaluations | Recorded model, interface, harness, effort, transcript, and explicit unknowns |
-| Human visual assessment | Stable run IDs and consistent capture metadata |
-| Historical comparisons | Immutable dated records and explicit model identifier kinds |
-| Additional challenges | Versioned challenge IDs, independent prompt records |
+| Human visual assessment  | Stable run IDs and consistent capture metadata                                |
+| Historical comparisons   | Immutable dated records and explicit model identifier kinds                   |
+| Additional challenges    | Versioned challenge IDs, independent prompt records                           |
 
 A later evaluation record should reference the run ID, artifact hash, evaluation-suite version, execution environment, timestamp, and individual observations/results. Allow multiple evaluations for one unchanged run. New evaluation methods must not rewrite original evidence. Build functional checks and repeated-run methodology before introducing aggregate scores or claims about general model capability.
 
