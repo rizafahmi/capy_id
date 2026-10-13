@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "run_id": "pi-01a123fb-b53f-727e-b6e5-c487a4e04628-metrics-reported-cost",
+  "published_at": "2026-10-13T04:56:24.547Z",
+  "visible": true,
+  "preview_allowed": true,
+  "preview_disabled_reason": null,
+  "observations": [
+    "Collected with Pi 1.1.0, openai-codex/gpt-6-luna, thinking level low.",
+    "Built-in read, bash, edit, and write tools were available. The session contains no tool calls.",
+    "Source review found self-contained HTML and CSS animations, with no scripts or external resource references.",
+    "Pi discovery of extensions, MCP, skills, context files, prompt templates, themes, and trusted project configuration was disabled. Agent-directory configuration was retained.",
+    "Model time and token counts recovered from the original Pi session. Model time excludes tool execution and harness startup. Cached tokens are cache reads. Total is Pi-reported, not estimated.",
+    "The preserved Pi session reports a total cost of US$0.001358200."
+  ],
+  "series_publication_complete": true,
+  "series_incomplete_reason": null,
+  "thumbnail": {
+    "path": "thumbnails/pi-01a123fb-b53f-727e-b6e5-c487a4e04628.webp",
+    "viewport": {
+      "width": 640,
+      "height": 480
+    },
+    "capture_delay_ms": 1000,
+    "browser_version": "156.0.8078.4",
+    "preview_policy_version": "restricted-html-v1"
+  }
+}

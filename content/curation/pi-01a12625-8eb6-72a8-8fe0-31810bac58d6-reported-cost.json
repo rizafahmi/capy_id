@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "run_id": "pi-01a12625-8eb6-72a8-8fe0-31810bac58d6-reported-cost",
+  "published_at": "2026-10-13T04:56:24.547Z",
+  "visible": true,
+  "preview_allowed": true,
+  "preview_disabled_reason": null,
+  "observations": [
+    "Self-contained HTML with inline CSS and JavaScript; no external assets or network requests were found.",
+    "Canvas-based animated capybara hoverboard scene with keyboard, mouse, touch, jump, boost, shade, and theme controls.",
+    "The preserved Pi session reports a total cost of US$0.699821550."
+  ],
+  "series_publication_complete": true,
+  "series_incomplete_reason": null,
+  "thumbnail": {
+    "path": "thumbnails/pi-01a12625-8eb6-72a8-8fe0-31810bac58d6.webp",
+    "viewport": {
+      "width": 640,
+      "height": 480
+    },
+    "capture_delay_ms": 1000,
+    "browser_version": "156.0.8078.4",
+    "preview_policy_version": "restricted-html-v1"
+  }
+}

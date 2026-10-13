@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "run_id": "pi-01a12606-d525-75a0-a529-3941c6b3563c-reported-cost",
+  "published_at": "2026-10-13T04:56:24.547Z",
+  "visible": true,
+  "preview_allowed": true,
+  "preview_disabled_reason": null,
+  "observations": [
+    "The preserved Pi session reports a total cost of US$0.233959425."
+  ],
+  "series_publication_complete": false,
+  "series_incomplete_reason": null,
+  "thumbnail": {
+    "path": "thumbnails/pi-01a12606-d525-75a0-a529-3941c6b3563c.webp",
+    "viewport": {
+      "width": 640,
+      "height": 480
+    },
+    "capture_delay_ms": 1000,
+    "browser_version": "156.0.8078.4",
+    "preview_policy_version": "restricted-html-v1"
+  }
+}

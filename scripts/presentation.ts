@@ -14,7 +14,7 @@ const numberFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 }
 const currencyFormat = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
-  maximumFractionDigits: 2,
+  maximumFractionDigits: 6,
 });
 
 export const runDateFormat = new Intl.DateTimeFormat("en-US", {

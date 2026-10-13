@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Capyboard - The Chillest Hoverboard in the Multiverse</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #060312;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  }
+  #canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 24px;
+    z-index: 10;
+  }
+  .hud-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .hud-card {
+    background: rgba(14, 9, 28, 0.75);
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.18), inset 0 0 16px rgba(0, 240, 255, 0.06);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 14px;
+    padding: 12px 18px;
+    color: #fff;
+  }
+  .hud-title {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #00f0ff;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+  }
+  .meter-bar-container {
+    width: 190px;
+    height: 13px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 7px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255, 0, 128, 0.45);
+  }
+  .meter-fill {
+    height: 100%;
+    width: 85%;
+    background: linear-gradient(90deg, #ff007f, #00f0ff, #ffe600);
+    border-radius: 7px;
+    box-shadow: 0 0 12px #00f0ff;
+    transition: width 0.25s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  .meter-label {
+    margin-top: 5px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #ffe600;
+    letter-spacing: 1.5px;
+    display: flex;
+    justify-content: space-between;
+    text-shadow: 0 0 6px rgba(255, 230, 0, 0.4);
+  }
+  .stats-cluster {
+    display: flex;
+    gap: 14px;
+  }
+  .stat-box {
+    text-align: right;
+    min-width: 100px;
+  }
+  .stat-val {
+    font-size: 24px;
+    font-weight: 900;
+    font-family: monospace, monospace;
+    letter-spacing: 1.5px;
+    color: #fff;
+    text-shadow: 0 0 12px rgba(0, 240, 255, 0.7);
+  }
+  .hud-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .controls-hint {
+    background: rgba(10, 6, 22, 0.82);
+    border: 1px solid rgba(255, 0, 128, 0.35);
+    border-radius: 22px;
+    padding: 8px 18px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 11.5px;
+    letter-spacing: 1px;
+    display: flex;
+    gap: 16px;
+    box-shadow: 0 0 18px rgba(255, 0, 128, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .key {
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: #00f0ff;
+    font-weight: 800;
+    font-size: 11px;
+  }
+  .hud-buttons {
+    pointer-events: auto;
+    display: flex;
+    gap: 10px;
+  }
+  .cyber-btn {
+    background: linear-gradient(135deg, rgba(255, 0, 128, 0.25), rgba(0, 240, 255, 0.25));
+    border: 1px solid rgba(0, 240, 255, 0.65);
+    color: #fff;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 1.2px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .cyber-btn:hover {
+    background: linear-gradient(135deg, rgba(255, 0, 128, 0.55), rgba(0, 240, 255, 0.55));
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.7);
+    transform: translateY(-2px);
+    border-color: #ffe600;
+  }
+  .cyber-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+  }
+  @media (max-width: 820px) {
+    .controls-hint { display: none; }
+    .hud { padding: 12px 14px; }
+    .meter-bar-container { width: 130px; }
+    .stat-val { font-size: 18px; }
+    .stat-box { min-width: 75px; }
+    .cyber-btn { padding: 8px 12px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<div class="hud">
+  <div class="hud-top">
+    <div class="hud-card">
+      <div class="hud-title">⚡ CHILL DYNAMICS ⚡</div>
+      <div class="meter-bar-container">
+        <div class="meter-fill" id="meterFill"></div>
+      </div>
+      <div class="meter-label">
+        <span>VIBES</span>
+        <span id="meterText">MAX CHILL</span>
+      </div>
+    </div>
+
+    <div class="stats-cluster">
+      <div class="hud-card stat-box">
+        <div class="hud-title">🍊 YUZUS</div>
+        <div class="stat-val" id="yuzuCount">0</div>
+      </div>
+      <div class="hud-card stat-box">
+        <div class="hud-title">🚀 SPEED</div>
+        <div class="stat-val" id="speedVal">88 <span style="font-size:12px;color:#00f0ff;">MPH</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hud-bottom">
+    <div class="controls-hint">
+      <span><span class="key">MOUSE / A D</span> Steer</span>
+      <span><span class="key">SPACE</span> Ollie / Flip</span>
+      <span><span class="key">SHIFT</span> Hyper Boost</span>
+      <span><span class="key">G</span> Shades</span>
+      <span><span class="key">C</span> Theme</span>
+    </div>
+
+    <div class="hud-buttons">
+      <button class="cyber-btn" id="btnJump">🛹 OLLIE</button>
+      <button class="cyber-btn" id="btnBoost">⚡ BOOST</button>
+      <button class="cyber-btn" id="btnShades">😎 SHADES</button>
+      <button class="cyber-btn" id="btnTheme">🎨 THEME</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- Canvas Setup ---
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W = window.innerWidth;
+let H = window.innerHeight;
+let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+function resize() {
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = Math.floor(W * dpr);
+  canvas.height = Math.floor(H * dpr);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// --- Themes Palette ---
+const THEMES = [
+  {
+    name: 'Synthwave Sunset',
+    skyTop: '#080315',
+    skyMid1: '#1b0933',
+    skyMid2: '#5c0f52',
+    skyMid3: '#9e2161',
+    skyBottom: '#ff5c39',
+    sunTop: '#fff59d',
+    sunMid: '#ff4081',
+    sunBottom: '#6a0080',
+    gridBase: '#0a011a',
+    gridLines: '#00f0ff',
+    gridRadials: 'rgba(255, 0, 128, 0.45)',
+    mountainFar: '#1c0c36',
+    mountainFarLine: '#ff007f',
+    mountainNear: '#100522',
+    mountainNearLine: '#00f0ff',
+    scarfColor: '#ff007f',
+    scarfTrim: '#ffe600',
+    palmSilhouette: '#0d041e',
+    neonAccent: '#00f0ff'
+  },
+  {
+    name: 'Cyber Midnight',
+    skyTop: '#020b14',
+    skyMid1: '#051b2c',
+    skyMid2: '#0b3d4f',
+    skyMid3: '#086e7d',
+    skyBottom: '#00f0ff',
+    sunTop: '#e0ffff',
+    sunMid: '#00e5ff',
+    sunBottom: '#004d61',
+    gridBase: '#020a12',
+    gridLines: '#00f0ff',
+    gridRadials: 'rgba(0, 240, 255, 0.45)',
+    mountainFar: '#051926',
+    mountainFarLine: '#00e5ff',
+    mountainNear: '#030e17',
+    mountainNearLine: '#39ff14',
+    scarfColor: '#00f0ff',
+    scarfTrim: '#39ff14',
+    palmSilhouette: '#020d18',
+    neonAccent: '#39ff14'
+  },
+  {
+    name: 'Solar Euphoria',
+    skyTop: '#14050b',
+    skyMid1: '#2e0a16',
+    skyMid2: '#691522',
+    skyMid3: '#b32e1e',
+    skyBottom: '#ffa726',
+    sunTop: '#ffffff',
+    sunMid: '#ffeb3b',
+    sunBottom: '#d84315',
+    gridBase: '#120409',
+    gridLines: '#ffb300',
+    gridRadials: 'rgba(255, 61, 0, 0.45)',
+    mountainFar: '#2b0914',
+    mountainFarLine: '#ff5252',
+    mountainNear: '#19040a',
+    mountainNearLine: '#ffab00',
+    scarfColor: '#ff3d00',
+    scarfTrim: '#ffea00',
+    palmSilhouette: '#1a040b',
+    neonAccent: '#ffe600'
+  }
+];
+let currentThemeIndex = 0;
+
+// --- State ---
+const state = {
+  time: 0,
+  speed: 1.0,
+  boost: false,
+  score: 0,
+  yuzusCollected: 0,
+  chillLevel: 90,
+  showShades: true,
+  lastUserInput: 0,
+  
+  // Capybara rider dynamics
+  rider: {
+    x: 0, // normalized -1 to 1
+    targetX: 0,
+    yOffset: 0, // jump offset
+    vy: 0,
+    isJumping: false,
+    jumpCount: 0,
+    tilt: 0,
+    spinAngle: 0,
+    isTricking: false
+  },
+
+  roadZ: 0,
+  vanishingYRatio: 0.56
+};
+
+// Particles, Texts, Collectibles, Roadside Palms, Speed Streaks
+const particles = [];
+const floatingTexts = [];
+const collectibles = [];
+const speedStreaks = [];
+const roadPalms = [];
+
+// Initialize speed streaks
+for (let i = 0; i < 50; i++) {
+  speedStreaks.push({
+    x: (Math.random() - 0.5) * 2.4,
+    y: Math.random() * 0.95 + 0.05,
+    z: Math.random() * 900 + 40,
+    len: Math.random() * 45 + 20,
+    speed: Math.random() * 0.5 + 0.8
+  });
+}
+
+// Initialize Roadside Palms (Left and Right shoulders)
+for (let i = 0; i < 8; i++) {
+  roadPalms.push({
+    side: i % 2 === 0 ? -1 : 1,
+    z: (i / 8) * 1200 + 100
+  });
+}
+
+// Spawn Collectibles
+function spawnCollectible() {
+  if (collectibles.length < 5) {
+    const lane = (Math.random() - 0.5) * 1.6;
+    collectibles.push({
+      lane: lane,
+      z: 1200 + Math.random() * 400,
+      type: Math.random() > 0.35 ? 'yuzu' : 'gem',
+      rot: Math.random() * Math.PI * 2,
+      bobOffset: Math.random() * 10
+    });
+  }
+}
+
+// Add Floating Popup
+function addFloatingText(text, x, y, color = '#ffe600') {
+  floatingTexts.push({
+    text: text,
+    x: x,
+    y: y,
+    vy: -2.4,
+    alpha: 1,
+    scale: 0.75,
+    targetScale: 1.25,
+    color: color
+  });
+}
+
+// Thruster Ember Particle
+function emitThrusterParticles(originX, originY, isBoost) {
+  const count = isBoost ? 6 : 3;
+  for (let i = 0; i < count; i++) {
+    const angle = Math.PI + (Math.random() - 0.5) * 0.5;
+    const speed = (isBoost ? 16 : 9) * (0.8 + Math.random() * 0.5);
+    particles.push({
+      x: originX,
+      y: originY + (Math.random() - 0.5) * 12,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed * 0.25 + (Math.random() - 0.5) * 1.8,
+      size: (isBoost ? 6 : 4) * (0.6 + Math.random() * 0.6),
+      life: 1.0,
+      decay: Math.random() * 0.035 + 0.02,
+      color: Math.random() > 0.4 ? '#00f0ff' : '#ff007f'
+    });
+  }
+}
+
+// Starburst Fireworks
+function emitStarburst(x, y, color = '#ffe600') {
+  for (let i = 0; i < 22; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 9 + 3;
+    particles.push({
+      x: x,
+      y: y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      size: Math.random() * 5 + 3,
+      life: 1.0,
+      decay: Math.random() * 0.04 + 0.02,
+      color: color
+    });
+  }
+}
+
+// Ollie / Jump / Trick
+function triggerJump() {
+  const r = state.rider;
+  state.lastUserInput = performance.now();
+  if (!r.isJumping) {
+    r.isJumping = true;
+    r.vy = -16.5;
+    r.jumpCount = 1;
+    addFloatingText('OLLIE! 🛹', W * 0.5 + r.x * W * 0.35, H * 0.6 + r.yOffset - 60, '#00f0ff');
+    emitStarburst(W * 0.5 + r.x * W * 0.35, H * 0.68, '#00f0ff');
+  } else if (r.jumpCount === 1) {
+    // Air Flip trick!
+    r.jumpCount = 2;
+    r.vy = -13;
+    r.isTricking = true;
+    r.spinAngle = 0;
+    state.chillLevel = Math.min(100, state.chillLevel + 15);
+    addFloatingText('⚡ 360° HOVER-FLIP! +500 ⚡', W * 0.5 + r.x * W * 0.35, H * 0.6 + r.yOffset - 80, '#ffe600');
+    emitStarburst(W * 0.5 + r.x * W * 0.35, H * 0.6 + r.yOffset, '#ff007f');
+  }
+}
+
+// User Controls Listeners
+window.addEventListener('mousemove', (e) => {
+  const normalized = (e.clientX / W - 0.5) * 2;
+  state.rider.targetX = Math.max(-0.95, Math.min(0.95, normalized));
+  state.lastUserInput = performance.now();
+});
+
+window.addEventListener('touchmove', (e) => {
+  if (e.touches.length > 0) {
+    const t = e.touches[0];
+    const normalized = (t.clientX / W - 0.5) * 2;
+    state.rider.targetX = Math.max(-0.95, Math.min(0.95, normalized));
+    state.lastUserInput = performance.now();
+  }
+}, { passive: true });
+
+window.addEventListener('keydown', (e) => {
+  state.lastUserInput = performance.now();
+  if (e.code === 'Space') {
+    e.preventDefault();
+    triggerJump();
+  } else if (e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.key.toLowerCase() === 'b') {
+    state.boost = true;
+  } else if (e.key.toLowerCase() === 'a' || e.key === 'ArrowLeft') {
+    state.rider.targetX = Math.max(-0.95, state.rider.targetX - 0.25);
+  } else if (e.key.toLowerCase() === 'd' || e.key === 'ArrowRight') {
+    state.rider.targetX = Math.min(0.95, state.rider.targetX + 0.25);
+  } else if (e.key.toLowerCase() === 'g') {
+    state.showShades = !state.showShades;
+    addFloatingText(state.showShades ? 'SHADES ON 😎' : 'BARE EYES 🐾', W * 0.5, H * 0.45, '#00f0ff');
+  } else if (e.key.toLowerCase() === 'c') {
+    currentThemeIndex = (currentThemeIndex + 1) % THEMES.length;
+    addFloatingText(THEMES[currentThemeIndex].name.toUpperCase(), W * 0.5, H * 0.45, '#ff007f');
+  } else if (e.key.toLowerCase() === 't') {
+    triggerJump();
+    if (state.rider.jumpCount === 1) triggerJump();
+  }
+});
+
+window.addEventListener('keyup', (e) => {
+  if (e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.key.toLowerCase() === 'b') {
+    state.boost = false;
+  }
+});
+
+canvas.addEventListener('click', () => {
+  triggerJump();
+});
+
+// HUD Buttons
+document.getElementById('btnJump').addEventListener('click', (e) => {
+  e.stopPropagation();
+  triggerJump();
+});
+
+const btnBoost = document.getElementById('btnBoost');
+btnBoost.addEventListener('mousedown', (e) => { e.stopPropagation(); state.boost = true; });
+btnBoost.addEventListener('mouseup', (e) => { e.stopPropagation(); state.boost = false; });
+btnBoost.addEventListener('touchstart', (e) => { e.stopPropagation(); state.boost = true; }, { passive: false });
+btnBoost.addEventListener('touchend', (e) => { e.stopPropagation(); state.boost = false; }, { passive: false });
+
+document.getElementById('btnShades').addEventListener('click', (e) => {
+  e.stopPropagation();
+  state.showShades = !state.showShades;
+  addFloatingText(state.showShades ? 'SHADES ON 😎' : 'BARE EYES 🐾', W * 0.5, H * 0.45, '#00f0ff');
+});
+
+document.getElementById('btnTheme').addEventListener('click', (e) => {
+  e.stopPropagation();
+  currentThemeIndex = (currentThemeIndex + 1) % THEMES.length;
+  addFloatingText(THEMES[currentThemeIndex].name.toUpperCase(), W * 0.5, H * 0.45, '#ff007f');
+});
+
+// --- Physics & Updates ---
+let lastTime = performance.now();
+
+function update(dt) {
+  state.time += dt;
+
+  // Auto chill slalom cruise if idle for 2.5s
+  if (performance.now() - state.lastUserInput > 2500) {
+    state.rider.targetX = Math.sin(state.time * 0.75) * 0.35;
+  }
+
+  // Speed and Boost Lerp
+  const targetSpeed = state.boost ? 2.3 : 1.0;
+  state.speed += (targetSpeed - state.speed) * 0.08;
+
+  // Road grid scrolling
+  state.roadZ = (state.roadZ + state.speed * dt * 480) % 200;
+
+  // Rider position lerp
+  const r = state.rider;
+  r.x += (r.targetX - r.x) * 0.12;
+
+  // Lean / bank angle
+  const targetTilt = (r.targetX - r.x) * 0.85;
+  r.tilt += (targetTilt - r.tilt) * 0.15;
+
+  // Jump physics
+  if (r.isJumping) {
+    r.yOffset += r.vy;
+    r.vy += 0.88;
+    if (r.yOffset >= 0) {
+      r.yOffset = 0;
+      r.vy = 0;
+      r.isJumping = false;
+      r.isTricking = false;
+      r.spinAngle = 0;
+      r.jumpCount = 0;
+      emitStarburst(W * 0.5 + r.x * W * 0.35, H * 0.68, '#00f0ff');
+    }
+  }
+
+  // Trick Flip spin
+  if (r.isTricking) {
+    r.spinAngle += dt * 14;
+    if (r.spinAngle >= Math.PI * 2) {
+      r.spinAngle = Math.PI * 2;
+    }
+  }
+
+  // Spawn collectible
+  if (Math.random() < 0.022) {
+    spawnCollectible();
+  }
+
+  // Roadside Palms scrolling
+  for (let palm of roadPalms) {
+    palm.z -= state.speed * dt * 480;
+    if (palm.z <= 10) {
+      palm.z = 1200;
+    }
+  }
+
+  // Collectibles update & check collision
+  const riderScreenX = r.x * (W * 0.35);
+  for (let i = collectibles.length - 1; i >= 0; i--) {
+    const c = collectibles[i];
+    c.z -= state.speed * dt * 520;
+    c.rot += dt * 3.2;
+
+    if (c.z < 180 && c.z > 20) {
+      const itemScreenX = c.lane * (W * 0.35);
+      if (Math.abs(itemScreenX - riderScreenX) < 85 && Math.abs(r.yOffset) < 95) {
+        if (c.type === 'yuzu') {
+          state.yuzusCollected++;
+          state.score += 250;
+          state.chillLevel = Math.min(100, state.chillLevel + 10);
+          addFloatingText('+250 🍊 JUICY!', W * 0.5 + riderScreenX, H * 0.55 + r.yOffset, '#ffe600');
+          emitStarburst(W * 0.5 + riderScreenX, H * 0.55 + r.yOffset, '#ffe600');
+        } else {
+          state.score += 500;
+          state.chillLevel = Math.min(100, state.chillLevel + 20);
+          addFloatingText('💎 ULTRA CHILL! +500', W * 0.5 + riderScreenX, H * 0.55 + r.yOffset, '#00f0ff');
+          emitStarburst(W * 0.5 + riderScreenX, H * 0.55 + r.yOffset, '#00f0ff');
+        }
+        collectibles.splice(i, 1);
+        continue;
+      }
+    }
+
+    if (c.z <= 0) {
+      collectibles.splice(i, 1);
+    }
+  }
+
+  // Particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= p.decay;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+
+  // Floating text
+  for (let i = floatingTexts.length - 1; i >= 0; i--) {
+    const ft = floatingTexts[i];
+    ft.y += ft.vy;
+    ft.alpha -= 0.018;
+    if (ft.scale < ft.targetScale) ft.scale += 0.05;
+    if (ft.alpha <= 0) floatingTexts.splice(i, 1);
+  }
+
+  // Speed streaks
+  for (let s of speedStreaks) {
+    s.z -= state.speed * dt * 920 * s.speed;
+    if (s.z <= 10) {
+      s.z = 900;
+      s.x = (Math.random() - 0.5) * 2.4;
+      s.y = Math.random() * 0.95 + 0.05;
+    }
+  }
+
+  // HUD sync
+  const mph = Math.floor(88 * state.speed);
+  document.getElementById('speedVal').innerHTML = `${mph} <span style="font-size:12px;color:#00f0ff;">MPH</span>`;
+  document.getElementById('yuzuCount').innerText = state.yuzusCollected;
+  document.getElementById('meterFill').style.width = `${state.chillLevel}%`;
+  document.getElementById('meterText').innerText = state.chillLevel > 90 ? 'MAX CHILL 🔥' : state.chillLevel > 60 ? 'SERENE 🌊' : 'CRUISIN 🍃';
+}
+
+// --- Render Methods ---
+function drawEnvironment(theme) {
+  const vy = H * state.vanishingYRatio;
+
+  // Sky Gradient
+  const sky = ctx.createLinearGradient(0, 0, 0, vy);
+  sky.addColorStop(0, theme.skyTop);
+  sky.addColorStop(0.3, theme.skyMid1);
+  sky.addColorStop(0.65, theme.skyMid2);
+  sky.addColorStop(0.85, theme.skyMid3);
+  sky.addColorStop(1, theme.skyBottom);
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, vy);
+
+  // Retro Slit Sun
+  const sunX = W * 0.5;
+  const sunY = vy - H * 0.13;
+  const sunR = Math.min(W, H) * 0.19;
+
+  const sunGrad = ctx.createLinearGradient(sunX, sunY - sunR, sunX, sunY + sunR);
+  sunGrad.addColorStop(0, theme.sunTop);
+  sunGrad.addColorStop(0.5, theme.sunMid);
+  sunGrad.addColorStop(1, theme.sunBottom);
+
+  ctx.fillStyle = sunGrad;
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Sun Slits
+  ctx.fillStyle = theme.skyTop;
+  const slitStart = sunY - sunR * 0.25;
+  for (let y = slitStart; y < sunY + sunR; y += 14) {
+    const h = ((y - slitStart) / (sunR * 1.25)) * 8 + 2;
+    ctx.fillRect(sunX - sunR - 15, y, sunR * 2 + 30, h);
+  }
+
+  // Parallax Mountains
+  drawParallaxMountains(theme, vy);
+
+  // 3D Highway Road
+  drawHighway(theme, vy);
+
+  // Roadside 3D Palms
+  drawRoadPalms(theme, vy);
+}
+
+function drawParallaxMountains(theme, vy) {
+  // Far range
+  ctx.fillStyle = theme.mountainFar;
+  ctx.beginPath();
+  ctx.moveTo(0, vy);
+  const steps = 10;
+  for (let i = 0; i <= steps; i++) {
+    const mx = (W / steps) * i;
+    const my = vy - (i % 2 === 1 ? H * 0.15 : H * 0.05);
+    ctx.lineTo(mx, my);
+  }
+  ctx.lineTo(W, vy);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = theme.mountainFarLine;
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+
+  // Near range
+  ctx.fillStyle = theme.mountainNear;
+  ctx.beginPath();
+  ctx.moveTo(0, vy);
+  for (let i = 0; i <= steps + 2; i++) {
+    const mx = (W / (steps + 2)) * i;
+    const my = vy - (i % 2 === 0 ? H * 0.09 : H * 0.02);
+    ctx.lineTo(mx, my);
+  }
+  ctx.lineTo(W, vy);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = theme.mountainNearLine;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function drawHighway(theme, vy) {
+  const roadHeight = H - vy;
+
+  // Road Surface
+  const roadGrad = ctx.createLinearGradient(0, vy, 0, H);
+  roadGrad.addColorStop(0, theme.gridBase);
+  roadGrad.addColorStop(1, '#1b0028');
+  ctx.fillStyle = roadGrad;
+  ctx.fillRect(0, vy, W, roadHeight);
+
+  // Radial grid lanes
+  const cx = W * 0.5;
+  const numRadials = 16;
+  for (let i = -numRadials; i <= numRadials; i++) {
+    const progress = i / numRadials;
+    const startX = cx + progress * (W * 0.12);
+    const endX = cx + progress * (W * 1.25);
+
+    ctx.strokeStyle = i === 0 ? '#ff007f' : theme.gridRadials;
+    ctx.lineWidth = i === 0 ? 3.2 : 1.3;
+    ctx.beginPath();
+    ctx.moveTo(startX, vy);
+    ctx.lineTo(endX, H);
+    ctx.stroke();
+  }
+
+  // Horizontal rungs scrolling forward
+  const numRungs = 16;
+  for (let i = 0; i < numRungs; i++) {
+    const norm = ((i * (200 / numRungs) + state.roadZ) % 200) / 200;
+    const y = vy + Math.pow(norm, 2.5) * roadHeight;
+    const alpha = Math.pow(norm, 1.8);
+
+    ctx.strokeStyle = `rgba(0, 240, 255, ${alpha * 0.85})`;
+    ctx.lineWidth = 1 + norm * 3.2;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(W, y);
+    ctx.stroke();
+  }
+}
+
+function drawRoadPalms(theme, vy) {
+  const cx = W * 0.5;
+  const roadHeight = H - vy;
+
+  for (let palm of roadPalms) {
+    const norm = Math.max(0.01, Math.min(1.0, 1.0 - palm.z / 1200));
+    const y = vy + Math.pow(norm, 2.2) * roadHeight;
+    const spread = palm.side * (W * 0.58) * norm;
+    const x = cx + spread;
+    const scale = norm * 1.6;
+
+    if (scale < 0.1) continue;
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale * (palm.side < 0 ? -1 : 1), scale);
+
+    ctx.fillStyle = theme.palmSilhouette;
+    // Palm trunk
+    ctx.beginPath();
+    ctx.moveTo(-5, 0);
+    ctx.quadraticCurveTo(15, -60, 20, -110);
+    ctx.lineTo(26, -110);
+    ctx.quadraticCurveTo(20, -60, 5, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    // Palm neon outline
+    ctx.strokeStyle = theme.neonAccent;
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Fronds
+    ctx.translate(22, -110);
+    for (let a = -3; a <= 3; a++) {
+      ctx.save();
+      ctx.rotate(a * 0.42);
+      ctx.fillStyle = theme.palmSilhouette;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(28, -22, 54, 5);
+      ctx.quadraticCurveTo(22, -6, 0, 0);
+      ctx.fill();
+      ctx.strokeStyle = theme.neonAccent;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+}
+
+// Draw Collectibles in Perspective
+function drawCollectibles(vy) {
+  const cx = W * 0.5;
+  const roadHeight = H - vy;
+
+  for (let c of collectibles) {
+    const norm = Math.max(0.01, Math.min(1.0, 1.0 - c.z / 1200));
+    const y = vy + Math.pow(norm, 2.2) * roadHeight - (c.bobOffset + Math.sin(state.time * 6 + c.bobOffset) * 12) * norm;
+    const x = cx + c.lane * (W * 0.45) * norm;
+    const scale = norm * 1.6;
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+
+    if (c.type === 'yuzu') {
+      ctx.rotate(c.rot);
+      ctx.shadowColor = '#ffea00';
+      ctx.shadowBlur = 16;
+      const yGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 16);
+      yGrad.addColorStop(0, '#ffffff');
+      yGrad.addColorStop(0.3, '#ffeb3b');
+      yGrad.addColorStop(0.8, '#ff9800');
+      yGrad.addColorStop(1, '#e65100');
+      ctx.fillStyle = yGrad;
+      ctx.beginPath();
+      ctx.arc(0, 0, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Stem & leaf
+      ctx.fillStyle = '#4caf50';
+      ctx.beginPath();
+      ctx.ellipse(8, -12, 8, 4, 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.rotate(c.rot * 1.5);
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = '#00f0ff';
+      ctx.beginPath();
+      ctx.moveTo(0, -18);
+      ctx.lineTo(14, 0);
+      ctx.lineTo(0, 18);
+      ctx.lineTo(-14, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(0, -10);
+      ctx.lineTo(7, 0);
+      ctx.lineTo(0, 10);
+      ctx.lineTo(-7, 0);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+// Draw Speed Streaks
+function drawSpeedStreaks() {
+  ctx.save();
+  for (let s of speedStreaks) {
+    const norm = 1.0 - s.z / 900;
+    const sx = W * 0.5 + s.x * W * 0.55 * norm;
+    const sy = s.y * H;
+    const len = s.len * (1 + norm * 2.2) * (state.boost ? 3.2 : 1);
+
+    ctx.strokeStyle = state.boost ? 'rgba(0, 240, 255, 0.85)' : 'rgba(255, 255, 255, 0.35)';
+    ctx.lineWidth = norm * (state.boost ? 2.6 : 1.5);
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(sx - len, sy);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// Draw Hoverboard & Capybara
+function drawCapybaraScene() {
+  const r = state.rider;
+  const time = state.time;
+  const theme = THEMES[currentThemeIndex];
+
+  const riderCenterX = W * 0.5 + r.x * (W * 0.35);
+  const hoverBaseY = H * 0.67;
+  const floatOffset = Math.sin(time * 3.5) * 11;
+  const boardY = hoverBaseY + r.yOffset + floatOffset;
+
+  // Ground Shadow & Repulsor Projection Rings
+  ctx.save();
+  const shadowDist = Math.max(0.18, 1.0 - Math.abs(r.yOffset) / 230);
+  ctx.translate(riderCenterX, hoverBaseY + 14);
+  ctx.scale(shadowDist, shadowDist * 0.32);
+
+  // Soft dark ground shadow
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
+  ctx.beginPath();
+  ctx.arc(0, 0, 145, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Cyan repulsor projection rings on asphalt
+  ctx.strokeStyle = `rgba(0, 240, 255, ${0.85 * shadowDist})`;
+  ctx.lineWidth = 4.5;
+  ctx.shadowColor = '#00f0ff';
+  ctx.shadowBlur = 14;
+  ctx.beginPath();
+  ctx.arc(-82, 0, 44, 0, Math.PI * 2);
+  ctx.arc(82, 0, 44, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // Thruster embers spray
+  const thrusterWorldX = riderCenterX - 145;
+  const thrusterWorldY = boardY;
+  emitThrusterParticles(thrusterWorldX, thrusterWorldY, state.boost);
+
+  // Apply Transform for Board & Rider
+  ctx.save();
+  ctx.translate(riderCenterX, boardY);
+  ctx.rotate(r.tilt + (r.isTricking ? r.spinAngle : 0));
+
+  // Underside Levitation Glow Cones
+  ctx.save();
+  const pulse = Math.sin(time * 8) * 0.15 + 0.85;
+  [-80, 80].forEach(bx => {
+    const beamGrad = ctx.createLinearGradient(bx, 15, bx, 82);
+    beamGrad.addColorStop(0, 'rgba(0, 240, 255, 0.75)');
+    beamGrad.addColorStop(0.5, 'rgba(0, 240, 255, 0.22)');
+    beamGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
+    ctx.fillStyle = beamGrad;
+    ctx.beginPath();
+    ctx.moveTo(bx - 26, 12);
+    ctx.lineTo(bx + 26, 12);
+    ctx.lineTo(bx + 44, 82);
+    ctx.lineTo(bx - 44, 82);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = `rgba(0, 240, 255, ${0.65 * pulse})`;
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.ellipse(bx, 20, 25 * pulse, 7.5, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+  ctx.restore();
+
+  // Rear Thruster Jets
+  ctx.save();
+  const flameLength = (state.boost ? 145 : 78) + Math.sin(time * 35) * 16;
+  [-8, 6].forEach(ty => {
+    ctx.save();
+    ctx.translate(-148, ty);
+    const fGrad = ctx.createLinearGradient(0, 0, -flameLength, 0);
+    fGrad.addColorStop(0, '#ffffff');
+    fGrad.addColorStop(0.2, '#00f0ff');
+    fGrad.addColorStop(0.65, '#ff007f');
+    fGrad.addColorStop(1, 'rgba(255, 0, 128, 0)');
+    ctx.fillStyle = fGrad;
+    ctx.beginPath();
+    ctx.moveTo(0, -7.5);
+    ctx.quadraticCurveTo(-flameLength * 0.5, -17, -flameLength, 0);
+    ctx.quadraticCurveTo(-flameLength * 0.5, 17, 0, 7.5);
+    ctx.closePath();
+    ctx.fill();
+
+    // Bright White-Cyan Core
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(0, -3.8);
+    ctx.lineTo(-flameLength * 0.45, 0);
+    ctx.lineTo(0, 3.8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  });
+  ctx.restore();
+
+  // Hoverboard Chassis & Deck
+  ctx.save();
+  // Under chassis
+  ctx.fillStyle = '#11131c';
+  ctx.beginPath();
+  ctx.moveTo(-142, 14);
+  ctx.lineTo(142, 14);
+  ctx.lineTo(152, 5);
+  ctx.lineTo(-152, 5);
+  ctx.closePath();
+  ctx.fill();
+
+  // Thruster metal bracket housing
+  ctx.fillStyle = '#3a3e50';
+  ctx.fillRect(-152, -12, 16, 22);
+  ctx.fillStyle = '#1a1c24';
+  ctx.fillRect(-156, -9, 5, 16);
+
+  // Deck Top Surface
+  const deckGrad = ctx.createLinearGradient(-160, -18, 160, 18);
+  deckGrad.addColorStop(0, '#151428');
+  deckGrad.addColorStop(0.4, '#2d294d');
+  deckGrad.addColorStop(0.6, '#2d294d');
+  deckGrad.addColorStop(1, '#151428');
+  ctx.fillStyle = deckGrad;
+
+  ctx.beginPath();
+  // Nose kick (front right)
+  ctx.moveTo(154, -14);
+  ctx.quadraticCurveTo(166, -10, 168, 0);
+  ctx.quadraticCurveTo(162, 9, 140, 10);
+  // Bottom deck edge
+  ctx.lineTo(-140, 10);
+  // Tail kick (rear left)
+  ctx.quadraticCurveTo(-162, 9, -165, -2);
+  ctx.quadraticCurveTo(-158, -12, -146, -16);
+  // Top deck curve
+  ctx.quadraticCurveTo(-75, -7, 0, -7);
+  ctx.quadraticCurveTo(75, -7, 154, -14);
+  ctx.closePath();
+  ctx.fill();
+
+  // Edge Neon Border
+  ctx.strokeStyle = '#00f0ff';
+  ctx.lineWidth = 4;
+  ctx.shadowColor = '#00f0ff';
+  ctx.shadowBlur = 12;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Deck Grip Pads
+  ctx.fillStyle = '#0a0a12';
+  ctx.beginPath();
+  ctx.roundRect(-132, -7, 72, 12, 4);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(65, -7, 72, 12, 4);
+  ctx.fill();
+
+  // Cyber Decal Stripes
+  ctx.strokeStyle = '#ff007f';
+  ctx.lineWidth = 2.8;
+  ctx.shadowColor = '#ff007f';
+  ctx.shadowBlur = 8;
+  ctx.beginPath();
+  ctx.moveTo(-55, -2);
+  ctx.lineTo(-25, -2);
+  ctx.lineTo(-12, -6);
+  ctx.lineTo(12, -6);
+  ctx.lineTo(25, -2);
+  ctx.lineTo(55, -2);
+  ctx.stroke();
+
+  // Status LEDs
+  const leds = ['#00f0ff', '#00f0ff', '#ff007f', '#ffe600'];
+  leds.forEach((col, i) => {
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.arc(-24 + i * 16, 5, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // --- DRAW CAPYBARA ---
+  drawCapybaraAnatomy(time, theme);
+
+  ctx.restore(); // end board + capy transform
+}
+
+function drawCapybaraAnatomy(time, theme) {
+  const breath = Math.sin(time * 3) * 0.02;
+
+  ctx.save();
+  // Translate slightly up so paws rest cleanly on the deck top (-7px)
+  ctx.translate(0, -6);
+
+  // Far back foot
+  ctx.fillStyle = '#48240a';
+  ctx.beginPath();
+  ctx.roundRect(-86, -6, 40, 13, 5);
+  ctx.fill();
+
+  // Far front foot
+  ctx.fillStyle = '#48240a';
+  ctx.beginPath();
+  ctx.roundRect(76, -6, 40, 13, 5);
+  ctx.fill();
+
+  // Body scale with breath
+  ctx.save();
+  ctx.scale(1 + breath * 0.3, 1 - breath * 0.8);
+
+  // Main Potato Torso
+  const bodyGrad = ctx.createLinearGradient(-105, -125, 85, 10);
+  bodyGrad.addColorStop(0, '#582f0e');
+  bodyGrad.addColorStop(0.25, '#884f23');
+  bodyGrad.addColorStop(0.65, '#b0723e');
+  bodyGrad.addColorStop(0.9, '#764118');
+  bodyGrad.addColorStop(1, '#48240a');
+  ctx.fillStyle = bodyGrad;
+
+  ctx.beginPath();
+  ctx.moveTo(-100, -25);
+  ctx.bezierCurveTo(-130, -85, -90, -140, -22, -132);
+  ctx.bezierCurveTo(22, -130, 55, -122, 70, -104);
+  ctx.bezierCurveTo(95, -78, 90, -32, 68, -8);
+  ctx.bezierCurveTo(26, 4, -55, 0, -100, -25);
+  ctx.closePath();
+  ctx.fill();
+
+  // Fur highlight on spine
+  ctx.strokeStyle = 'rgba(255, 195, 145, 0.22)';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(-38, -90, 64, 3.8, 5.1);
+  ctx.stroke();
+
+  // Warm golden belly
+  const bellyGrad = ctx.createLinearGradient(-30, -50, 20, 0);
+  bellyGrad.addColorStop(0, 'rgba(235, 175, 120, 0.42)');
+  bellyGrad.addColorStop(1, 'rgba(235, 175, 120, 0)');
+  ctx.fillStyle = bellyGrad;
+  ctx.beginPath();
+  ctx.ellipse(-12, -45, 65, 30, -0.12, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Hip muscle definition
+  ctx.strokeStyle = '#422008';
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.arc(-62, -52, 42, 0.7, 2.3);
+  ctx.stroke();
+
+  // Near rear foot & leg
+  ctx.fillStyle = '#78431c';
+  ctx.beginPath();
+  ctx.roundRect(-72, -10, 45, 16, 7);
+  ctx.fill();
+  // Toes
+  ctx.fillStyle = '#220f04';
+  ctx.fillRect(-40, -6, 9, 12);
+  ctx.fillRect(-53, -6, 9, 12);
+  ctx.fillRect(-66, -6, 9, 12);
+
+  // Near front shoulder crease
+  ctx.strokeStyle = 'rgba(70, 35, 10, 0.35)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(52, -48, 32, 1.1, 2.6);
+  ctx.stroke();
+
+  // Near front foot
+  ctx.fillStyle = '#8a4f22';
+  ctx.beginPath();
+  ctx.roundRect(86, -10, 44, 16, 7);
+  ctx.fill();
+  // Toes
+  ctx.fillStyle = '#220f04';
+  ctx.fillRect(117, -6, 9, 12);
+  ctx.fillRect(105, -6, 9, 12);
+  ctx.fillRect(93, -6, 9, 12);
+
+  // --- CAPYBARA HEAD ---
+  ctx.save();
+  ctx.translate(50, -112);
+  ctx.rotate(-0.02 + breath * 0.6);
+
+  const headGrad = ctx.createLinearGradient(0, -55, 100, 35);
+  headGrad.addColorStop(0, '#9c5f2e');
+  headGrad.addColorStop(0.35, '#b87740');
+  headGrad.addColorStop(0.7, '#b87740');
+  headGrad.addColorStop(0.9, '#764019');
+  headGrad.addColorStop(1, '#48240a');
+  ctx.fillStyle = headGrad;
+
+  ctx.beginPath();
+  // Crown
+  ctx.moveTo(-24, -48);
+  ctx.lineTo(38, -48);
+  // Nose ridge
+  ctx.bezierCurveTo(70, -48, 94, -38, 102, -16);
+  // Blunt snout box
+  ctx.bezierCurveTo(110, 6, 109, 38, 88, 48);
+  // Chin / lower jaw
+  ctx.bezierCurveTo(66, 54, 32, 45, 10, 38);
+  // Throat
+  ctx.bezierCurveTo(-16, 32, -30, 12, -30, -22);
+  ctx.closePath();
+  ctx.fill();
+
+  // Dark muzzle shading
+  ctx.fillStyle = 'rgba(60, 30, 8, 0.28)';
+  ctx.beginPath();
+  ctx.ellipse(72, 18, 28, 26, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Nose Pad
+  ctx.fillStyle = '#180b03';
+  ctx.beginPath();
+  ctx.roundRect(92, -11, 19, 28, 7);
+  ctx.fill();
+
+  // Nostril slit
+  ctx.fillStyle = '#060201';
+  ctx.beginPath();
+  ctx.ellipse(100, 3, 5, 8, 0.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+
+  // Friendly Capybara smile line
+  ctx.strokeStyle = '#180b03';
+  ctx.lineWidth = 3.6;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(92, 24);
+  ctx.quadraticCurveTo(72, 35, 52, 26);
+  ctx.stroke();
+
+  // Rosy Cheek blush
+  const blushGrad = ctx.createRadialGradient(30, 8, 2, 30, 8, 20);
+  blushGrad.addColorStop(0, 'rgba(255, 80, 120, 0.35)');
+  blushGrad.addColorStop(1, 'rgba(255, 80, 120, 0)');
+  ctx.fillStyle = blushGrad;
+  ctx.beginPath();
+  ctx.arc(30, 8, 20, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Whiskers
+  ctx.strokeStyle = 'rgba(255, 235, 215, 0.7)';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(78, 14);
+  ctx.lineTo(120, 10);
+  ctx.moveTo(77, 20);
+  ctx.lineTo(118, 23);
+  ctx.moveTo(74, 25);
+  ctx.lineTo(110, 35);
+  ctx.stroke();
+
+  // Ear
+  ctx.save();
+  const earTwitch = Math.sin(time * 5) > 0.88 ? Math.sin(time * 35) * 0.18 : 0;
+  ctx.translate(-16, -44);
+  ctx.rotate(earTwitch);
+  ctx.fillStyle = '#6a3613';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 15, 20, -0.32, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#c77878';
+  ctx.beginPath();
+  ctx.ellipse(1, 2, 9, 13, -0.32, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // --- EYES OR SUNGLASSES ---
+  if (!state.showShades) {
+    ctx.save();
+    ctx.translate(34, -18);
+    // Eye socket
+    ctx.fillStyle = 'rgba(45, 22, 6, 0.4)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 13, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Eye white
+    ctx.fillStyle = '#fffdf7';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 11, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Iris
+    ctx.fillStyle = '#261104';
+    ctx.beginPath();
+    ctx.arc(1.5, 0, 5.5, 0, Math.PI * 2);
+    ctx.fill();
+    // Sparkle
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(3, -2, 2, 0, Math.PI * 2);
+    ctx.fill();
+    // Sleepy capy lid
+    const blink = (Math.sin(time * 1.6) > 0.95) ? 1 : 0.45;
+    ctx.fillStyle = '#9c5f2e';
+    ctx.beginPath();
+    ctx.rect(-12, -9, 24, 18 * blink);
+    ctx.fill();
+    // Eyelash contour
+    ctx.strokeStyle = '#180b03';
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.arc(0, -1, 11, 3.4, 6.0);
+    ctx.stroke();
+    ctx.restore();
+  } else {
+    // Cyberpunk Visor Sunglasses
+    ctx.save();
+    ctx.translate(38, -20);
+    ctx.fillStyle = '#0d0e14';
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 3.2;
+    ctx.beginPath();
+    ctx.moveTo(-22, -15);
+    ctx.lineTo(40, -18);
+    ctx.lineTo(34, 16);
+    ctx.lineTo(-4, 19);
+    ctx.lineTo(-20, 7);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Animated Neon Mirrored Reflection
+    ctx.save();
+    ctx.clip();
+    const sweep = ((time * 1.5) % 3) * 44 - 44;
+    const rGrad = ctx.createLinearGradient(sweep - 28, -35, sweep + 40, 35);
+    rGrad.addColorStop(0, 'rgba(255, 0, 128, 0)');
+    rGrad.addColorStop(0.35, 'rgba(255, 0, 128, 0.9)');
+    rGrad.addColorStop(0.55, 'rgba(0, 240, 255, 0.95)');
+    rGrad.addColorStop(0.75, 'rgba(255, 235, 59, 0.9)');
+    rGrad.addColorStop(1, 'rgba(255, 235, 59, 0)');
+    ctx.fillStyle = rGrad;
+    ctx.fillRect(-45, -45, 110, 80);
+    ctx.restore();
+
+    // Temple bar
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 3.2;
+    ctx.beginPath();
+    ctx.moveTo(-21, -13);
+    ctx.lineTo(-46, -17);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // --- YUZU ON HEAD ---
+  ctx.save();
+  ctx.translate(16, -50);
+  ctx.rotate(Math.sin(time * 4) * 0.08);
+
+  ctx.fillStyle = 'rgba(45, 22, 6, 0.35)';
+  ctx.beginPath();
+  ctx.ellipse(0, 3, 20, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  const yGrad = ctx.createRadialGradient(-6, -18, 2, 0, -15, 24);
+  yGrad.addColorStop(0, '#fff59d');
+  yGrad.addColorStop(0.3, '#ffca28');
+  yGrad.addColorStop(0.8, '#ff9800');
+  yGrad.addColorStop(1, '#e65100');
+  ctx.fillStyle = yGrad;
+  ctx.beginPath();
+  ctx.arc(0, -17, 22, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Stem
+  ctx.fillStyle = '#4e342e';
+  ctx.beginPath();
+  ctx.arc(0, -38, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillRect(-2, -45, 4, 8);
+
+  // Leaf
+  ctx.save();
+  ctx.translate(2, -42);
+  ctx.rotate(-0.35 + Math.sin(time * 12) * 0.18);
+  ctx.fillStyle = '#43a047';
+  ctx.beginPath();
+  ctx.ellipse(15, -4, 16, 8, -0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#2e7d32';
+  ctx.lineWidth = 1.4;
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.restore(); // end Yuzu
+
+  ctx.restore(); // end Head
+
+  // --- FLOWING CYBER SCARF ---
+  ctx.save();
+  ctx.translate(28, -108);
+
+  // Scarf knot
+  ctx.fillStyle = theme.scarfColor;
+  ctx.beginPath();
+  ctx.roundRect(-16, -7, 40, 26, 10);
+  ctx.fill();
+  ctx.strokeStyle = theme.scarfTrim;
+  ctx.lineWidth = 2.8;
+  ctx.stroke();
+
+  // Background ribbon tail
+  ctx.fillStyle = '#d4005c';
+  ctx.beginPath();
+  ctx.moveTo(-14, 6);
+  const w1 = Math.sin(time * 14) * 16;
+  const w2 = Math.cos(time * 14 + 1.2) * 22;
+  const w3 = Math.sin(time * 14 + 2.5) * 28;
+  ctx.quadraticCurveTo(-55, 0 + w1, -105, -6 + w2);
+  ctx.quadraticCurveTo(-145, -12 + w3, -180, w3);
+  ctx.lineTo(-176, w3 + 24);
+  ctx.quadraticCurveTo(-135, 8 + w2, -98, 12 + w1);
+  ctx.quadraticCurveTo(-50, 18, -12, 24);
+  ctx.closePath();
+  ctx.fill();
+
+  // Foreground ribbon tail
+  ctx.fillStyle = theme.scarfColor;
+  ctx.beginPath();
+  ctx.moveTo(-11, 2);
+  const v1 = Math.cos(time * 14 + 0.5) * 14;
+  const v2 = Math.sin(time * 14 + 1.8) * 20;
+  const v3 = Math.cos(time * 14 + 3.0) * 26;
+  ctx.quadraticCurveTo(-50, -5 + v1, -95, -10 + v2);
+  ctx.quadraticCurveTo(-135, -16 + v3, -170, v3 - 6);
+  ctx.lineTo(-166, v3 + 16);
+  ctx.quadraticCurveTo(-125, 2 + v2, -88, 6 + v1);
+  ctx.quadraticCurveTo(-44, 12, -9, 18);
+  ctx.closePath();
+  ctx.fill();
+
+  // Scarf Gold Trim
+  ctx.strokeStyle = theme.scarfTrim;
+  ctx.lineWidth = 3.2;
+  ctx.beginPath();
+  ctx.moveTo(-158, v3 - 4);
+  ctx.lineTo(-156, v3 + 14);
+  ctx.stroke();
+
+  ctx.restore(); // end scarf
+
+  ctx.restore(); // end body scaling
+
+  ctx.restore(); // end Capybara
+}
+
+// Draw Particles
+function drawParticles() {
+  ctx.save();
+  for (let p of particles) {
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+// Draw Floating Score & Text
+function drawFloatingTexts() {
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.font = '900 22px monospace, sans-serif';
+  for (let ft of floatingTexts) {
+    ctx.save();
+    ctx.translate(ft.x, ft.y);
+    ctx.scale(ft.scale, ft.scale);
+    ctx.globalAlpha = Math.max(0, ft.alpha);
+    ctx.fillStyle = ft.color;
+    ctx.shadowColor = ft.color;
+    ctx.shadowBlur = 12;
+    ctx.fillText(ft.text, 0, 0);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+// --- Animation Loop ---
+function loop(now) {
+  const dt = Math.min((now - lastTime) / 1000, 0.1);
+  lastTime = now;
+
+  update(dt);
+
+  ctx.save();
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const theme = THEMES[currentThemeIndex];
+  drawEnvironment(theme);
+  drawSpeedStreaks();
+  drawCollectibles(H * state.vanishingYRatio);
+  drawCapybaraScene();
+  drawParticles();
+  drawFloatingTexts();
+
+  ctx.restore();
+  requestAnimationFrame(loop);
+}
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

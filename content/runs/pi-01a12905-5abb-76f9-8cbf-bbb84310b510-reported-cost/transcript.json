@@ -1,0 +1,281 @@
+{
+  "schema_version": 1,
+  "turns": [
+    {
+      "role": "user",
+      "content": "Build an animated capybara riding a hoverboard using only HTML, CSS, and JavaScript.\n\nDeliver a single self-contained HTML file with all CSS and JavaScript inline. Do not use external libraries, external image assets, external fonts, or network requests. Inline SVG, CSS drawing, and canvas are allowed.\n\nThe result should visibly show a capybara riding a hoverboard, with animation that makes the scene feel alive. Do not include audio.\n\nReturn only the HTML source, without explanations or Markdown code fences.\n"
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "assistant",
+      "content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n  <title>Capybara Hoverboard Cruise</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n      user-select: none;\n      -webkit-user-select: none;\n    }\n\n    html, body {\n      width: 100%;\n      height: 100%;\n      overflow: hidden;\n      background: #06020e;\n      font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;\n      color: #fff;\n      touch-action: none;\n    }\n\n    #canvas-container {\n      position: absolute;\n      inset: 0;\n      width: 100%;\n      height: 100%;\n    }\n\n    canvas {\n      display: block;\n      width: 100%;\n      height: 100%;\n    }\n\n    /* Modern Glassmorphic Cyber HUD */\n    .hud-layer {\n      position: absolute;\n      inset: 0;\n      pointer-events: none;\n      display: flex;\n      flex-direction: column;\n      justify-content: space-between;\n      padding: 16px 24px;\n      z-index: 10;\n    }\n\n    /* Top HUD stats bar */\n    .hud-top {\n      display: flex;\n      justify-content: space-between;\n      align-items: flex-start;\n      gap: 16px;\n      flex-wrap: wrap;\n    }\n\n    .hud-card {\n      background: rgba(14, 7, 28, 0.68);\n      backdrop-filter: blur(14px);\n      -webkit-backdrop-filter: blur(14px);\n      border: 1px solid rgba(255, 255, 255, 0.14);\n      border-radius: 14px;\n      padding: 10px 18px;\n      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45), 0 0 16px rgba(0, 240, 255, 0.12);\n      display: flex;\n      align-items: center;\n      gap: 12px;\n      pointer-events: auto;\n    }\n\n    .hud-title {\n      font-size: 10.5px;\n      font-weight: 700;\n      text-transform: uppercase;\n      letter-spacing: 1.5px;\n      color: rgba(255, 255, 255, 0.6);\n      margin-bottom: 2px;\n    }\n\n    .hud-val {\n      font-size: 18px;\n      font-weight: 800;\n      letter-spacing: 0.5px;\n      color: #00f0ff;\n      text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);\n    }\n\n    .vibe-meter {\n      display: flex;\n      flex-direction: column;\n      min-width: 130px;\n      max-width: 200px;\n    }\n\n    .vibe-bar-bg {\n      width: 100%;\n      height: 8px;\n      background: rgba(255, 255, 255, 0.1);\n      border-radius: 4px;\n      overflow: hidden;\n      margin-top: 4px;\n      border: 1px solid rgba(255, 255, 255, 0.15);\n    }\n\n    .vibe-bar-fill {\n      height: 100%;\n      width: 100%;\n      background: linear-gradient(90deg, #ff007f, #00f0ff);\n      box-shadow: 0 0 10px #00f0ff;\n      border-radius: 4px;\n      animation: vibePulse 3s ease-in-out infinite alternate;\n    }\n\n    @keyframes vibePulse {\n      0% { filter: hue-rotate(0deg) brightness(1); }\n      100% { filter: hue-rotate(45deg) brightness(1.3); }\n    }\n\n    /* Floating Trick Banner */\n    .trick-banner {\n      position: absolute;\n      top: 18%;\n      left: 50%;\n      transform: translate(-50%, -50%) scale(0.8);\n      background: rgba(255, 0, 127, 0.88);\n      border: 2px solid #ffffff;\n      padding: 10px 26px;\n      border-radius: 30px;\n      font-size: 22px;\n      font-weight: 900;\n      letter-spacing: 2px;\n      text-transform: uppercase;\n      box-shadow: 0 0 35px rgba(255, 0, 127, 0.8);\n      opacity: 0;\n      pointer-events: none;\n      white-space: nowrap;\n      transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);\n    }\n\n    .trick-banner.show {\n      opacity: 1;\n      transform: translate(-50%, -50%) scale(1.1);\n    }\n\n    /* Bottom HUD Controls */\n    .hud-bottom {\n      display: flex;\n      flex-direction: column;\n      align-items: center;\n      gap: 10px;\n      pointer-events: auto;\n    }\n\n    .controls-row {\n      display: flex;\n      gap: 8px;\n      flex-wrap: wrap;\n      justify-content: center;\n      background: rgba(12, 6, 24, 0.72);\n      backdrop-filter: blur(14px);\n      -webkit-backdrop-filter: blur(14px);\n      padding: 8px 14px;\n      border-radius: 20px;\n      border: 1px solid rgba(255, 255, 255, 0.14);\n      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5);\n    }\n\n    .ctrl-btn {\n      background: rgba(255, 255, 255, 0.08);\n      border: 1px solid rgba(255, 255, 255, 0.2);\n      border-radius: 12px;\n      color: #fff;\n      padding: 8px 15px;\n      font-size: 13px;\n      font-weight: 700;\n      cursor: pointer;\n      display: inline-flex;\n      align-items: center;\n      gap: 7px;\n      transition: all 0.18s ease;\n      outline: none;\n      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);\n      -webkit-tap-highlight-color: transparent;\n    }\n\n    .ctrl-btn:hover {\n      background: rgba(0, 240, 255, 0.22);\n      border-color: #00f0ff;\n      transform: translateY(-2px);\n      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);\n    }\n\n    .ctrl-btn:active, .ctrl-btn.active {\n      background: rgba(255, 0, 127, 0.35);\n      border-color: #ff007f;\n      transform: translateY(0);\n      box-shadow: 0 0 18px rgba(255, 0, 127, 0.55);\n    }\n\n    .ctrl-btn.turbo-btn:hover, .ctrl-btn.turbo-btn.active {\n      background: rgba(255, 170, 0, 0.38);\n      border-color: #ffaa00;\n      box-shadow: 0 0 22px rgba(255, 170, 0, 0.65);\n    }\n\n    .ctrl-key-hint {\n      font-size: 10px;\n      opacity: 0.65;\n      background: rgba(0, 0, 0, 0.4);\n      padding: 2px 5px;\n      border-radius: 5px;\n    }\n\n    .desktop-hint {\n      font-size: 11px;\n      color: rgba(255, 255, 255, 0.55);\n      letter-spacing: 0.8px;\n      text-shadow: 0 1px 3px rgba(0,0,0,0.8);\n      text-align: center;\n    }\n\n    @media (max-width: 680px) {\n      .hud-layer { padding: 10px; }\n      .hud-card { padding: 6px 12px; }\n      .hud-val { font-size: 15px; }\n      .ctrl-btn { padding: 6px 11px; font-size: 12px; }\n      .desktop-hint { display: none; }\n      .trick-banner { font-size: 18px; padding: 8px 18px; }\n    }\n  </style>\n</head>\n<body>\n\n  <div id=\"canvas-container\">\n    <canvas id=\"c\"></canvas>\n  </div>\n\n  <div class=\"hud-layer\">\n    <!-- Top HUD Cards -->\n    <div class=\"hud-top\">\n      <div class=\"hud-card\">\n        <span style=\"font-size: 22px;\">🦫</span>\n        <div>\n          <div class=\"hud-title\">Rider Status</div>\n          <div class=\"hud-val\" id=\"status-text\">MAXIMUM CHILL</div>\n        </div>\n      </div>\n\n      <div class=\"hud-card vibe-meter\">\n        <div style=\"display: flex; justify-content: space-between;\">\n          <span class=\"hud-title\">Vibe Level</span>\n          <span class=\"hud-title\" style=\"color: #00f0ff;\">100%</span>\n        </div>\n        <div class=\"vibe-bar-bg\">\n          <div class=\"vibe-bar-fill\"></div>\n        </div>\n      </div>\n\n      <div class=\"hud-card\">\n        <span style=\"font-size: 20px;\">⚡</span>\n        <div>\n          <div class=\"hud-title\">Velocity</div>\n          <div class=\"hud-val\"><span id=\"speed-disp\">88</span> <span style=\"font-size: 12px; opacity: 0.75;\">MPH</span></div>\n        </div>\n      </div>\n    </div>\n\n    <!-- Floating Trick Banner -->\n    <div id=\"trick-banner\" class=\"trick-banner\"></div>\n\n    <!-- Bottom Controls Bar -->\n    <div class=\"hud-bottom\">\n      <div class=\"controls-row\">\n        <button id=\"btn-trick\" class=\"ctrl-btn\">\n          <span>🛹</span> Flip Trick <span class=\"ctrl-key-hint\">SPACE</span>\n        </button>\n        <button id=\"btn-turbo\" class=\"ctrl-btn turbo-btn\">\n          <span>🚀</span> Turbo <span class=\"ctrl-key-hint\">SHIFT</span>\n        </button>\n        <button id=\"btn-shades\" class=\"ctrl-btn\">\n          <svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"currentColor\" style=\"vertical-align: middle;\">\n            <path d=\"M4 8C2.9 8 2 8.9 2 10V14C2 15.1 2.9 16 4 16H8C9.1 16 10 15.1 10 14V10C10 8.9 9.1 8 8 8H4ZM16 8C14.9 8 14 8.9 14 10V14C14 15.1 14.9 16 16 16H20C21.1 16 22 15.1 22 14V10C22 8.9 21.1 8 20 8H16ZM10 11H14V13H10V11Z\"/>\n          </svg>\n          Shades\n        </button>\n        <button id=\"btn-yuzu\" class=\"ctrl-btn active\">\n          <span>🍊</span> Yuzu\n        </button>\n        <button id=\"btn-theme\" class=\"ctrl-btn\">\n          <span>🎨</span> <span id=\"theme-name\">Sunset Synth</span>\n        </button>\n        <button id=\"btn-auto\" class=\"ctrl-btn active\">\n          <span>🕹️</span> Auto: <span id=\"auto-state\">ON</span>\n        </button>\n      </div>\n      <div class=\"desktop-hint\">\n        [WASD / Arrows / Drag] Glide • [Space / Tap] Flip Trick • [Shift / Turbo] Rocket Boost\n      </div>\n    </div>\n  </div>\n\n<script>\n(() => {\n  const canvas = document.getElementById('c');\n  const ctx = canvas.getContext('2d');\n\n  // DOM elements\n  const speedDisp = document.getElementById('speed-disp');\n  const statusText = document.getElementById('status-text');\n  const trickBanner = document.getElementById('trick-banner');\n  const btnTrick = document.getElementById('btn-trick');\n  const btnTurbo = document.getElementById('btn-turbo');\n  const btnShades = document.getElementById('btn-shades');\n  const btnYuzu = document.getElementById('btn-yuzu');\n  const btnTheme = document.getElementById('btn-theme');\n  const btnAuto = document.getElementById('btn-auto');\n  const themeNameDisp = document.getElementById('theme-name');\n  const autoStateDisp = document.getElementById('auto-state');\n\n  // COLOR PALETTES\n  const THEMES = [\n    {\n      name: 'Sunset Synth',\n      primary: '#00f0ff',\n      secondary: '#ff007f',\n      accent: '#ffb03a',\n      skyTop: '#09021b',\n      skyMid1: '#1d0738',\n      skyMid2: '#5c0f4f',\n      skyMid3: '#a3205b',\n      skyLow: '#e8524e',\n      skyBottom: '#ffa245',\n      sunTop: '#fff6a8',\n      sunMid: '#ff4672',\n      sunBottom: '#48004b',\n      roadBase: '#0a0316',\n      gridColor: 'rgba(255, 0, 128, 0.28)'\n    },\n    {\n      name: 'Cyber Tokyo',\n      primary: '#00ffff',\n      secondary: '#bd00ff',\n      accent: '#00e5ff',\n      skyTop: '#030517',\n      skyMid1: '#090f32',\n      skyMid2: '#1b1b54',\n      skyMid3: '#361c6b',\n      skyLow: '#6a127a',\n      skyBottom: '#b01088',\n      sunTop: '#a3f7ff',\n      sunMid: '#7e22ce',\n      sunBottom: '#1e053a',\n      roadBase: '#040514',\n      gridColor: 'rgba(0, 255, 255, 0.28)'\n    },\n    {\n      name: 'Solar Emerald',\n      primary: '#00ff9d',\n      secondary: '#ffbf00',\n      accent: '#00e1d9',\n      skyTop: '#011210',\n      skyMid1: '#04241d',\n      skyMid2: '#0b4737',\n      skyMid3: '#186e4e',\n      skyLow: '#2e9e62',\n      skyBottom: '#ffd152',\n      sunTop: '#fff8b3',\n      sunMid: '#22c55e',\n      sunBottom: '#022c22',\n      roadBase: '#020f0c',\n      gridColor: 'rgba(0, 255, 157, 0.28)'\n    },\n    {\n      name: 'Vapor Dream',\n      primary: '#ff71ce',\n      secondary: '#01cdfe',\n      accent: '#05ffa1',\n      skyTop: '#100524',\n      skyMid1: '#250b4a',\n      skyMid2: '#47146e',\n      skyMid3: '#79208a',\n      skyLow: '#ab329d',\n      skyBottom: '#ff9ad9',\n      sunTop: '#ffffff',\n      sunMid: '#ff71ce',\n      sunBottom: '#2d0854',\n      roadBase: '#0e041e',\n      gridColor: 'rgba(255, 113, 206, 0.28)'\n    }\n  ];\n\n  let currentThemeIdx = 0;\n  let theme = THEMES[0];\n\n  // CANVAS & VIEWPORT DIMENSIONS\n  let width = window.innerWidth;\n  let height = window.innerHeight;\n  let dpr = window.devicePixelRatio || 1;\n\n  // RIDER STATE\n  const state = {\n    x: width * 0.44,\n    y: height * 0.72,\n    baseY: height * 0.72,\n    vx: 0,\n    vy: 0,\n    targetX: width * 0.44,\n    targetY: height * 0.72,\n    tilt: 0,\n    targetTilt: 0,\n    // Jump & Trick\n    jumping: false,\n    jumpTimer: 0,\n    jumpDuration: 0.85,\n    jumpHeight: 140,\n    spinAngle: 0,\n    trickName: '',\n    // Speed\n    turbo: false,\n    baseSpeed: 88,\n    curSpeed: 88,\n    // Customization\n    shades: false,\n    yuzu: true,\n    autoCruise: true,\n    autoWanderTimer: 0\n  };\n\n  // Keyboard input\n  const keys = {\n    ArrowLeft: false,\n    ArrowRight: false,\n    ArrowUp: false,\n    ArrowDown: false,\n    KeyA: false,\n    KeyD: false,\n    KeyW: false,\n    KeyS: false,\n    Space: false,\n    ShiftLeft: false,\n    ShiftRight: false\n  };\n\n  // Particle systems\n  const thrusterParticles = [];\n  const ambientSparks = [];\n  const speedLines = [];\n\n  // Initialize Speed Lines\n  for (let i = 0; i < 22; i++) {\n    speedLines.push({\n      x: Math.random() * width,\n      y: Math.random() * height * 0.9,\n      len: 70 + Math.random() * 120,\n      spd: 12 + Math.random() * 16,\n      alpha: 0.2 + Math.random() * 0.5\n    });\n  }\n\n  // Initialize Ambient sparks\n  for (let i = 0; i < 45; i++) {\n    ambientSparks.push({\n      x: Math.random() * width,\n      y: height * 0.35 + Math.random() * height * 0.6,\n      rad: 1 + Math.random() * 2.2,\n      spd: 1.5 + Math.random() * 3,\n      pulse: Math.random() * Math.PI * 2,\n      isPrimary: Math.random() > 0.5\n    });\n  }\n\n  // Window Resize\n  function resize() {\n    width = window.innerWidth;\n    height = window.innerHeight;\n    dpr = window.devicePixelRatio || 1;\n    canvas.width = width * dpr;\n    canvas.height = height * dpr;\n    ctx.scale(dpr, dpr);\n    state.baseY = height * 0.72;\n    if (!state.jumping) {\n      state.y = state.baseY;\n      state.targetY = state.baseY;\n    }\n  }\n\n  window.addEventListener('resize', resize);\n  resize();\n\n  // Input Listeners\n  window.addEventListener('keydown', (e) => {\n    if (keys.hasOwnProperty(e.code)) {\n      keys[e.code] = true;\n      state.autoCruise = false;\n      updateAutoCruiseUI();\n    }\n    if (e.code === 'Space') {\n      e.preventDefault();\n      triggerTrick();\n    }\n    if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {\n      state.turbo = true;\n    }\n    if (e.code === 'KeyS' && !e.ctrlKey && !e.metaKey) {\n      toggleShades();\n    }\n    if (e.code === 'KeyO' || e.code === 'KeyY') {\n      toggleYuzu();\n    }\n    if (e.code === 'KeyC' || e.code === 'KeyT') {\n      cycleTheme();\n    }\n    if (e.code === 'KeyA' && (e.altKey || !keys.KeyA)) {\n      state.autoCruise = !state.autoCruise;\n      updateAutoCruiseUI();\n    }\n  });\n\n  window.addEventListener('keyup', (e) => {\n    if (keys.hasOwnProperty(e.code)) {\n      keys[e.code] = false;\n    }\n    if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {\n      state.turbo = false;\n    }\n  });\n\n  // Pointer / Touch Drag\n  let isPointerDown = false;\n  let lastPointerX = 0;\n  let lastPointerY = 0;\n\n  window.addEventListener('pointerdown', (e) => {\n    if (e.target.closest('.hud-card') || e.target.closest('.controls-row')) return;\n    isPointerDown = true;\n    lastPointerX = e.clientX;\n    lastPointerY = e.clientY;\n    state.autoCruise = false;\n    updateAutoCruiseUI();\n\n    // Tap/Click jumps\n    triggerTrick();\n  });\n\n  window.addEventListener('pointermove', (e) => {\n    if (!isPointerDown) return;\n    const dx = e.clientX - lastPointerX;\n    const dy = e.clientY - lastPointerY;\n    lastPointerX = e.clientX;\n    lastPointerY = e.clientY;\n\n    const baseScale = Math.min(1.0, Math.max(0.55, width / 680));\n    const margin = Math.max(90, 150 * baseScale);\n    state.targetX = Math.max(margin, Math.min(width - margin, state.targetX + dx * 1.25));\n    state.targetY = Math.max(height * 0.45, Math.min(height * 0.82, state.targetY + dy * 1.25));\n  });\n\n  window.addEventListener('pointerup', () => { isPointerDown = false; });\n  window.addEventListener('pointercancel', () => { isPointerDown = false; });\n\n  // Buttons\n  btnTrick.addEventListener('click', (e) => {\n    e.stopPropagation();\n    triggerTrick();\n  });\n\n  btnTurbo.addEventListener('pointerdown', (e) => {\n    e.stopPropagation();\n    state.turbo = true;\n    btnTurbo.classList.add('active');\n  });\n\n  window.addEventListener('pointerup', () => {\n    if (state.turbo && !keys.ShiftLeft && !keys.ShiftRight) {\n      state.turbo = false;\n      btnTurbo.classList.remove('active');\n    }\n  });\n\n  btnShades.addEventListener('click', (e) => {\n    e.stopPropagation();\n    toggleShades();\n  });\n\n  btnYuzu.addEventListener('click', (e) => {\n    e.stopPropagation();\n    toggleYuzu();\n  });\n\n  btnTheme.addEventListener('click', (e) => {\n    e.stopPropagation();\n    cycleTheme();\n  });\n\n  btnAuto.addEventListener('click', (e) => {\n    e.stopPropagation();\n    state.autoCruise = !state.autoCruise;\n    updateAutoCruiseUI();\n  });\n\n  function toggleShades() {\n    state.shades = !state.shades;\n    btnShades.classList.toggle('active', state.shades);\n    showTrickText(state.shades ? 'SHADES EQUIPPED 🕶️' : 'ZEN GAZE 👀');\n  }\n\n  function toggleYuzu() {\n    state.yuzu = !state.yuzu;\n    btnYuzu.classList.toggle('active', state.yuzu);\n    showTrickText(state.yuzu ? 'CITRUS BALANCE 🍊' : 'HATLESS MODE 🌿');\n  }\n\n  function cycleTheme() {\n    currentThemeIdx = (currentThemeIdx + 1) % THEMES.length;\n    theme = THEMES[currentThemeIdx];\n    themeNameDisp.textContent = theme.name;\n    showTrickText(theme.name.toUpperCase() + ' 🎨');\n  }\n\n  function updateAutoCruiseUI() {\n    autoStateDisp.textContent = state.autoCruise ? 'ON' : 'OFF';\n    btnAuto.classList.toggle('active', state.autoCruise);\n  }\n\n  const TRICK_NAMES = [\n    'SICK KICKFLIP +500',\n    '360 HEEL-CHILL +750',\n    'ZEN POP-SHOVIT +600',\n    'NO DRAMA FLIP +800',\n    'MAXIMUM VIBE +1000',\n    'OK I PULL UP 🦫✨'\n  ];\n\n  function triggerTrick() {\n    if (state.jumping) return;\n    state.jumping = true;\n    state.jumpTimer = 0;\n    state.trickName = TRICK_NAMES[Math.floor(Math.random() * TRICK_NAMES.length)];\n    showTrickText(state.trickName);\n  }\n\n  let trickBannerTimeout = null;\n  function showTrickText(text) {\n    trickBanner.textContent = text;\n    trickBanner.classList.add('show');\n    clearTimeout(trickBannerTimeout);\n    trickBannerTimeout = setTimeout(() => {\n      trickBanner.classList.remove('show');\n    }, 1400);\n  }\n\n  // Animation Loop Variables\n  let lastTime = performance.now();\n  let timeSeconds = 0;\n\n  function loop(now) {\n    const dt = Math.min(0.05, (now - lastTime) / 1000);\n    lastTime = now;\n    timeSeconds += dt;\n\n    update(dt);\n    render(timeSeconds);\n\n    requestAnimationFrame(loop);\n  }\n\n  // Physics & State Updates\n  function update(dt) {\n    // 1. Auto Cruise Wandering AI\n    if (state.autoCruise) {\n      state.autoWanderTimer += dt;\n      const baseScale = Math.min(1.0, Math.max(0.55, width / 680));\n      const margin = Math.max(100, 160 * baseScale);\n      const wanderAmp = Math.max(20, (width - margin * 2) * 0.35);\n      state.targetX = (width * 0.46) + Math.sin(state.autoWanderTimer * 0.75) * wanderAmp;\n      state.targetY = state.baseY + Math.sin(state.autoWanderTimer * 1.4) * 20;\n\n      // Casual automatic trick after initial cruise\n      if (state.autoWanderTimer > 5.0 && (state.autoWanderTimer % 10.0 < dt) && !state.jumping) {\n        triggerTrick();\n      }\n    } else {\n      // Manual Steering\n      const moveSpeed = 380 * dt;\n      if (keys.ArrowLeft || keys.KeyA) state.targetX -= moveSpeed;\n      if (keys.ArrowRight || keys.KeyD) state.targetX += moveSpeed;\n      if (keys.ArrowUp || keys.KeyW) state.targetY -= moveSpeed * 0.7;\n      if (keys.ArrowDown || keys.KeyS) state.targetY += moveSpeed * 0.7;\n\n      const baseScale = Math.min(1.0, Math.max(0.55, width / 680));\n      const margin = Math.max(90, 150 * baseScale);\n      state.targetX = Math.max(margin, Math.min(width - margin, state.targetX));\n      state.targetY = Math.max(height * 0.45, Math.min(height * 0.82, state.targetY));\n    }\n\n    // Smooth Spring-Mass Position Smoothing\n    const springSpeed = 6.0 * dt;\n    state.vx = (state.targetX - state.x) * springSpeed;\n    state.x += state.vx;\n\n    // Smooth Banking Angle based on horizontal glide velocity\n    state.targetTilt = (state.targetX - state.x) * 0.0009;\n    state.tilt += (state.targetTilt - state.tilt) * (8.0 * dt);\n\n    // Jump / Ollie / Trick Physics\n    let jumpOffset = 0;\n    if (state.jumping) {\n      state.jumpTimer += dt;\n      const progress = state.jumpTimer / state.jumpDuration;\n\n      if (progress >= 1.0) {\n        state.jumping = false;\n        state.jumpTimer = 0;\n        state.spinAngle = 0;\n      } else {\n        // Jump parabolic arc\n        jumpOffset = Math.sin(progress * Math.PI) * state.jumpHeight;\n        // 360 Spin\n        state.spinAngle = progress * Math.PI * 2;\n      }\n    }\n\n    // Gentle hoverboard harmonic float oscillation\n    const floatBob = Math.sin(timeSeconds * 3.5) * 11 + Math.sin(timeSeconds * 6.7) * 3;\n    state.y = (state.targetY - jumpOffset) + floatBob;\n\n    // Turbo Speed Interpolation\n    const targetSpeed = state.turbo ? 142 : state.baseSpeed;\n    state.curSpeed += (targetSpeed - state.curSpeed) * (5.0 * dt);\n    speedDisp.textContent = Math.round(state.curSpeed);\n\n    if (state.turbo) {\n      btnTurbo.classList.add('active');\n    } else if (!keys.ShiftLeft && !keys.ShiftRight) {\n      btnTurbo.classList.remove('active');\n    }\n\n    // Spawn Thruster Plasma Particles from Kicktail\n    const spawnRate = state.turbo ? 4 : 2;\n    for (let i = 0; i < spawnRate; i++) {\n      thrusterParticles.push({\n        x: state.x - 175 + (Math.random() - 0.5) * 8,\n        y: state.y - 6 + (Math.random() - 0.5) * 6,\n        vx: -(state.turbo ? 380 : 220) - Math.random() * 160,\n        vy: (Math.random() - 0.5) * 45,\n        size: 3 + Math.random() * 5,\n        alpha: 1.0,\n        decay: 1.8 + Math.random() * 2.5,\n        color: Math.random() > 0.4 ? theme.primary : theme.secondary\n      });\n    }\n\n    // Update Particles\n    for (let i = thrusterParticles.length - 1; i >= 0; i--) {\n      const p = thrusterParticles[i];\n      p.x += p.vx * dt;\n      p.y += p.vy * dt;\n      p.alpha -= p.decay * dt;\n      p.size = Math.max(0, p.size - dt * 2.2);\n      if (p.alpha <= 0 || p.size <= 0) {\n        thrusterParticles.splice(i, 1);\n      }\n    }\n\n    // Update Speed Lines\n    const speedMult = state.turbo ? 2.5 : 1.2;\n    speedLines.forEach(l => {\n      l.x -= l.spd * speedMult * 60 * dt;\n      if (l.x < -200) {\n        l.x = width + 50 + Math.random() * 150;\n        l.y = Math.random() * height * 0.9;\n      }\n    });\n\n    // Update Ambient Floating Sparks\n    ambientSparks.forEach(s => {\n      s.x -= s.spd * speedMult * 35 * dt;\n      s.pulse += dt * 3;\n      if (s.x < -50) {\n        s.x = width + 50 + Math.random() * 80;\n        s.y = height * 0.35 + Math.random() * height * 0.6;\n      }\n    });\n  }\n\n  // Master Render Function\n  function render(t) {\n    ctx.clearRect(0, 0, width, height);\n\n    // Subtle camera shake during hyperspeed rocket boost\n    const shakeX = state.turbo ? (Math.random() - 0.5) * 3 : 0;\n    const shakeY = state.turbo ? (Math.random() - 0.5) * 2.5 : 0;\n\n    ctx.save();\n    if (state.turbo) {\n      ctx.translate(shakeX, shakeY);\n    }\n\n    const horizonY = height * 0.62;\n\n    // 1. SKY GRADIENT\n    const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);\n    skyGrad.addColorStop(0, theme.skyTop);\n    skyGrad.addColorStop(0.28, theme.skyMid1);\n    skyGrad.addColorStop(0.52, theme.skyMid2);\n    skyGrad.addColorStop(0.74, theme.skyMid3);\n    skyGrad.addColorStop(0.9, theme.skyLow);\n    skyGrad.addColorStop(1, theme.skyBottom);\n    ctx.fillStyle = skyGrad;\n    ctx.fillRect(0, 0, width, horizonY);\n\n    // Twinkling Celestial Stars\n    ctx.fillStyle = '#ffffff';\n    for (let i = 0; i < 50; i++) {\n      const sx = (i * 137.5 + 40) % width;\n      const sy = (i * 47.3 + 20) % (horizonY * 0.55);\n      const twinkle = 0.3 + 0.7 * Math.sin(t * 2.5 + i);\n      ctx.globalAlpha = twinkle;\n      const sz = (i % 4 === 0) ? 2.2 : 1.4;\n      ctx.fillRect(sx, sy, sz, sz);\n    }\n    ctx.globalAlpha = 1.0;\n\n    // 2. GIANT SYNTHWAVE SUN\n    const sunR = Math.min(width * 0.16, 140);\n    const sunX = width * 0.65;\n    const sunY = horizonY - sunR * 0.65;\n\n    const sunGrad = ctx.createLinearGradient(sunX, sunY - sunR, sunX, sunY + sunR);\n    sunGrad.addColorStop(0, theme.sunTop);\n    sunGrad.addColorStop(0.4, theme.sunMid);\n    sunGrad.addColorStop(1, theme.sunBottom);\n\n    ctx.save();\n    ctx.shadowColor = theme.sunMid;\n    ctx.shadowBlur = 50;\n    ctx.fillStyle = sunGrad;\n    ctx.beginPath();\n    ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);\n    ctx.fill();\n\n    // Horizontal scanline cuts through sun\n    ctx.shadowBlur = 0;\n    ctx.fillStyle = theme.skyMid1;\n    const cuts = 9;\n    for (let i = 0; i < cuts; i++) {\n      const cutY = sunY + (sunR * 0.1) + i * (sunR * 0.11);\n      const cutH = 2 + i * 1.5;\n      ctx.fillRect(sunX - sunR - 15, cutY, sunR * 2 + 30, cutH);\n    }\n    ctx.restore();\n\n    // 3. PARALLAX MOUNTAINS LAYER\n    ctx.fillStyle = '#140624';\n    ctx.beginPath();\n    ctx.moveTo(0, horizonY);\n    ctx.lineTo(0, horizonY - 80);\n    const mtnSegments = 12;\n    for (let i = 0; i <= mtnSegments; i++) {\n      const mx = (width / mtnSegments) * i;\n      const my = horizonY - 50 - Math.sin(i * 1.3) * 60 - ((i % 3 === 0) ? 40 : 0);\n      ctx.lineTo(mx, my);\n    }\n    ctx.lineTo(width, horizonY);\n    ctx.closePath();\n    ctx.fill();\n\n    // Mountain neon rim light\n    ctx.strokeStyle = theme.secondary;\n    ctx.globalAlpha = 0.35;\n    ctx.lineWidth = 2;\n    ctx.stroke();\n    ctx.globalAlpha = 1.0;\n\n    // 4. PARALLAX CITY SKYLINE\n    const cityScroll = (t * (state.turbo ? 90 : 45)) % 300;\n    ctx.fillStyle = '#0e041a';\n    const numBuildings = Math.ceil(width / 60) + 6;\n    for (let b = -2; b < numBuildings; b++) {\n      const bx = b * 65 - cityScroll;\n      const seed = Math.abs(Math.sin(b * 99)) * 1000;\n      const bh = 50 + (seed % 100);\n      const bw = 40 + (seed % 25);\n      ctx.fillRect(bx, horizonY - bh, bw, bh);\n\n      // Windows\n      ctx.fillStyle = theme.primary;\n      ctx.globalAlpha = 0.3;\n      for (let wy = horizonY - bh + 10; wy < horizonY - 10; wy += 16) {\n        for (let wx = bx + 6; wx < bx + bw - 6; wx += 10) {\n          if ((Math.sin(wx * 11 + wy * 17) > 0.3)) {\n            ctx.fillRect(wx, wy, 3, 6);\n          }\n        }\n      }\n      ctx.globalAlpha = 1.0;\n      ctx.fillStyle = '#0e041a';\n    }\n\n    // 5. HIGHWAY SURFACE\n    const roadH = height - horizonY;\n    const roadGrad = ctx.createLinearGradient(0, horizonY, 0, height);\n    roadGrad.addColorStop(0, theme.roadBase);\n    roadGrad.addColorStop(0.3, '#120524');\n    roadGrad.addColorStop(1, '#1c0836');\n    ctx.fillStyle = roadGrad;\n    ctx.fillRect(0, horizonY, width, roadH);\n\n    // Horizon Neon Glow Laser Strip\n    ctx.save();\n    ctx.strokeStyle = theme.primary;\n    ctx.shadowColor = theme.primary;\n    ctx.shadowBlur = 18;\n    ctx.lineWidth = 3.5;\n    ctx.beginPath();\n    ctx.moveTo(0, horizonY);\n    ctx.lineTo(width, horizonY);\n    ctx.stroke();\n    ctx.restore();\n\n    // Road Perspective Grid\n    ctx.save();\n    ctx.strokeStyle = theme.gridColor;\n    ctx.lineWidth = 1.5;\n    const vanishX = width * 0.5;\n    const gridCount = 24;\n    for (let i = -gridCount; i <= gridCount * 2; i++) {\n      const bottomX = (width / gridCount) * i;\n      ctx.beginPath();\n      ctx.moveTo(vanishX, horizonY);\n      ctx.lineTo(bottomX, height);\n      ctx.stroke();\n    }\n\n    // Fast speed laser dashes on road\n    const speedCycle = (t * (state.turbo ? 1600 : 800)) % 220;\n    ctx.strokeStyle = theme.secondary;\n    ctx.shadowColor = theme.secondary;\n    ctx.shadowBlur = 12;\n    ctx.lineWidth = 3.5;\n    for (let z = 0; z < 14; z++) {\n      const normY = (z + (speedCycle / 220)) / 14;\n      const yPos = horizonY + Math.pow(normY, 2.3) * roadH;\n      if (yPos > height) continue;\n      ctx.beginPath();\n      ctx.moveTo(0, yPos);\n      ctx.lineTo(width, yPos);\n      ctx.stroke();\n    }\n    ctx.restore();\n\n    // Roadside glowing neon guide rails (spaced widely as highway boundaries)\n    ctx.save();\n    ctx.strokeStyle = theme.primary;\n    ctx.shadowColor = theme.primary;\n    ctx.shadowBlur = 14;\n    ctx.lineWidth = 3;\n    ctx.beginPath();\n    ctx.moveTo(vanishX - width * 0.08, horizonY);\n    ctx.lineTo(-width * 0.15, height);\n    ctx.moveTo(vanishX + width * 0.08, horizonY);\n    ctx.lineTo(width * 1.15, height);\n    ctx.stroke();\n    ctx.restore();\n\n    // 6. SPEED STREAKS & FLOATING MOTES\n    // Speed lines\n    ctx.save();\n    ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';\n    ctx.lineWidth = state.turbo ? 2.5 : 1.5;\n    speedLines.forEach(l => {\n      ctx.globalAlpha = l.alpha * (state.turbo ? 1.0 : 0.6);\n      ctx.beginPath();\n      ctx.moveTo(l.x, l.y);\n      ctx.lineTo(l.x - l.len * (state.turbo ? 2.0 : 1.0), l.y);\n      ctx.stroke();\n    });\n    ctx.restore();\n\n    // Ambient floating neon motes\n    ctx.save();\n    ctx.globalCompositeOperation = 'lighter';\n    ambientSparks.forEach(s => {\n      const alpha = 0.4 + 0.6 * Math.sin(s.pulse);\n      ctx.fillStyle = s.isPrimary ? theme.primary : theme.secondary;\n      ctx.globalAlpha = alpha;\n      ctx.beginPath();\n      ctx.arc(s.x, s.y, s.rad, 0, Math.PI * 2);\n      ctx.fill();\n    });\n    ctx.restore();\n\n    // 7. HOVERBOARD GROUND REFLECTION & SHADOW\n    const groundY = Math.min(height - 35, state.baseY + 80);\n    ctx.save();\n    ctx.translate(state.x, groundY);\n\n    // Contact shadow\n    const shadowScale = Math.max(0.4, 1 - ((state.baseY - state.y) / 250));\n    const shadowGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, 150 * shadowScale);\n    shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0.85)');\n    shadowGrad.addColorStop(0.5, 'rgba(0, 0, 0, 0.4)');\n    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');\n    ctx.fillStyle = shadowGrad;\n    ctx.beginPath();\n    ctx.ellipse(0, 0, 140 * shadowScale, 22 * shadowScale, 0, 0, Math.PI * 2);\n    ctx.fill();\n\n    // Dual Repulsor Light Puddles reflecting on road\n    ctx.globalCompositeOperation = 'lighter';\n    [-75, 75].forEach(rx => {\n      const puddleGrad = ctx.createRadialGradient(rx * shadowScale, 0, 5, rx * shadowScale, 0, 70 * shadowScale);\n      puddleGrad.addColorStop(0, theme.primary);\n      puddleGrad.addColorStop(0.35, theme.secondary);\n      puddleGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');\n      ctx.fillStyle = puddleGrad;\n      ctx.globalAlpha = 0.7 * shadowScale;\n      ctx.beginPath();\n      ctx.ellipse(rx * shadowScale, 0, 65 * shadowScale, 18 * shadowScale, 0, 0, Math.PI * 2);\n      ctx.fill();\n    });\n    ctx.restore();\n\n    // 8. THRUSTER PARTICLES (behind board)\n    ctx.save();\n    ctx.globalCompositeOperation = 'lighter';\n    thrusterParticles.forEach(p => {\n      ctx.fillStyle = p.color;\n      ctx.globalAlpha = Math.max(0, p.alpha);\n      ctx.beginPath();\n      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);\n      ctx.fill();\n    });\n    ctx.restore();\n\n    // 9. THE CAPYBARA & HOVERBOARD\n    ctx.save();\n    ctx.translate(state.x, state.y);\n    ctx.rotate(state.tilt + state.spinAngle);\n\n    drawCapybaraAndBoard(t);\n\n    ctx.restore();\n    ctx.restore(); // end camera shake\n  }\n\n  // Draw Capybara and Hoverboard Component\n  function drawCapybaraAndBoard(t) {\n    const primary = theme.primary;\n    const secondary = theme.secondary;\n    const baseScale = Math.min(1.0, Math.max(0.58, width / 680));\n    ctx.scale(baseScale, baseScale);\n\n    const breath = Math.sin(t * 3.2) * 2;\n    const earWiggle = Math.sin(t * (state.turbo ? 8 : 4.5)) * 0.04 + (Math.sin(t * 1.8) > 0.85 ? Math.sin(t * 26) * 0.12 : 0);\n    const bob = Math.sin(t * 3.2 - 0.4) * 1.5;\n\n    // 1. DUAL UNDER-DECK REPULSOR PODS\n    [-75, 75].forEach(rx => {\n      ctx.save();\n      // Metallic generator housing\n      ctx.fillStyle = '#151928';\n      ctx.strokeStyle = primary;\n      ctx.lineWidth = 2.2;\n      ctx.beginPath();\n      ctx.roundRect(rx - 28, 14, 56, 18, 5);\n      ctx.fill();\n      ctx.stroke();\n\n      // Glowing power core\n      ctx.fillStyle = primary;\n      ctx.shadowColor = primary;\n      ctx.shadowBlur = 14;\n      ctx.beginPath();\n      ctx.roundRect(rx - 20, 23, 40, 7, 3);\n      ctx.fill();\n\n      // Expanding plasma shockwave rings\n      ctx.globalCompositeOperation = 'lighter';\n      for (let r = 0; r < 3; r++) {\n        const ringScale = (t * 3.6 + r * 0.33) % 1;\n        const ringY = 32 + ringScale * 45;\n        const ringW = 28 + ringScale * 38;\n        const ringAlpha = (1 - ringScale) * 0.85;\n        ctx.strokeStyle = primary;\n        ctx.globalAlpha = ringAlpha;\n        ctx.lineWidth = 2.6;\n        ctx.beginPath();\n        ctx.ellipse(rx, ringY, ringW, 7, 0, 0, Math.PI * 2);\n        ctx.stroke();\n      }\n      ctx.restore();\n    });\n\n    // Aerodynamic Rear Ion Jet Thruster at Kicktail (x = -165, y = -6)\n    ctx.save();\n    ctx.fillStyle = '#181c2b';\n    ctx.strokeStyle = primary;\n    ctx.lineWidth = 2;\n    ctx.beginPath();\n    ctx.roundRect(-178, -13, 20, 14, 3);\n    ctx.fill();\n    ctx.stroke();\n\n    // Blazing Plasma Jet shooting straight back from tail\n    ctx.globalCompositeOperation = 'lighter';\n    const jetLen = state.turbo ? (230 + Math.random() * 50) : (95 + Math.sin(t * 16) * 25);\n    const jetWidth = state.turbo ? 16 : 9;\n    const jetGrad = ctx.createLinearGradient(-178, -6, -178 - jetLen, -6);\n    jetGrad.addColorStop(0, '#ffffff');\n    jetGrad.addColorStop(0.18, primary);\n    jetGrad.addColorStop(0.6, secondary);\n    jetGrad.addColorStop(1, 'rgba(255, 0, 128, 0)');\n    ctx.fillStyle = jetGrad;\n    ctx.shadowColor = primary;\n    ctx.shadowBlur = state.turbo ? 30 : 18;\n    ctx.beginPath();\n    ctx.moveTo(-178, -6 - jetWidth);\n    ctx.lineTo(-178 - jetLen, -6);\n    ctx.lineTo(-178, -6 + jetWidth);\n    ctx.closePath();\n    ctx.fill();\n\n    // Inner white-hot plasma core\n    const coreLen = jetLen * 0.45;\n    ctx.fillStyle = '#ffffff';\n    ctx.beginPath();\n    ctx.moveTo(-178, -6 - jetWidth * 0.4);\n    ctx.lineTo(-178 - coreLen, -6);\n    ctx.lineTo(-178, -6 + jetWidth * 0.4);\n    ctx.closePath();\n    ctx.fill();\n    ctx.restore();\n\n    // 2. HOVERBOARD DECK CHASSIS\n    ctx.save();\n    const deckGrad = ctx.createLinearGradient(-190, 0, 190, 0);\n    deckGrad.addColorStop(0, '#101320');\n    deckGrad.addColorStop(0.25, '#22273e');\n    deckGrad.addColorStop(0.75, '#2e3552');\n    deckGrad.addColorStop(1, '#171a29');\n\n    ctx.fillStyle = deckGrad;\n    ctx.strokeStyle = primary;\n    ctx.lineWidth = 3.5;\n    ctx.shadowColor = primary;\n    ctx.shadowBlur = 16;\n\n    ctx.beginPath();\n    ctx.moveTo(-165, 0);\n    ctx.quadraticCurveTo(-190, -16, -165, -18); // kicktail\n    ctx.lineTo(-125, -2);\n    ctx.lineTo(125, -2);\n    ctx.quadraticCurveTo(190, -16, 178, 0);     // nose tip\n    ctx.quadraticCurveTo(185, 18, 145, 18);     // nose underside\n    ctx.lineTo(-145, 18);                       // bottom flat\n    ctx.quadraticCurveTo(-182, 16, -165, 0);    // tail underside\n    ctx.closePath();\n    ctx.fill();\n    ctx.stroke();\n\n    // Dual Neon Edge Rail Piping\n    ctx.strokeStyle = secondary;\n    ctx.lineWidth = 2.5;\n    ctx.shadowColor = secondary;\n    ctx.shadowBlur = 10;\n    ctx.beginPath();\n    ctx.moveTo(-145, 6);\n    ctx.lineTo(145, 6);\n    ctx.stroke();\n\n    // Grip Tape Sections\n    ctx.shadowBlur = 0;\n    ctx.fillStyle = '#0b0d16';\n    ctx.beginPath();\n    ctx.roundRect(-120, -1, 75, 5, 2);\n    ctx.roundRect(-30, -1, 60, 5, 2);\n    ctx.roundRect(45, -1, 75, 5, 2);\n    ctx.fill();\n\n    // LED Power Gauge\n    const leds = [primary, primary, '#39ff14', '#ffe600', secondary];\n    leds.forEach((col, i) => {\n      ctx.fillStyle = col;\n      ctx.shadowColor = col;\n      ctx.shadowBlur = 6;\n      ctx.fillRect(-22 + i * 11, 10, 7, 4);\n    });\n\n    // Tech deck lettering\n    ctx.fillStyle = primary;\n    ctx.font = 'bold 9px monospace';\n    ctx.shadowBlur = 4;\n    ctx.fillText('CAPY-LEV • MK-IV', 40, 14);\n    ctx.restore();\n\n    // 3. FAR LEGS (Left-side paws on board)\n    // Far hind leg\n    ctx.save();\n    ctx.fillStyle = '#452511';\n    ctx.beginPath();\n    ctx.ellipse(-72, -32, 16, 26, -0.2, 0, Math.PI * 2);\n    ctx.fill();\n    ctx.fillStyle = '#261205';\n    ctx.beginPath();\n    ctx.roundRect(-88, -10, 32, 11, [4, 4, 1, 1]);\n    ctx.fill();\n    ctx.restore();\n\n    // Far front leg\n    ctx.save();\n    ctx.fillStyle = '#452511';\n    ctx.beginPath();\n    ctx.ellipse(55, -32, 15, 26, 0.1, 0, Math.PI * 2);\n    ctx.fill();\n    ctx.fillStyle = '#261205';\n    ctx.beginPath();\n    ctx.roundRect(45, -10, 32, 11, [4, 4, 1, 1]);\n    ctx.fill();\n    ctx.restore();\n\n    // 4. CAPYBARA TORSO & SCULPTED BODY\n    ctx.save();\n    ctx.translate(0, breath * 0.3);\n\n    // Warm radial fur gradient\n    const bodyGrad = ctx.createRadialGradient(-10, -75, 20, 0, -65, 130);\n    bodyGrad.addColorStop(0, '#be824c');\n    bodyGrad.addColorStop(0.35, '#92572b');\n    bodyGrad.addColorStop(0.75, '#693816');\n    bodyGrad.addColorStop(1, '#43200a');\n    ctx.fillStyle = bodyGrad;\n\n    ctx.beginPath();\n    ctx.moveTo(-112, -25);\n    ctx.bezierCurveTo(-132, -55, -125, -115, -75, -135); // rump curve\n    ctx.bezierCurveTo(-35, -150, 30, -150, 75, -125);   // dorsal spine\n    ctx.bezierCurveTo(98, -115, 110, -95, 102, -55);    // chest transition\n    ctx.bezierCurveTo(92, -20, 50, 4, -10, 2);          // belly\n    ctx.bezierCurveTo(-65, 0, -98, -8, -112, -25);      // lower rump\n    ctx.closePath();\n    ctx.fill();\n\n    // Soft warm belly highlight\n    const bellyGrad = ctx.createLinearGradient(0, 2, 0, -35);\n    bellyGrad.addColorStop(0, 'rgba(225, 180, 130, 0.45)');\n    bellyGrad.addColorStop(1, 'rgba(150, 90, 50, 0)');\n    ctx.fillStyle = bellyGrad;\n    ctx.beginPath();\n    ctx.ellipse(-10, -14, 60, 16, -0.05, 0, Math.PI * 2);\n    ctx.fill();\n\n    // Fine fur texture strokes\n    ctx.strokeStyle = 'rgba(255, 230, 195, 0.2)';\n    ctx.lineWidth = 1.4;\n    for (let fx = -80; fx <= 50; fx += 16) {\n      const fy = -135 + Math.sin(fx * 0.04) * 6;\n      ctx.beginPath();\n      ctx.moveTo(fx, fy);\n      ctx.lineTo(fx + 7, fy + 7);\n      ctx.stroke();\n    }\n\n    // Neon underglow reflection from hoverboard onto capybara belly\n    ctx.save();\n    ctx.globalCompositeOperation = 'lighter';\n    const rimGrad = ctx.createLinearGradient(0, 4, 0, -25);\n    rimGrad.addColorStop(0, 'rgba(0, 240, 255, 0.45)');\n    rimGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');\n    ctx.fillStyle = rimGrad;\n    ctx.beginPath();\n    ctx.ellipse(0, -6, 95, 14, 0, 0, Math.PI * 2);\n    ctx.fill();\n    ctx.restore();\n\n    // 5. FOREGROUND LEGS & GRIPPING PAWS\n    // Near Hind Leg & Paw\n    ctx.save();\n    ctx.translate(-62, -42);\n    const thighGrad = ctx.createRadialGradient(-5, -5, 8, 0, 10, 42);\n    thighGrad.addColorStop(0, '#b17544');\n    thighGrad.addColorStop(0.6, '#7c451e');\n    thighGrad.addColorStop(1, '#4e240d');\n    ctx.fillStyle = thighGrad;\n    ctx.beginPath();\n    ctx.ellipse(-2, 0, 30, 36, -0.2, 0, Math.PI * 2);\n    ctx.fill();\n\n    ctx.fillStyle = '#653617';\n    ctx.beginPath();\n    ctx.roundRect(-18, 16, 26, 24, 7);\n    ctx.fill();\n\n    // Paw planted solidly on deck\n    ctx.fillStyle = '#321708';\n    ctx.beginPath();\n    ctx.roundRect(-26, 32, 42, 12, [5, 5, 1, 1]);\n    ctx.fill();\n\n    // 3 Toes & Claws\n    [-14, -2, 10].forEach(tx => {\n      ctx.fillStyle = '#1a0b03';\n      ctx.beginPath();\n      ctx.roundRect(tx, 33, 7.5, 11, 2.5);\n      ctx.fill();\n      ctx.fillStyle = '#080301';\n      ctx.fillRect(tx + 1.5, 41, 4.5, 3);\n    });\n    ctx.restore();\n\n    // Near Front Leg & Paw\n    ctx.save();\n    ctx.translate(52, -42);\n    const foreGrad = ctx.createLinearGradient(-15, -10, 20, 35);\n    foreGrad.addColorStop(0, '#a86e3f');\n    foreGrad.addColorStop(0.7, '#743f1b');\n    foreGrad.addColorStop(1, '#4e240d');\n    ctx.fillStyle = foreGrad;\n    ctx.beginPath();\n    ctx.roundRect(-15, -10, 32, 42, 10);\n    ctx.fill();\n\n    // Paw on deck\n    ctx.fillStyle = '#321708';\n    ctx.beginPath();\n    ctx.roundRect(-15, 32, 42, 12, [5, 5, 1, 1]);\n    ctx.fill();\n\n    // 4 Toes & Claws\n    [-9, 3, 14, 25].forEach(tx => {\n      ctx.fillStyle = '#1a0b03';\n      ctx.beginPath();\n      ctx.roundRect(tx, 33, 6.5, 11, 2);\n      ctx.fill();\n      ctx.fillStyle = '#080301';\n      ctx.fillRect(tx + 1, 41, 4.5, 3);\n    });\n    ctx.restore();\n\n    // 6. CAPYBARA HEAD (Dignified, peaceful, iconic)\n    ctx.save();\n    ctx.translate(65, -125 + bob);\n    const headTilt = Math.sin(t * 3 - 0.2) * 0.035;\n    ctx.rotate(headTilt);\n\n    // Definitive Capybara Head\n    const headGrad = ctx.createRadialGradient(35, -15, 15, 40, 5, 95);\n    headGrad.addColorStop(0, '#c78952');   // golden cheek\n    headGrad.addColorStop(0.45, '#9a5c2d'); // warm brown\n    headGrad.addColorStop(0.85, '#683916');\n    headGrad.addColorStop(1, '#44210a');\n    ctx.fillStyle = headGrad;\n\n    ctx.beginPath();\n    ctx.moveTo(-35, -34);\n    ctx.bezierCurveTo(0, -48, 50, -48, 85, -38);\n    ctx.bezierCurveTo(112, -30, 126, -16, 134, 4); // snout bridge\n    ctx.lineTo(136, 44);                           // blunt snout front\n    ctx.bezierCurveTo(130, 62, 105, 65, 82, 62);    // chin\n    ctx.bezierCurveTo(45, 60, 5, 50, -25, 25);     // jawline\n    ctx.bezierCurveTo(-45, 5, -45, -20, -35, -34); // back of skull\n    ctx.closePath();\n    ctx.fill();\n\n    // Cream cheek buff\n    const buffGrad = ctx.createRadialGradient(78, 24, 5, 78, 24, 55);\n    buffGrad.addColorStop(0, '#d9ac7e');\n    buffGrad.addColorStop(0.65, '#be8d5c');\n    buffGrad.addColorStop(1, 'rgba(160, 95, 50, 0)');\n    ctx.fillStyle = buffGrad;\n    ctx.beginPath();\n    ctx.ellipse(75, 24, 52, 28, 0.08, 0, Math.PI * 2);\n    ctx.fill();\n\n    // Leathery Dark Nose Pad\n    const noseGrad = ctx.createLinearGradient(112, -5, 136, 26);\n    noseGrad.addColorStop(0, '#2e170c');\n    noseGrad.addColorStop(1, '#140803');\n    ctx.fillStyle = noseGrad;\n    ctx.beginPath();\n    ctx.moveTo(114, -18);\n    ctx.bezierCurveTo(128, -10, 137, 6, 137, 24);\n    ctx.bezierCurveTo(137, 34, 130, 38, 120, 34);\n    ctx.bezierCurveTo(110, 28, 107, 10, 109, -10);\n    ctx.closePath();\n    ctx.fill();\n\n    // Nostril slit\n    ctx.fillStyle = '#060201';\n    ctx.beginPath();\n    ctx.ellipse(125, 12, 6.5, 3.5, -0.35, 0, Math.PI * 2);\n    ctx.fill();\n    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';\n    ctx.lineWidth = 1.2;\n    ctx.beginPath();\n    ctx.arc(124, 10, 3.2, 0.2, Math.PI * 0.9);\n    ctx.stroke();\n\n    // Content, serene smile (upturned at the cheek!)\n    ctx.strokeStyle = '#281105';\n    ctx.lineWidth = 3.2;\n    ctx.lineCap = 'round';\n    ctx.beginPath();\n    ctx.moveTo(126, 30);\n    ctx.quadraticCurveTo(106, 32, 90, 28);\n    ctx.quadraticCurveTo(74, 24, 66, 18);\n    ctx.stroke();\n\n    // Whiskers\n    ctx.strokeStyle = 'rgba(255, 245, 230, 0.55)';\n    ctx.lineWidth = 1.3;\n    [\n      [106, 18, 146, 20],\n      [109, 26, 150, 32],\n      [104, 33, 142, 42]\n    ].forEach(([x1, y1, x2, y2]) => {\n      ctx.beginPath();\n      ctx.moveTo(x1, y1);\n      ctx.quadraticCurveTo((x1 + x2) / 2, (y1 + y2) / 2 - 2, x2, y2);\n      ctx.stroke();\n    });\n\n    // Capybara Eye (Zen & sleepy)\n    ctx.save();\n    ctx.translate(38, -14);\n\n    ctx.fillStyle = '#48240f';\n    ctx.beginPath();\n    ctx.ellipse(0, 0, 16, 11, -0.15, 0, Math.PI * 2);\n    ctx.fill();\n\n    ctx.fillStyle = '#1a0b04';\n    ctx.beginPath();\n    ctx.ellipse(0, 0, 12, 8.5, -0.15, 0, Math.PI * 2);\n    ctx.fill();\n\n    ctx.fillStyle = '#834213';\n    ctx.beginPath();\n    ctx.ellipse(1, 2, 7, 4, 0, 0, Math.PI * 2);\n    ctx.fill();\n\n    // Natural Eye Blinking animation (brief blink every 3.5s)\n    const blinkCycle = (t * 0.28) % 1;\n    const isBlinking = blinkCycle > 0.96;\n    const lidDrop = isBlinking ? 8.5 : 2.5;\n\n    ctx.fillStyle = '#9a5c2d';\n    ctx.beginPath();\n    ctx.moveTo(-16, -4);\n    ctx.quadraticCurveTo(0, -13, 16, -5);\n    ctx.quadraticCurveTo(0, lidDrop, -16, -4);\n    ctx.closePath();\n    ctx.fill();\n\n    // Specular shine catchlights\n    if (!isBlinking) {\n      ctx.fillStyle = '#ffffff';\n      ctx.beginPath();\n      ctx.arc(3.5, -2.5, 2.4, 0, Math.PI * 2);\n      ctx.arc(-1, 0, 1.2, 0, Math.PI * 2);\n      ctx.fill();\n    }\n    ctx.restore();\n\n    // Capybara Ear (Cute rounded cup on skull)\n    ctx.save();\n    ctx.translate(-26, -38);\n    ctx.rotate(-0.12 + earWiggle);\n\n    ctx.fillStyle = '#54290f';\n    ctx.beginPath();\n    ctx.ellipse(0, 0, 14, 19, 0.35, 0, Math.PI * 2);\n    ctx.fill();\n\n    const earInner = ctx.createLinearGradient(0, -9, 2, 9);\n    earInner.addColorStop(0, '#b86654');\n    earInner.addColorStop(1, '#df9482');\n    ctx.fillStyle = earInner;\n    ctx.beginPath();\n    ctx.ellipse(2, 2, 8, 12, 0.35, 0, Math.PI * 2);\n    ctx.fill();\n    ctx.restore();\n\n    // RETRO CYBER SUNGLASSES (Toggleable)\n    if (state.shades) {\n      ctx.save();\n      ctx.translate(48, -14);\n\n      ctx.fillStyle = '#0a0d14';\n      ctx.strokeStyle = primary;\n      ctx.lineWidth = 2.2;\n      ctx.shadowColor = primary;\n      ctx.shadowBlur = 8;\n\n      ctx.beginPath();\n      ctx.moveTo(-34, -14);\n      ctx.lineTo(28, -10);\n      ctx.quadraticCurveTo(36, -9, 38, -1);\n      ctx.lineTo(35, 14);\n      ctx.quadraticCurveTo(32, 22, 20, 22);\n      ctx.lineTo(-26, 17);\n      ctx.quadraticCurveTo(-36, 14, -36, 2);\n      ctx.closePath();\n      ctx.fill();\n      ctx.stroke();\n\n      // Mirror lens\n      const lensGrad = ctx.createLinearGradient(-30, -10, 28, 16);\n      lensGrad.addColorStop(0, secondary);\n      lensGrad.addColorStop(0.5, '#8925d4');\n      lensGrad.addColorStop(1, primary);\n      ctx.fillStyle = lensGrad;\n      ctx.beginPath();\n      ctx.roundRect(-30, -8, 60, 24, 5);\n      ctx.fill();\n\n      // Moving specular glare\n      const gx = -35 + ((t * 1.5) % 4) * 30;\n      ctx.save();\n      ctx.beginPath();\n      ctx.roundRect(-30, -8, 60, 24, 5);\n      ctx.clip();\n      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';\n      ctx.lineWidth = 3.5;\n      ctx.beginPath();\n      ctx.moveTo(gx, 28);\n      ctx.lineTo(gx + 18, -18);\n      ctx.stroke();\n      ctx.restore();\n\n      // Frame temple arm\n      ctx.strokeStyle = '#0a0d14';\n      ctx.lineWidth = 2.5;\n      ctx.shadowBlur = 0;\n      ctx.beginPath();\n      ctx.moveTo(-34, -8);\n      ctx.lineTo(-68, -22);\n      ctx.stroke();\n      ctx.restore();\n    }\n\n    // THE GOLDEN YUZU / ORANGE ON HEAD (Toggleable)\n    if (state.yuzu) {\n      ctx.save();\n      const yuzuWobble = Math.sin(t * 4.5) * 0.1 - headTilt * 0.7;\n      ctx.translate(30, -50);\n      ctx.rotate(yuzuWobble);\n\n      const yuzuGrad = ctx.createRadialGradient(-5, -6, 3, 0, 0, 20);\n      yuzuGrad.addColorStop(0, '#fff47a');\n      yuzuGrad.addColorStop(0.35, '#ffb800');\n      yuzuGrad.addColorStop(0.8, '#f57c00');\n      yuzuGrad.addColorStop(1, '#b84e00');\n      ctx.fillStyle = yuzuGrad;\n      ctx.shadowColor = 'rgba(255, 170, 0, 0.6)';\n      ctx.shadowBlur = 10;\n      ctx.beginPath();\n      ctx.ellipse(0, 0, 18, 16, 0, 0, Math.PI * 2);\n      ctx.fill();\n\n      // Pores texture\n      ctx.fillStyle = 'rgba(180, 80, 0, 0.28)';\n      ctx.shadowBlur = 0;\n      [[-6, -5], [5, -4], [-2, 3], [7, 2], [-8, 2], [3, 7]].forEach(([dx, dy]) => {\n        ctx.beginPath();\n        ctx.arc(dx, dy, 1, 0, Math.PI * 2);\n        ctx.fill();\n      });\n\n      // Stem\n      ctx.strokeStyle = '#3e6b18';\n      ctx.lineWidth = 2.4;\n      ctx.beginPath();\n      ctx.moveTo(0, -15);\n      ctx.quadraticCurveTo(2, -22, 6, -24);\n      ctx.stroke();\n\n      // Leaf\n      ctx.fillStyle = '#5eb81e';\n      ctx.beginPath();\n      ctx.moveTo(4, -22);\n      ctx.quadraticCurveTo(18, -28, 20, -19);\n      ctx.quadraticCurveTo(10, -17, 4, -22);\n      ctx.fill();\n\n      ctx.restore();\n    }\n\n    ctx.restore(); // end head\n    ctx.restore(); // end torso\n  }\n\n  // Kick off silky 60fps loop\n  requestAnimationFrame(loop);\n})();\n</script>\n</body>\n</html>"
+    }
+  ]
+}

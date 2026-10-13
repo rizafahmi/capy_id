@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "run_id": "pi-01a12554-7f7d-7778-8628-7f7f856c2e1a-reported-cost",
+  "published_at": "2026-10-13T04:56:24.547Z",
+  "visible": true,
+  "preview_allowed": true,
+  "preview_disabled_reason": null,
+  "observations": [
+    "Self-contained HTML with inline CSS and CSS keyframe animation.",
+    "Depicts a capybara riding a hoverboard in a meadow scene.",
+    "No script tags, external URLs, network APIs, iframes, forms, or media elements detected.",
+    "The preserved Pi session reports a total cost of US$0.003204100."
+  ],
+  "series_publication_complete": true,
+  "series_incomplete_reason": null,
+  "thumbnail": {
+    "path": "thumbnails/pi-01a12554-7f7d-7778-8628-7f7f856c2e1a.webp",
+    "viewport": {
+      "width": 640,
+      "height": 480
+    },
+    "capture_delay_ms": 1000,
+    "browser_version": "156.0.8078.4",
+    "preview_policy_version": "restricted-html-v1"
+  }
+}

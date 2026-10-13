@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "id": "pi-01a125c6-e3d4-704e-977c-822bef6894cd-reported-cost",
+  "challenge_id": "capybara-hoverboard-v1",
+  "series_id": "pi-series-01a125c6-e3d4-704e-977c-822bef6894cd",
+  "attempt_number": 1,
+  "provider": "openai-codex",
+  "model": {
+    "display_name": "gpt-6-luna",
+    "identifier": "gpt-6-luna",
+    "identifier_kind": "unknown"
+  },
+  "generated_at": "2026-10-10T12:25:53.876Z",
+  "generation": {
+    "mode": "tool-assisted",
+    "interface": "coding-agent",
+    "tools_used": "yes",
+    "harness": {
+      "name": "Pi",
+      "version": "1.1.0",
+      "effort": "high"
+    },
+    "metrics": {
+      "time": {
+        "kind": "model",
+        "duration_ms": 145973
+      },
+      "tokens": {
+        "input": 8137,
+        "cached": 0,
+        "output": 7760,
+        "total": 15897
+      },
+      "cost": 0.0046937
+    }
+  },
+  "instructions": {
+    "prompt_path": "challenges/capybara-hoverboard-v1/prompt.txt",
+    "prompt_sha256": "e6b955ce7c23afabd2adf2115467e7b6c213ac2cab2a7596886ca71ad827fe1c",
+    "transcript_path": "runs/pi-01a125c6-e3d4-704e-977c-822bef6894cd-reported-cost/transcript.json"
+  },
+  "artifacts": {
+    "response": {
+      "path": "runs/pi-01a125c6-e3d4-704e-977c-822bef6894cd-reported-cost/response.txt",
+      "sha256": "8643a5efcf39280568b3bbc6011125a4f7cb33400feff2d4e86023ff33c603c8",
+      "size_bytes": 8838
+    },
+    "html": {
+      "path": "runs/pi-01a125c6-e3d4-704e-977c-822bef6894cd-reported-cost/output.html.txt",
+      "sha256": "8643a5efcf39280568b3bbc6011125a4f7cb33400feff2d4e86023ff33c603c8",
+      "size_bytes": 8838,
+      "extraction": {
+        "start_byte": 0,
+        "end_byte_exclusive": 8838
+      }
+    }
+  },
+  "supersedes_run_id": "pi-01a125c6-e3d4-704e-977c-822bef6894cd",
+  "correction_reason": "Add the Pi-reported total cost from the preserved session usage."
+}

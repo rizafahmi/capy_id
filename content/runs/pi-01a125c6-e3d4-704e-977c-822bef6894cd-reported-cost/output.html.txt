@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Capybara Hoverboard</title>
+<style>
+:root{color-scheme:dark;--ink:#17313a}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{display:grid;place-items:center;overflow:hidden;background:#101f32;font-family:ui-rounded,"Trebuchet MS",system-ui,sans-serif;color:#fff}
+.scene{position:relative;width:min(100vw,140vh,1000px);aspect-ratio:900/650;overflow:hidden;border-radius:26px;background:#8ed7d1;box-shadow:0 30px 100px #050b1880,inset 0 0 0 1px #ffffff50;isolation:isolate}
+svg{display:block;width:100%;height:100%}
+.sky-glow{animation:glow 5s ease-in-out infinite alternate}
+.cloud{animation:drift 20s linear infinite}
+.cloud.two{animation-delay:-10s;animation-duration:28s}
+.spark{transform-box:fill-box;transform-origin:center;animation:twinkle 2.4s ease-in-out infinite alternate}
+.spark:nth-of-type(2n){animation-delay:-1.2s}
+.rider{transform-box:fill-box;transform-origin:center bottom;animation:bob 1.8s ease-in-out infinite}
+.hoverboard{transform-box:fill-box;transform-origin:center;animation:board 1.8s ease-in-out infinite}
+.board-light{animation:flash 1s ease-in-out infinite alternate}
+.trail{animation:shimmer 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-.4deg)}50%{transform:translateY(-9px) rotate(.7deg)}}
+@keyframes board{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(5px) rotate(1deg)}}
+@keyframes drift{from{transform:translateX(-160px)}to{transform:translateX(920px)}}
+@keyframes twinkle{from{opacity:.3;transform:scale(.7)}to{opacity:1;transform:scale(1.18)}}
+@keyframes glow{from{opacity:.45}to{opacity:.85}}
+@keyframes flash{from{opacity:.55}to{opacity:1}}
+@keyframes shimmer{0%,100%{opacity:.35}50%{opacity:.8}}
+@media(max-width:600px){.scene{width:100vw;border-radius:0}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+</style>
+</head>
+<body>
+<main class="scene" aria-label="An animated capybara rides a glowing hoverboard through a sunny sky">
+<svg viewBox="0 0 900 650" role="img" aria-labelledby="title desc" xmlns="http://www.w3.org/2000/svg">
+<title id="title">Capybara on a hoverboard</title><desc id="desc">A cheerful little capybara balances on a turquoise hoverboard above a dreamy, sunny landscape.</desc>
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#73c9d0"/><stop offset=".55" stop-color="#b9e6d0"/><stop offset="1" stop-color="#f7d6a2"/></linearGradient>
+ <radialGradient id="sun"><stop stop-color="#fff8c9" stop-opacity=".9"/><stop offset="1" stop-color="#fff8c9" stop-opacity="0"/></radialGradient>
+ <linearGradient id="fur" x2=".8" y2="1"><stop stop-color="#bc8050"/><stop offset="1" stop-color="#8e5535"/></linearGradient>
+ <linearGradient id="boardpaint" x2="0" y2="1"><stop stop-color="#66f4e0"/><stop offset=".5" stop-color="#22bdbd"/><stop offset="1" stop-color="#137d91"/></linearGradient>
+ <linearGradient id="hill" x2="0" y2="1"><stop stop-color="#79c89e"/><stop offset="1" stop-color="#3c9d83"/></linearGradient>
+ <filter id="soft"><feGaussianBlur stdDeviation="24"/></filter>
+ <filter id="shadow" x="-50%" y="-100%" width="200%" height="300%"><feGaussianBlur stdDeviation="9"/></filter>
+ <filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="900" height="650" fill="url(#sky)"/>
+<circle class="sky-glow" cx="716" cy="135" r="145" fill="url(#sun)"/>
+<circle cx="716" cy="135" r="48" fill="#fff4bd" opacity=".9"/>
+<g fill="#fff" opacity=".57" class="cloud"><path d="M-100 173c0-13 11-23 25-23 3-20 20-34 41-34 17 0 32 10 38 25 5-4 11-6 18-6 17 0 30 13 30 29 0 2 0 5-1 7h-151z"/></g>
+<g fill="#fff" opacity=".43" class="cloud two"><path d="M-120 257c0-11 9-20 21-20 4-18 19-30 37-30 15 0 28 8 34 22 4-3 10-5 15-5 15 0 26 11 26 25v8h-133z"/></g>
+<path d="M0 414c105-85 191-76 292-18 93-91 186-109 288-31 102-69 218-47 320 26v259H0z" fill="#a8d5a8" opacity=".65"/>
+<path d="M0 459c114-88 229-55 328-5 111-79 213-61 312-12 96-71 180-47 260-6v214H0z" fill="url(#hill)"/>
+<path d="M0 528c113-40 222-25 335 22 119-49 249-47 370-8 72-24 137-22 195-8v116H0z" fill="#328c78" opacity=".55"/>
+<g opacity=".55" fill="#fff4d1"><circle cx="115" cy="498" r="3"/><circle cx="130" cy="486" r="2"/><circle cx="773" cy="496" r="3"/><circle cx="796" cy="508" r="2"/><circle cx="235" cy="552" r="2"/><circle cx="666" cy="555" r="3"/></g>
+<g class="trail" fill="none" stroke-linecap="round"><path d="M155 355h110" stroke="#e8ffff" stroke-width="5" opacity=".62"/><path d="M188 378h74" stroke="#fff5c8" stroke-width="3" opacity=".7"/><path d="M117 393h130" stroke="#d8fff5" stroke-width="2" opacity=".65"/></g>
+<g fill="#fff8d0"><path class="spark" d="M303 206l4 12 12 4-12 4-4 12-4-12-12-4 12-4z"/><path class="spark" d="M614 300l3 9 9 3-9 3-3 9-3-9-9-3 9-3z"/><path class="spark" d="M243 278l2 7 7 2-7 2-2 7-2-7-7-2 7-2z"/><circle class="spark" cx="654" cy="387" r="4"/><circle class="spark" cx="343" cy="287" r="3"/></g>
+<ellipse cx="457" cy="523" rx="175" ry="22" fill="#1b655f" opacity=".25" filter="url(#shadow)"/>
+<ellipse class="board-light" cx="456" cy="506" rx="105" ry="15" fill="#79fff0" opacity=".25" filter="url(#soft)"/>
+<g class="hoverboard">
+ <path d="M326 469q8-14 29-16l198 7q18 1 24 13l-16 27q-6 10-23 10l-192-8q-17-1-23-12z" fill="#173c4a" opacity=".45" transform="translate(0 8)"/>
+ <path d="M326 454q5-16 27-17l198 7q17 1 25 14l-15 24q-7 10-23 9l-192-7q-17-1-23-13z" fill="url(#boardpaint)" stroke="#b5fff1" stroke-width="3"/>
+ <path d="M343 452l197 7" fill="none" stroke="#d1fff0" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+ <path d="M374 467l-8 17m27-16-8 18m141-13 8 16" stroke="#0c7180" stroke-width="4" stroke-linecap="round" opacity=".7"/>
+ <path class="board-light" d="M349 491l-14 19m205-11 13 19" stroke="#8afff0" stroke-width="5" stroke-linecap="round" filter="url(#glow)"/>
+ <circle cx="351" cy="490" r="4" fill="#e1fff5"/><circle cx="548" cy="496" r="4" fill="#e1fff5"/>
+</g>
+<g class="rider" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M379 411q-8 31 1 47 5 9 22 6l13-2q7-2 3-9l-15-10 11-28z" fill="#895536" stroke="#75462f" stroke-width="3"/>
+ <path d="M489 412q-2 26 14 40 9 8 24 2l10-5q6-4 0-9l-21-7 7-27z" fill="#805033" stroke="#70442e" stroke-width="3"/>
+ <path d="M337 354q5-55 69-66 66-12 116 21 35 23 28 75-5 41-41 47l-159-5q-22-3-23-23z" fill="url(#fur)" stroke="#75472f" stroke-width="4"/>
+ <path d="M373 387q28 14 76 5 37-7 66-2-9 35-40 38l-88-4q-21-4-14-37z" fill="#d19a6b" opacity=".8"/>
+ <path d="M364 405q-7 26 2 42 5 8 22 7l13-2q7-2 2-9l-15-9 8-27z" fill="#a66b44" stroke="#75472f" stroke-width="3"/>
+ <path d="M459 405q-5 24 10 40 8 8 24 3l11-5q6-4 0-9l-20-7 8-25z" fill="#a66b44" stroke="#75472f" stroke-width="3"/>
+ <path d="M365 447q14-5 28 2 9 5 6 10-4 6-20 4l-14-3zM473 444q13-5 26 2 9 5 5 10-4 6-19 5l-14-4z" fill="#6d4431"/>
+ <path d="M431 317q-13-38 4-68 14-24 51-22 34 2 48 29 10 19 0 47l-13 29q-16 24-51 19-36-5-43-34z" fill="url(#fur)" stroke="#75472f" stroke-width="4"/>
+ <ellipse cx="449" cy="241" rx="11" ry="15" transform="rotate(-22 449 241)" fill="#8d5739" stroke="#70452f" stroke-width="3"/>
+ <ellipse cx="509" cy="240" rx="11" ry="15" transform="rotate(18 509 240)" fill="#8d5739" stroke="#70452f" stroke-width="3"/>
+ <ellipse cx="450" cy="242" rx="5" ry="8" fill="#c58a65"/><ellipse cx="508" cy="241" rx="5" ry="8" fill="#c58a65"/>
+ <path d="M472 292q23-19 49-6 20 10 21 31-3 25-31 28-34 3-48-18-11-18 9-35z" fill="#d39a6c" stroke="#895537" stroke-width="3"/>
+ <ellipse cx="522" cy="306" rx="10" ry="7" fill="#382b29"/>
+ <ellipse cx="468" cy="274" rx="4.8" ry="6.5" fill="#292523"/><circle cx="469" cy="272" r="1.5" fill="#fff"/>
+ <path d="M498 331q9 7 19 0" fill="none" stroke="#70442f" stroke-width="2.5"/>
+ <ellipse cx="485" cy="308" rx="8" ry="4" fill="#e9a186" opacity=".52"/>
+ <path d="M431 332q29 13 62 4l-3 17q-27 13-59-2z" fill="#f1a84d" stroke="#c97c36" stroke-width="3"/>
+ <path d="M483 348q13 5 22 0l-3 20-12-9z" fill="#f1a84d" stroke="#c97c36" stroke-width="3"/>
+ <path d="M442 339q16 6 31 5" stroke="#ffe09a" stroke-width="3" fill="none"/>
+</g>
+<path d="M0 601q185-15 337 0t319-2q130-9 244 5" fill="none" stroke="#caffdc" stroke-width="3" opacity=".3"/>
+<g font-family="ui-rounded,system-ui,sans-serif" text-anchor="middle">
+ <text x="450" y="78" font-size="14" font-weight="700" letter-spacing="4" fill="#21666a" opacity=".75">CLOUD NINE CRUISE</text>
+ <text x="450" y="109" font-size="12" font-weight="600" letter-spacing="2" fill="#34797b" opacity=".65">slow down · float on</text>
+</g>
+</svg>
+</main>
+</body>
+</html>

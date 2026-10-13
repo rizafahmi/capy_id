@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "run_id": "pi-01a1325c-8b2b-71f3-94c2-e752d9cf55b7-capybara-hoverboard-v1-cost-reported-cost",
+  "published_at": "2026-10-13T04:56:24.547Z",
+  "visible": true,
+  "preview_allowed": true,
+  "preview_disabled_reason": null,
+  "observations": [
+    "The response is a complete self-contained HTML document with inline CSS and JavaScript; no external asset tags, imports, or network calls were found during source inspection.",
+    "The capybara and hoverboard are drawn with inline SVG, supported by animated CSS scenery and a canvas particle-effects layer.",
+    "The experience includes pointer-based steering, pointer and Space-key boost controls, an animation frame loop, hover motion, blinking, glowing thrusters, and speed effects.",
+    "The Pi session used bash and write tools to create index.html before returning the final HTML response; the imported transcript preserves the intermediate commentary and tool-call turn boundaries.",
+    "The preserved Pi session reports a total cost of US$0.006684148."
+  ],
+  "series_publication_complete": true,
+  "series_incomplete_reason": null,
+  "thumbnail": {
+    "path": "thumbnails/pi-01a1325c-8b2b-71f3-94c2-e752d9cf55b7-capybara-hoverboard-v1.png",
+    "viewport": {
+      "width": 640,
+      "height": 480
+    },
+    "capture_delay_ms": 1000,
+    "browser_version": "156.0.8078.4",
+    "preview_policy_version": "restricted-html-v1"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "run_id": "pi-01a12905-5abb-76f9-8cbf-bbb84310b510-reported-cost",
+  "published_at": null,
+  "visible": false,
+  "preview_allowed": false,
+  "preview_disabled_reason": "Withheld at requester direction: the requested xhigh effort was clamped to high by Vertex.",
+  "observations": [
+    "This high-effort Pi run used Gemini 3.8 Flash through Google Vertex and made 68 model calls with 67 tool interactions. Recorded model time was 20 minutes 14 seconds and the final self-contained response was 46.8 KB.",
+    "The most notable process decision was adapting to the environment: Playwright could not find its browser binary, so the run located Chrome Canary and used it headlessly for rendering checks instead of stopping.",
+    "The run used an iterative visual QA loop. It generated multiple intermediate versions, then separately tested the full page, mobile layout, cruising motion, shades, themes, tricks, and final desktop rendering before cleaning temporary files.",
+    "The final output is a canvas-led animated scene with an inline SVG control icon, responsive scaling, pointer and keyboard steering, auto-cruise, turbo, flip tricks, themes, shades, a yuzu toggle, particles, hover physics, and HUD controls.",
+    "Compared with the earlier imported high-effort Gemini run pi-01a128ec-d942-7211-ac9e-19e0b5634a43, this run produced a larger artifact (46.8 KB versus 43.0 KB), added one control, and used more recorded model work (7.07M versus 5.46M total tokens). The richer interaction comes with more state and maintenance complexity.",
+    "The preserved evidence contains the final HTML and transcript. Intermediate desktop and mobile screenshots used during iteration were deleted; the curator capture below is the retained final preview record.",
+    "The preserved Pi session reports a total cost of US$1.388663025."
+  ],
+  "series_publication_complete": false,
+  "series_incomplete_reason": "Withheld at requester direction because the requested xhigh effort was clamped to high by Vertex.",
+  "thumbnail": {
+    "path": "thumbnails/pi-01a12905-5abb-76f9-8cbf-bbb84310b510.webp",
+    "viewport": {
+      "width": 640,
+      "height": 480
+    },
+    "capture_delay_ms": 1000,
+    "browser_version": "156.0.8078.4",
+    "preview_policy_version": "restricted-html-v1"
+  }
+}

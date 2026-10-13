@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "run_id": "pi-01a128ec-d942-7211-ac9e-19e0b5634a43-reported-cost",
+  "published_at": "2026-10-13T04:56:24.547Z",
+  "visible": true,
+  "preview_allowed": true,
+  "preview_disabled_reason": null,
+  "observations": [
+    "This high-effort Pi run used Gemini 3.8 Flash through Google Vertex and produced a 42.9 KB self-contained HTML response in 16 minutes 20 seconds, with 5.46M recorded total tokens.",
+    "The most effective design choice was splitting responsibilities: inline SVG gives the capybara and hoverboard precise character detail, while Canvas drives the procedural neon city, parallax road, stars, and particles.",
+    "The final scene combines pointer and keyboard steering, hover physics, head bobbing, blinking, scarf motion, particles, boost, a 360 spin, shades, citrus, and theme switching while remaining dependency-free.",
+    "The run used an iterative visual QA loop with repeated browser previews, several intermediate prototypes, a syntax check that caught a duplicate waveFreq declaration, and cleanup of temporary files.",
+    "Compared with pi-01a12625, the artifact grew from 41.4 KB to 42.9 KB, recorded work increased from 2.16M to 5.46M tokens, and the interface gained a 360 spin and citrus control.",
+    "Compared with pi-01a12905, this version is smaller and simpler: 42.9 KB versus 46.8 KB and 5.46M versus 7.07M tokens. The later run adds more controls and state, while this one keeps a more compact interaction set.",
+    "The main takeaway for future runs is to keep the SVG plus Canvas architecture and screenshot-driven workflow, while seeding procedural randomness, adding interaction smoke tests, and resolving the S-key conflict between steering and shades.",
+    "The preserved Pi session reports a total cost of US$1.200095700."
+  ],
+  "series_publication_complete": true,
+  "series_incomplete_reason": null,
+  "thumbnail": {
+    "path": "thumbnails/pi-01a128ec-d942-7211-ac9e-19e0b5634a43.webp",
+    "viewport": {
+      "width": 640,
+      "height": 480
+    },
+    "capture_delay_ms": 1000,
+    "browser_version": "156.0.8078.4",
+    "preview_policy_version": "restricted-html-v1"
+  }
+}
