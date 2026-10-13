@@ -261,11 +261,9 @@ function enableGallery() {
     id: card.dataset.card,
     name: card.dataset.name,
     timestamp: card.dataset.date ? Date.parse(card.dataset.date) : -Infinity,
-    searchable: [card.dataset.name, card.dataset.identifier, card.dataset.provider].map((value) =>
-      (value ?? "").toLowerCase(),
-    ),
     provider: card.dataset.provider,
     model: card.dataset.identifier,
+    harness: card.dataset.harness,
     effort: card.dataset.effort,
     mode: card.dataset.mode,
   }));
@@ -278,13 +276,13 @@ function enableGallery() {
   const selectionCount = document.querySelector("#selection-count");
   const selectedList = document.querySelector("#selected-runs");
   const compareLink = document.querySelector("#compare-link");
-  const search = filters.elements.namedItem("search");
   const provider = filters.elements.namedItem("provider");
   const model = filters.elements.namedItem("model");
+  const harness = filters.elements.namedItem("harness");
   const effort = filters.elements.namedItem("effort");
   const mode = filters.elements.namedItem("mode");
   const sort = filters.elements.namedItem("sort");
-  const fields = { search, provider, model, effort, mode, sort };
+  const fields = { provider, model, harness, effort, mode, sort };
   const feedback = document.querySelector(".filter-feedback");
   const activeFilters = feedback.querySelector(".active-filters");
   const clearFilters = feedback.querySelector("[data-clear-filters]");
@@ -305,9 +303,9 @@ function enableGallery() {
   };
   const syncUrl = (method) => {
     const params = new URLSearchParams(location.search);
-    for (const key of Object.keys(fields)) params.delete(key);
+    for (const key of [...Object.keys(fields), "search"]) params.delete(key);
     for (const [key, field] of Object.entries(fields)) {
-      const value = key === "search" ? field.value.trim() : field.value;
+      const value = field.value;
       if (value && (key !== "sort" || value !== "newest")) params.set(key, value);
     }
     const href = `${location.pathname}${params.size ? `?${params}` : ""}${location.hash}`;
@@ -319,7 +317,6 @@ function enableGallery() {
   reset.hidden = false;
   let currentSort = null;
   const update = () => {
-    const query = search.value.toLowerCase().trim();
     let count = 0;
     if (sort.value !== currentSort) {
       currentSort = sort.value;
@@ -334,18 +331,18 @@ function enableGallery() {
       const hidden = !(
         (!provider.value || item.provider === provider.value) &&
         (!model.value || item.model === model.value) &&
+        (!harness.value || item.harness === harness.value) &&
         (!effort.value || item.effort === effort.value) &&
-        (!mode.value || item.mode === mode.value) &&
-        (!query || item.searchable.some((value) => value.includes(query)))
+        (!mode.value || item.mode === mode.value)
       );
       if (item.card.hidden !== hidden) item.card.hidden = hidden;
       if (!hidden) count++;
     }
     const selections = [];
-    if (query) selections.push(`Search: ${search.value.trim()}`);
     for (const [label, field] of [
       ["Provider", provider],
       ["Model", model],
+      ["Harness", harness],
       ["Effort", effort],
       ["Mode", mode],
     ]) {
@@ -425,13 +422,7 @@ function enableGallery() {
   }
   restoreUrl();
   syncUrl("replaceState");
-  filters.addEventListener("input", (event) => {
-    if (event.target !== search) return;
-    update();
-    syncUrl("replaceState");
-  });
-  filters.addEventListener("change", (event) => {
-    if (event.target === search) return;
+  filters.addEventListener("change", () => {
     update();
     syncUrl("pushState");
   });

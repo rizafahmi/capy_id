@@ -42,13 +42,15 @@ test("gallery browsing combines controls without loading experiment artifacts", 
   await expect(page.locator("iframe")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Reset", exact: true })).not.toBeVisible();
   await page.getByText("Filter and sort", { exact: true }).click();
-  await page.getByLabel("Search models").fill("FIXTURE-ANIMATION");
+  await page
+    .getByRole("combobox", { name: "Model", exact: true })
+    .selectOption("fixture-animation");
   await expect(page.getByRole("button", { name: "Reset", exact: true })).toBeVisible();
   await page
     .getByRole("combobox", { name: "Provider", exact: true })
     .selectOption("Development fixture");
   await expect(page.locator("[data-card]:visible")).toHaveCount(1);
-  await page.getByLabel("Search models").fill("not a model");
+  await page.getByRole("combobox", { name: "Effort", exact: true }).selectOption("unknown");
   await expect(page.getByText("No matching attempts", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Reset filters" }).click();
   await expect(page.locator("[data-card]:visible")).toHaveCount(6);

@@ -28,7 +28,7 @@ The installed Playwright engines reported these versions.
 
 Each engine passed 16 browser tests. Curator capture always uses Chromium, including when its CLI regression test runs under another test project. This does not certify the standalone Safari application or every assistive technology.
 
-Browser journeys cover search, combined filters, sorting, gallery non-execution, direct run refresh, exact-byte downloads, clipboard fallback, failed retrieval, altered-artifact rejection, preview start/stop/restart, invalid comparison pairs, shared URLs, equal viewports, and unavailable results.
+Browser journeys cover exact metadata filters, combined filters, sorting, gallery non-execution, direct run refresh, exact-byte downloads, clipboard fallback, failed retrieval, altered-artifact rejection, preview start/stop/restart, invalid comparison pairs, shared URLs, equal viewports, and unavailable results.
 
 Containment fixtures attempt parent DOM access, top navigation, popups, form submission, fetch, remote images, and remote scripts. Tests check the actual HTTP CSP and sandbox attributes. A directly opened preview also receives response-level sandbox restrictions. No infinite-loop fixture was executed.
 
@@ -118,7 +118,7 @@ unchanged. No new client runtime was added.
   tests pass. `npm run check` also passed while browser tests built sites concurrently.
 - All 114 browser tests pass across Chromium, Firefox, and WebKit without retries.
   New tests verify that hostile-looking metadata remains text, cannot inject an
-  image, and still works with provider filtering and search.
+  image, and still works with provider and harness filtering.
 - All 21 compared Chromium screenshots have zero changed pixels. They cover
   fixture galleries, real-content galleries, single-attempt galleries, and run
   detail at desktop and mobile widths in light and dark mode.

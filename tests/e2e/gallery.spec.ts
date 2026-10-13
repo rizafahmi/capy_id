@@ -9,21 +9,29 @@ import { animationHtml, fixtureMetadata } from "../../scripts/fixtures.ts";
 import { curationSchema } from "../../scripts/schema.ts";
 import { serveStatic } from "../../scripts/server.ts";
 
-test("gallery restores a shareable model and effort filter and handles history", async ({
+test("gallery restores shareable model, harness, and effort filters and handles history", async ({
   page,
 }) => {
-  await page.goto("/?model=fixture-animation&effort=low&sort=name#attempts");
+  await page.goto(
+    "/?model=fixture-animation&harness=Development%20harness&effort=low&sort=name#attempts",
+  );
   await expect(page.getByRole("combobox", { name: "Model", exact: true })).toHaveValue(
     "fixture-animation",
+  );
+  await expect(page.getByRole("combobox", { name: "Coding harness", exact: true })).toHaveValue(
+    "Development harness",
   );
   await expect(page.getByRole("combobox", { name: "Effort", exact: true })).toHaveValue("low");
   await expect(page.locator("[data-card]:visible")).toHaveCount(1);
   await expect(page.locator(".active-filters")).toContainText("Model: animation");
+  await expect(page.locator(".active-filters")).toContainText("Harness: Development harness");
   await expect(page.locator(".active-filters")).toContainText("Effort: Low");
   await expect(page.locator("#results-status")).toHaveText("1 of 6 attempts");
   await page.getByRole("combobox", { name: "Effort", exact: true }).selectOption("unknown");
   await expect(page.getByText("No matching attempts", { exact: true })).toBeVisible();
-  await expect(page).toHaveURL(/model=fixture-animation&effort=unknown&sort=name#attempts$/);
+  await expect(page).toHaveURL(
+    /model=fixture-animation&harness=Development\+harness&effort=unknown&sort=name#attempts$/,
+  );
   await page.goBack();
   await expect(page.getByRole("combobox", { name: "Effort", exact: true })).toHaveValue("low");
   await expect(page.locator("[data-card]:visible")).toHaveCount(1);
@@ -34,24 +42,28 @@ test("gallery restores a shareable model and effort filter and handles history",
   await expect(page.locator("#results-status")).not.toBeVisible();
 });
 
-test("invalid URL filters are ignored and search creates a shareable URL", async ({ page }) => {
+test("invalid URL filters are ignored and exact filters create shareable URLs", async ({
+  page,
+}) => {
   await page.goto(
-    "/?campaign=launch&model=not-published&effort=bogus&mode=bogus&provider=bogus&sort=bogus",
+    "/?campaign=launch&model=not-published&harness=not-installed&effort=bogus&mode=bogus&provider=bogus&sort=bogus&search=legacy",
   );
   await expect(page).toHaveURL("/?campaign=launch");
   await expect(page.locator("[data-card]:visible")).toHaveCount(6);
   await expect(page.locator('.filters [name="model"]')).toHaveValue("");
   await page.getByText("Filter and sort", { exact: true }).click();
-  await page.getByLabel("Search models").fill("FIXTURE-ANIMATION");
-  await expect(page).toHaveURL("/?campaign=launch&search=FIXTURE-ANIMATION");
+  await page.getByLabel("Coding harness").selectOption("Development harness");
+  await expect(page).toHaveURL("/?campaign=launch&harness=Development+harness");
   await page.reload();
-  await expect(page.getByLabel("Search models")).toHaveValue("FIXTURE-ANIMATION");
-  await expect(page.locator("[data-card]:visible")).toHaveCount(1);
+  await expect(page.getByLabel("Coding harness")).toHaveValue("Development harness");
+  await expect(page.locator("[data-card]:visible")).toHaveCount(6);
   await page.getByRole("button", { name: "Reset", exact: true }).click();
   await expect(page).toHaveURL("/?campaign=launch");
 });
 
-test("model, effort, and mode filters combine using published metadata", async ({ page }) => {
+test("model, harness, effort, and mode filters combine using published metadata", async ({
+  page,
+}) => {
   const root = await mkdtemp(join(tmpdir(), "capyboard-facets-"));
   const content = join(root, "content");
   try {
@@ -60,10 +72,10 @@ test("model, effort, and mode filters combine using published metadata", async (
       join(content, "challenges/capybara-hoverboard-v1/prompt.txt"),
       "utf8",
     );
-    for (const [id, model, effort, mode] of [
-      ["fixture-a-low", "model-a", "low", "one-shot"],
-      ["fixture-a-high", "model-a", "high", "tool-assisted"],
-      ["fixture-b-unknown", "model-b", null, "tool-assisted"],
+    for (const [id, model, harness, effort, mode] of [
+      ["fixture-a-low", "model-a", "Harness A", "low", "one-shot"],
+      ["fixture-a-high", "model-a", "Harness B", "high", "tool-assisted"],
+      ["fixture-b-unknown", "model-b", "Harness B", null, "tool-assisted"],
     ] as const) {
       const metadata = fixtureMetadata(id);
       const run = await importRun({
@@ -75,7 +87,7 @@ test("model, effort, and mode filters combine using published metadata", async (
             ...metadata.generation,
             mode,
             tools_used: mode === "tool-assisted" ? "yes" : "no",
-            harness: { ...metadata.generation.harness, effort },
+            harness: { ...metadata.generation.harness, name: harness, effort },
           },
         },
         response: Buffer.from("No HTML returned."),
@@ -101,13 +113,14 @@ test("model, effort, and mode filters combine using published metadata", async (
       const address = server.address();
       if (!address || typeof address === "string") throw new Error("No gallery server address");
       await page.goto(
-        `http://127.0.0.1:${address.port}/?model=model-a&effort=high&mode=tool-assisted`,
+        `http://127.0.0.1:${address.port}/?model=model-a&harness=Harness%20B&effort=high&mode=tool-assisted`,
       );
       await expect(page.locator("[data-card]:visible")).toHaveCount(1);
       await expect(page.locator("[data-card='fixture-a-high']")).toBeVisible();
+      await expect(page.locator(".active-filters")).toContainText("Harness: Harness B");
       await expect(page.locator(".active-filters")).toContainText("Mode: Tool-assisted");
       await expect(
-        page.getByRole("combobox", { name: "Model", exact: true }).locator("option"),
+        page.getByRole("combobox", { name: "Coding harness", exact: true }).locator("option"),
       ).toHaveCount(3);
       await page.getByRole("combobox", { name: "Effort", exact: true }).selectOption("unknown");
       await expect(page.getByText("No matching attempts", { exact: true })).toBeVisible();
@@ -130,14 +143,14 @@ test("gallery form submission applies filters without navigation", async ({ page
   await page.getByText("Filter and sort", { exact: true }).click();
   await page.locator(".filters").evaluate((form) => {
     if (!(form instanceof HTMLFormElement)) throw new Error("Expected the gallery form");
-    const search = form.elements.namedItem("search");
-    if (!(search instanceof HTMLInputElement)) throw new Error("Expected the search input");
-    search.value = "FIXTURE-ANIMATION";
+    const model = form.elements.namedItem("model");
+    if (!(model instanceof HTMLSelectElement)) throw new Error("Expected the model select");
+    model.value = "fixture-animation";
     form.requestSubmit();
   });
   await expect(page.locator("[data-card]:visible")).toHaveCount(1);
   await expect(page.locator("#results-status")).toHaveText("1 of 6 attempts");
-  await expect(page).toHaveURL("/?search=FIXTURE-ANIMATION");
+  await expect(page).toHaveURL("/?model=fixture-animation");
 });
 
 test("gallery and comparison keep hostile-looking metadata as text and preserve values", async ({
@@ -194,7 +207,7 @@ test("gallery and comparison keep hostile-looking metadata as text and preserve 
         throw new Error("Gallery server has no TCP address");
       await page.goto(`http://127.0.0.1:${address.port}/`);
       const card = page.locator('[data-card="fixture-gallery-escaping"]');
-      for (const attribute of ["data-provider", "data-name", "data-identifier"]) {
+      for (const attribute of ["data-provider", "data-name", "data-identifier", "data-harness"]) {
         await expect(card).toHaveAttribute(attribute, injected);
       }
       await expect(card.locator("h3")).toHaveText(injected);
@@ -207,7 +220,9 @@ test("gallery and comparison keep hostile-looking metadata as text and preserve 
         .selectOption({ label: injected });
       await expect(page.locator("[data-card]:visible")).toHaveCount(1);
       await expect(card).toBeVisible();
-      await page.getByLabel("Search models").fill(injected);
+      await page
+        .getByRole("combobox", { name: "Coding harness", exact: true })
+        .selectOption({ label: injected });
       await expect(page.locator("[data-card]:visible")).toHaveCount(1);
       await expect(card).toBeVisible();
       await page.goto(

@@ -8,6 +8,11 @@ const { entries, fixtures } = __CAPYBOARD_ASTRO_PAGES__.gallery;
 const providers = [
   ...new Set(entries.map((entry) => entry.run.provider)),
 ].sort();
+const harnesses = [
+  ...new Set(
+    entries.map((entry) => entry.run.generation.harness?.name ?? "unknown"),
+  ),
+].sort((a, b) => a.localeCompare(b, "en"));
 const models = [
   ...new Map(
     entries.map(({ run }) => [run.model.identifier, run.model.display_name]),
@@ -99,21 +104,9 @@ const comparable = entries.length > 1;
             <form
               class="filters"
               toolname="filter_gallery"
-              tooldescription="Filter and sort model attempts by search, provider, exact model identifier, recorded effort, and generation mode. Returns matching attempt names, providers, and inspection links. Omitted parameters keep their current values."
+              tooldescription="Filter and sort model attempts by provider, exact model identifier, coding harness, recorded effort, and generation mode. Returns matching attempt names, providers, and inspection links. Omitted parameters keep their current values."
               toolautosubmit
             >
-              <label>
-                Search models
-                <input
-                  name="search"
-                  toolparamdescription="A case-insensitive substring of the model name, identifier, or provider. Whitespace is trimmed. Use an empty string to clear the search."
-                  type="search"
-                  placeholder="Name, identifier, or provider"
-                  autocomplete="off"
-                  spellcheck="false"
-                  autocapitalize="none"
-                />
-              </label>
               <label>
                 Provider
                 <select
@@ -135,6 +128,20 @@ const comparable = entries.length > 1;
                   <option value="">All models</option>
                   {models.map(([identifier, name]) => (
                     <option value={identifier}>{name}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Coding harness
+                <select
+                  name="harness"
+                  toolparamdescription="Limit attempts to this coding harness, or leave empty to include all harnesses."
+                >
+                  <option value="">All harnesses</option>
+                  {harnesses.map((harness) => (
+                    <option value={harness}>
+                      {harness === "unknown" ? "Unknown" : harness}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -212,7 +219,7 @@ const comparable = entries.length > 1;
       </h2>
       <p>
         {entries.length
-          ? "Try another search or reset your filters."
+          ? "Try another filter or reset your filters."
           : "Genuine experiments will appear here after curator review."}
       </p>
       <button type="button" data-reset hidden>

@@ -26,7 +26,6 @@ test.describe("native WebMCP gallery tools", () => {
       inputSchema: {
         type: "object",
         properties: {
-          search: { type: "string", description: expect.stringContaining("case-insensitive") },
           provider: { enum: ["", "Development fixture"] },
           model: {
             enum: [
@@ -39,6 +38,7 @@ test.describe("native WebMCP gallery tools", () => {
               "fixture-unknown",
             ],
           },
+          harness: { enum: ["", "Development harness"] },
           effort: { enum: ["", "low", "unknown"] },
           mode: { enum: ["", "one-shot"] },
           sort: { enum: ["newest", "name"] },
@@ -47,7 +47,7 @@ test.describe("native WebMCP gallery tools", () => {
     });
     const result = await page.webmcp.callTool(
       "filter_gallery",
-      { search: "  FIXTURE-ANIMATION  ", provider: "Development fixture", sort: "name" },
+      { model: "fixture-animation", provider: "Development fixture", sort: "name" },
       { timeout: 5000 },
     );
     expect(result).toEqual({
@@ -76,12 +76,16 @@ test.describe("native WebMCP gallery tools", () => {
   test("returns empty results and can clear filters and change sorting", async ({ page }) => {
     await page.goto("/");
     expect(
-      await page.webmcp.callTool("filter_gallery", { search: "not a model" }, { timeout: 5000 }),
+      await page.webmcp.callTool(
+        "filter_gallery",
+        { model: "fixture-animation", effort: "unknown" },
+        { timeout: 5000 },
+      ),
     ).toEqual({ count: 0, total: 6, attempts: [] });
     await expect(page.getByText("No matching attempts", { exact: true })).toBeVisible();
     const result = await page.webmcp.callTool(
       "filter_gallery",
-      { search: "", provider: "", sort: "name" },
+      { model: "", provider: "", effort: "", sort: "name" },
       { timeout: 5000 },
     );
     expect(result).toMatchObject({
@@ -109,11 +113,18 @@ test.describe("native WebMCP gallery tools", () => {
     await page.goto("/");
     const result = await page.webmcp.callTool(
       "filter_gallery",
-      { model: "fixture-animation", effort: "low", mode: "one-shot" },
+      {
+        model: "fixture-animation",
+        harness: "Development harness",
+        effort: "low",
+        mode: "one-shot",
+      },
       { timeout: 5000 },
     );
     expect(result).toMatchObject({ count: 1, total: 6, attempts: [{ id: "fixture-animation" }] });
-    await expect(page).toHaveURL("/?model=fixture-animation&effort=low&mode=one-shot");
+    await expect(page).toHaveURL(
+      "/?model=fixture-animation&harness=Development+harness&effort=low&mode=one-shot",
+    );
     await expect(page.locator("[data-card]:visible")).toHaveCount(1);
   });
 

@@ -55,9 +55,9 @@ Template edits update open browsers. CSS, JavaScript, and local asset edits
 trigger a full page reload. Reloading restores filters from the URL and stops
 active previews.
 
-The gallery can filter by search text, provider, exact model identifier, recorded
-effort (including unknown), and generation mode. It can also sort by name or
-newest attempt. Copy the address to share the current view. These controls use
+The gallery can filter by provider, exact model identifier, coding harness,
+recorded effort (including unknown), and generation mode. It can also sort by
+name or newest attempt. Copy the address to share the current view. These controls use
 browser JavaScript; without it, every published attempt remains browsable.
 
 Restart after tooling or configuration edits. Content and curation changes

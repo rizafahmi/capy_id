@@ -122,7 +122,7 @@ Curator adds an experiment folder and separate curation record, captures a scree
 
 Each card displays thumbnail or an honest placeholder, model display name, provider, generation date or “Unknown date,” generation mode, and any unavailable-preview label. Cards link to run details. Screenshots never execute generated code.
 
-Search matches model display name, model identifier, and provider, case-insensitively. Provide a provider filter and sort by newest generation date or model name. Unknown generation dates sort last; tie-break by run ID. Default is newest first. With empty content or no matching results, show a clear empty state and a reset action where relevant.
+Provide exact filters for provider, model identifier, coding harness, recorded effort, and generation mode. Sort by newest generation date or model name. Unknown generation dates sort last; tie-break by run ID. Default is newest first. With empty content or no matching results, show a clear empty state and a reset action where relevant.
 
 Acceptance: all published runs appear, failures are not filtered out by default, filters combine correctly, and gallery browsing creates zero experiment iframes or generated-script executions.
 
@@ -309,7 +309,7 @@ These tests validate Capyboard itself. They are not CapyLab evaluations of model
 | --- | --- |
 | Content integrity | Duplicate IDs, missing files, changed prior hashes, invalid enums/dates, and path traversal fail validation |
 | Evidence preservation | Imported response and extracted HTML checksums match downloaded bytes; source strings cannot inject host markup |
-| Gallery | Search/filter/sort, zero results, empty collection, and non-execution of card content |
+| Gallery | Exact metadata filters, sorting, zero results, empty collection, and non-execution of card content |
 | Detail | Direct load/refresh, copy fallback, downloads, start/stop/restart, missing HTML, disabled preview, and source retrieval errors |
 | Comparison | Pair persists in URL; invalid/duplicate IDs recover; viewport sizes match; condition notices render |
 | Containment | Fixtures attempting parent DOM access, top navigation, popups, form submission, fetch, and remote image/script loading are blocked |

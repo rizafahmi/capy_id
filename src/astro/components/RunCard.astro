@@ -36,6 +36,7 @@ const url = `/runs/${run.id}/`;
   data-provider={run.provider}
   data-name={run.model.display_name}
   data-identifier={run.model.identifier}
+  data-harness={run.generation.harness?.name ?? "unknown"}
   data-effort={effort ?? "unknown"}
   data-mode={run.generation.mode}
   data-date={run.generated_at ?? ""}
