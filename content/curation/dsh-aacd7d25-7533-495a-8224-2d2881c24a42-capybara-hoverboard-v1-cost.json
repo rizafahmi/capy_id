@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "run_id": "dsh-aacd7d25-7533-495a-8224-2d2881c24a42-capybara-hoverboard-v1-cost",
+  "published_at": "2026-10-13T04:38:52Z",
+  "visible": true,
+  "preview_allowed": true,
+  "preview_disabled_reason": null,
+  "observations": [
+    "The run demonstrates strong iterative tool use: after image inspection failed, the model compensated with screenshots, pixel analysis, and layout measurements, then refined the scene and perspective grid. Its visual QA was indirect, so human review remains important before enabling the preview.",
+    "The total recorded DSH cost is US$0.04."
+  ],
+  "series_publication_complete": true,
+  "series_incomplete_reason": null,
+  "thumbnail": {
+    "path": "thumbnails/dsh-aacd7d25-7533-495a-8224-2d2881c24a42-capybara-hoverboard-v1-cost.png",
+    "viewport": {
+      "width": 640,
+      "height": 480
+    },
+    "capture_delay_ms": 1000,
+    "browser_version": "156.0.8078.4",
+    "preview_policy_version": "restricted-html-v1"
+  }
+}

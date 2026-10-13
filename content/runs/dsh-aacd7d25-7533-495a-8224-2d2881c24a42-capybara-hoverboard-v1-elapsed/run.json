@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "id": "dsh-aacd7d25-7533-495a-8224-2d2881c24a42-capybara-hoverboard-v1-elapsed",
+  "challenge_id": "capybara-hoverboard-v1",
+  "series_id": "dsh-series-aacd7d25-7533-495a-8224-2d2881c24a42",
+  "attempt_number": 1,
+  "provider": "deepseek-official",
+  "model": {
+    "display_name": "deepseek-v4-flash",
+    "identifier": "deepseek-v4-flash",
+    "identifier_kind": "unknown"
+  },
+  "generated_at": "2026-10-13T04:19:30Z",
+  "generation": {
+    "mode": "tool-assisted",
+    "interface": "coding-agent",
+    "tools_used": "yes",
+    "harness": {
+      "name": "DeepSeek Harness",
+      "version": "0.1.6-alpha.2",
+      "effort": "high"
+    },
+    "metrics": {
+      "time": {
+        "kind": "elapsed",
+        "duration_ms": 320000
+      },
+      "tokens": {
+        "input": 22647,
+        "cached": 1078144,
+        "output": 55617,
+        "total": 1156408
+      },
+      "cost": 0.04
+    }
+  },
+  "instructions": {
+    "prompt_path": "challenges/capybara-hoverboard-v1/prompt.txt",
+    "prompt_sha256": "e6b955ce7c23afabd2adf2115467e7b6c213ac2cab2a7596886ca71ad827fe1c",
+    "transcript_path": "runs/dsh-aacd7d25-7533-495a-8224-2d2881c24a42-capybara-hoverboard-v1-elapsed/transcript.json"
+  },
+  "artifacts": {
+    "response": {
+      "path": "runs/dsh-aacd7d25-7533-495a-8224-2d2881c24a42-capybara-hoverboard-v1-elapsed/response.txt",
+      "sha256": "e576c85760b0043b0f3d1b183798562f6d5131ebef3b86c60760d78572438f6f",
+      "size_bytes": 18598
+    },
+    "html": {
+      "path": "runs/dsh-aacd7d25-7533-495a-8224-2d2881c24a42-capybara-hoverboard-v1-elapsed/output.html.txt",
+      "sha256": "e576c85760b0043b0f3d1b183798562f6d5131ebef3b86c60760d78572438f6f",
+      "size_bytes": 18598,
+      "extraction": {
+        "start_byte": 0,
+        "end_byte_exclusive": 18598
+      }
+    }
+  },
+  "supersedes_run_id": "dsh-aacd7d25-7533-495a-8224-2d2881c24a42-capybara-hoverboard-v1-cost",
+  "correction_reason": "Record the supplied approximate elapsed time of 5m20s (320000 ms)."
+}

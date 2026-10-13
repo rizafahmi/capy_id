@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "id": "dsh-adef23f3-d235-4306-93d7-9afaf9df31cf-capybara-hoverboard-v1-elapsed",
+  "challenge_id": "capybara-hoverboard-v1",
+  "series_id": "dsh-series-adef23f3-d235-4306-93d7-9afaf9df31cf",
+  "attempt_number": 1,
+  "provider": "deepseek-official",
+  "model": {
+    "display_name": "deepseek-v4-flash",
+    "identifier": "deepseek-v4-flash",
+    "identifier_kind": "unknown"
+  },
+  "generated_at": "2026-10-13T03:41:38.738Z",
+  "generation": {
+    "mode": "tool-assisted",
+    "interface": "coding-agent",
+    "tools_used": "yes",
+    "harness": {
+      "name": "DeepSeek Harness",
+      "version": "0.1.6-alpha.2",
+      "effort": "high"
+    },
+    "metrics": {
+      "time": {
+        "kind": "elapsed",
+        "duration_ms": 142000
+      },
+      "tokens": {
+        "input": 7123,
+        "cached": 103424,
+        "output": 33648,
+        "total": 144195
+      },
+      "cost": 0.04
+    }
+  },
+  "instructions": {
+    "prompt_path": "challenges/capybara-hoverboard-v1/prompt.txt",
+    "prompt_sha256": "e6b955ce7c23afabd2adf2115467e7b6c213ac2cab2a7596886ca71ad827fe1c",
+    "transcript_path": "runs/dsh-adef23f3-d235-4306-93d7-9afaf9df31cf-capybara-hoverboard-v1-elapsed/transcript.json"
+  },
+  "artifacts": {
+    "response": {
+      "path": "runs/dsh-adef23f3-d235-4306-93d7-9afaf9df31cf-capybara-hoverboard-v1-elapsed/response.txt",
+      "sha256": "040d98529b3d23601757ffbfe7ba3ea2f89c354a0c49a08c95be6f8d5c662af8",
+      "size_bytes": 17663
+    },
+    "html": {
+      "path": "runs/dsh-adef23f3-d235-4306-93d7-9afaf9df31cf-capybara-hoverboard-v1-elapsed/output.html.txt",
+      "sha256": "040d98529b3d23601757ffbfe7ba3ea2f89c354a0c49a08c95be6f8d5c662af8",
+      "size_bytes": 17663,
+      "extraction": {
+        "start_byte": 0,
+        "end_byte_exclusive": 17663
+      }
+    }
+  },
+  "supersedes_run_id": "dsh-adef23f3-d235-4306-93d7-9afaf9df31cf-capybara-hoverboard-v1-cost",
+  "correction_reason": "Record the supplied approximate elapsed time of 2m22s (142000 ms)."
+}
