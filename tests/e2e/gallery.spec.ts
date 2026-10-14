@@ -243,13 +243,22 @@ test("gallery and comparison keep hostile-looking metadata as text and preserve 
       expect(stages[0]).toBe(stages[1]);
       await page.locator("#compare-provenance summary").click();
       const provenance = page.getByRole("table", { name: "Generation details and provenance" });
-      for (const label of ["Provider", "Model identifier", "Harness"]) {
+      for (const label of ["Provider", "Model identifier"]) {
         const row = provenance.getByRole("row").filter({
           has: page.getByRole("rowheader", { name: label, exact: true }),
         });
         await expect(row.getByRole("cell").first()).toHaveText(injected);
         await expect(row).toHaveClass("comparison-difference");
       }
+      const settings = page.getByRole("table", {
+        name: "Harness and generation settings",
+        exact: true,
+      });
+      const harnessRow = settings.getByRole("row").filter({
+        has: page.getByRole("rowheader", { name: "Harness", exact: true }),
+      });
+      await expect(harnessRow.getByRole("cell").first()).toHaveText(injected);
+      await expect(harnessRow).toHaveClass("comparison-difference");
       await expect(page.locator("img, iframe")).toHaveCount(0);
       await expect(page.locator("html")).not.toHaveAttribute("data-injected");
     } finally {
