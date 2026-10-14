@@ -155,11 +155,17 @@ test("managed Astro development reloads source edits in every browser and stops 
       });
       await writeFile(css, `${originalCss}\nbody { --dev-reload-probe: ${name}; }\n`);
       await expect
-        .poll(() =>
-          page.evaluate(() =>
-            getComputedStyle(document.body).getPropertyValue("--dev-reload-probe").trim(),
-          ),
-        )
+        .poll(async () => {
+          try {
+            return await page.evaluate(() =>
+              getComputedStyle(document.body).getPropertyValue("--dev-reload-probe").trim(),
+            );
+          } catch (error) {
+            if (error instanceof Error && error.message.includes("Execution context was destroyed"))
+              return "";
+            throw error;
+          }
+        })
         .toBe(name);
       await writeFile(
         script,
