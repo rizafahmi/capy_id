@@ -79,7 +79,6 @@ for (const colorScheme of ["light", "dark"] as const) {
     ).toEqual([]);
     await viewer.scrollIntoViewIfNeeded();
     expect(errors).toEqual([]);
-    // Playwright's screenshot stylesheet triggers a WebKit CSP warning, not an app error.
     page.off("console", recordConsole);
     await page.screenshot({ path: info.outputPath(`code-${colorScheme}-mobile.png`) });
     await page.setViewportSize({ width: 1366, height: 900 });

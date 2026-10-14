@@ -21,7 +21,7 @@ development environment.
 
 ```sh
 npm ci
-npm exec playwright install chromium firefox webkit
+npm exec playwright install chromium
 npm run dev -- --fixtures
 ```
 
@@ -76,11 +76,11 @@ npm run validate
 npm run test:e2e
 ```
 
-The browser suite covers Chromium, Firefox, and WebKit. It first tests live
-source updates and managed server lifecycle in a temporary project copy. It then
-exercises Astro routes, containment attempts, downloads, keyboard navigation,
-responsive layouts, and automated accessibility checks. Static build tests cover
-generated routes and a 100-run collection's compressed shell budget. Stop
+The browser suite covers Chromium. It first tests live source updates and
+managed server lifecycle in a temporary project copy. It then exercises Astro
+routes, containment attempts, downloads, keyboard navigation, responsive layouts,
+and automated accessibility checks. Static build tests cover generated routes
+and a 100-run collection's compressed shell budget. Stop
 development servers before `npm run test:e2e`; the integration tests use the
 same local ports.
 

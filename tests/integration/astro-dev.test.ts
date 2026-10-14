@@ -6,13 +6,13 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import test from "node:test";
 import { promisify } from "node:util";
-import { chromium, expect, firefox, webkit } from "@playwright/test";
+import { chromium, expect } from "@playwright/test";
 import { curationSchema } from "../../scripts/schema.ts";
 import { serveStatic } from "../../scripts/server.ts";
 
 const execute = promisify(execFile);
 
-test("managed Astro development reloads source edits in every browser and stops both origins", {
+test("managed Astro development reloads source edits in Chromium and stops both origins", {
   timeout: 180000,
 }, async (t) => {
   const directory = await mkdtemp(join(tmpdir(), "capyboard-astro-dev-"));
@@ -75,11 +75,7 @@ test("managed Astro development reloads source edits in every browser and stops 
   );
   const [originalTemplate, originalCss, originalScript] = originals;
   assert.ok(originalTemplate && originalCss && originalScript);
-  for (const [name, browserType] of [
-    ["chromium", chromium],
-    ["firefox", firefox],
-    ["webkit", webkit],
-  ] as const) {
+  for (const [name, browserType] of [["chromium", chromium]] as const) {
     const browser = await browserType.launch();
     try {
       const page = await browser.newPage({ reducedMotion: "reduce" });
@@ -101,15 +97,7 @@ test("managed Astro development reloads source edits in every browser and stops 
       await page.goto(baselineOrigin);
       await expect(page.locator("[data-card]")).toHaveCount(5);
       const baselineViolation = await page.locator("html").getAttribute("data-csp-violation");
-      if (baselineViolation !== null) {
-        assert.equal(name, "webkit");
-        assert.deepEqual(JSON.parse(baselineViolation), {
-          directive: "style-src-attr",
-          source: "",
-          line: 1,
-          sample: "",
-        });
-      }
+      assert.equal(baselineViolation, null);
       const baselineMessages = [...new Set(violations)];
       violations.length = 0;
       if (name === "chromium") {

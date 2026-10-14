@@ -8,13 +8,7 @@ for (const colorScheme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme, reducedMotion: "reduce" });
     const errors: string[] = [];
     const recordError = (message: ConsoleMessage) => {
-      // WebKit emits this UA-stylesheet warning for a bare native <select>
-      // under strict CSP, even without application scripts or inline styles.
-      const nativeSelectWarning =
-        info.project.name === "webkit" &&
-        message.text() ===
-          "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.";
-      if (message.type() === "error" && !nativeSelectWarning) errors.push(message.text());
+      if (message.type() === "error") errors.push(message.text());
     };
     page.on("console", recordError);
     const routes = [

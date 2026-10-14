@@ -418,8 +418,8 @@ for (const width of [360, 768, 1440]) {
   });
 }
 
-test("keyboard focus reaches evidence controls and host-owned Stop", async ({ page }, info) => {
-  const tab = info.project.name === "webkit" && process.platform === "darwin" ? "Alt+Tab" : "Tab";
+test("keyboard focus reaches evidence controls and host-owned Stop", async ({ page }) => {
+  const tab = "Tab";
   const tabTo = async (target: Locator) => {
     for (let step = 0; step < 50; step++) {
       if (await target.evaluate((node) => node === document.activeElement)) break;
