@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f7f3e8">
+<title>Capy Cruise — No hurry.</title>
+<style>
+  :root { --paper:#f7f3e8; --ink:#303d34; --muted:#818476; --orange:#df743f; --pace:1; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:Arial,Helvetica,sans-serif; }
+  button,input { font:inherit; }
+  .page { max-width:1180px; margin:auto; padding:28px 40px 22px; }
+  header { display:flex; align-items:center; justify-content:space-between; padding-bottom:22px; border-bottom:1px solid #deded0; }
+  .brand { display:flex; align-items:center; gap:10px; font-weight:900; font-size:17px; letter-spacing:-.7px; }
+  .brand svg { width:38px; height:38px; }
+  .edition { font-size:10px; letter-spacing:2px; text-transform:uppercase; display:flex; align-items:center; gap:10px; }
+  .dot { width:7px; height:7px; border-radius:50%; background:#779779; box-shadow:0 0 0 4px #77977915; }
+  .intro { display:flex; align-items:end; justify-content:space-between; padding:32px 0 25px; gap:20px; }
+  h1 { font-size:clamp(32px,4.8vw,57px); letter-spacing:-2.5px; line-height:1.03; font-weight:600; margin:0; }
+  h1 span { color:#9caa89; }
+  .intro p { max-width:220px; font-size:13px; line-height:1.65; margin:0 0 3px; color:#747b6b; }
+  .scene { position:relative; overflow:hidden; border-radius:18px; background:#eeeeda; border:1px solid #e2e4cf; }
+  .landscape { display:block; width:100%; height:auto; }
+  .scene-note { position:absolute; top:23px; left:26px; font:10px monospace; letter-spacing:2px; color:#75856c; }
+  .live { position:absolute; top:23px; right:26px; display:flex; gap:7px; align-items:center; font:10px monospace; letter-spacing:1px; color:#75856c; }
+  .live i { width:5px; height:5px; border-radius:100%; background:#839977; animation:blink 3s ease-in-out infinite; }
+  .caption { position:absolute; bottom:22px; right:26px; color:#76806a; font:10px monospace; letter-spacing:1px; }
+  .controls { padding:25px 0; display:flex; align-items:center; justify-content:space-between; gap:24px; }
+  .speed-control { display:flex; align-items:center; gap:20px; }
+  .label { font-size:9px; letter-spacing:1.8px; margin-bottom:7px; color:#818476; }
+  .speed-value { font-size:23px; font-weight:600; letter-spacing:-1px; }
+  .speed-value span { font-size:11px; font-weight:400; letter-spacing:0; color:#818476; }
+  input[type=range] { width:150px; height:4px; accent-color:#6d876b; cursor:pointer; }
+  button { border:0; border-radius:30px; padding:16px 25px; background:var(--ink); color:var(--paper); font-size:12px; cursor:pointer; display:flex; align-items:center; gap:28px; transition:background .2s,transform .2s; }
+  button:hover { background:#4b624d; transform:translateY(-2px); }
+  button:active { transform:translateY(0); }
+  button:focus-visible,input:focus-visible { outline:3px solid #df743f; outline-offset:5px; }
+  button span { font-size:19px; line-height:12px; }
+  .mood { font-size:12px; display:flex; align-items:center; gap:10px; }
+  .mood svg { width:26px; height:26px; }
+  footer { border-top:1px solid #deded0; padding-top:17px; display:flex; justify-content:space-between; color:#929487; font-size:9px; letter-spacing:1.3px; text-transform:uppercase; }
+  .rider { animation:hover 3.3s ease-in-out infinite; }
+  .lean { transform-origin:475px 440px; animation:lean 5s ease-in-out infinite; }
+  .shadow { transform-origin:475px 516px; animation:shadow 3.3s ease-in-out infinite; }
+  .cloud-a { animation:cloud 24s linear infinite; }
+  .cloud-b { animation:cloud 35s linear infinite reverse; }
+  .streak { animation:streak calc(2.8s / var(--pace)) linear infinite; }
+  .streak.two { animation-delay:-1.7s; }
+  .streak.three { animation-delay:-.8s; }
+  .scarf { transform-origin:446px 330px; animation:scarf .8s ease-in-out infinite alternate; }
+  .leaf { transform-origin:497px 233px; animation:leaf 2s ease-in-out infinite alternate; }
+  .eye { transform-origin:551px 296px; animation:blink-eye 6s infinite; }
+  .glow { animation:glow 1.7s ease-in-out infinite alternate; }
+  .spark { animation:spark 2s ease-in-out infinite; }
+  .spark.b { animation-delay:-.9s; }
+  .grass { transform-origin:835px 479px; animation:grass 4s ease-in-out infinite alternate; }
+  #boostTrail { opacity:0; transition:opacity .25s; }
+  .boosting #boostTrail { opacity:1; }
+  .boosting .rider { animation:boost 1.8s ease-in-out; }
+  .boosting .scarf { animation-duration:.18s; }
+  @keyframes hover { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-13px); } }
+  @keyframes lean { 0%,100% { transform:rotate(-1deg); } 50% { transform:rotate(1deg); } }
+  @keyframes shadow { 0%,100% { transform:scaleX(1); opacity:.17; } 50% { transform:scaleX(.87); opacity:.1; } }
+  @keyframes cloud { 0% { transform:translateX(-35px); } 50% { transform:translateX(35px); } 100% { transform:translateX(-35px); } }
+  @keyframes streak { from { transform:translateX(550px); opacity:0; } 15%,80% { opacity:1; } to { transform:translateX(-650px); opacity:0; } }
+  @keyframes scarf { from { transform:rotate(-5deg); } to { transform:rotate(6deg); } }
+  @keyframes leaf { from { transform:rotate(-8deg); } to { transform:rotate(8deg); } }
+  @keyframes blink-eye { 0%,43%,47%,100% { transform:scaleY(1); } 45% { transform:scaleY(.1); } }
+  @keyframes glow { from { opacity:.55; } to { opacity:1; } }
+  @keyframes spark { 0%,100% { opacity:.25; transform:translateY(0); } 50% { opacity:1; transform:translateY(-9px); } }
+  @keyframes grass { from { transform:skewX(-3deg); } to { transform:skewX(6deg); } }
+  @keyframes blink { 50% { opacity:.35; } }
+  @keyframes boost { 0%,100% { transform:translate(0,0); } 30% { transform:translate(-15px,5px); } 55% { transform:translate(34px,-36px); } 75% { transform:translate(15px,-23px); } }
+  @media(max-width:650px) {
+    .page { padding:20px 18px; }
+    .edition { font-size:8px; letter-spacing:1px; }
+    .intro { padding:28px 0 22px; }
+    h1 { letter-spacing:-1.5px; }
+    .intro p { display:none; }
+    .landscape { width:145%; max-width:none; margin-left:-22.5%; }
+    .scene-note { left:16px; top:17px; font-size:8px; letter-spacing:1px; }
+    .live { right:16px; top:17px; font-size:8px; }
+    .caption { right:16px; bottom:16px; font-size:8px; }
+    .controls { gap:12px; flex-wrap:wrap; }
+    .speed-control { gap:14px; }
+    input[type=range] { width:95px; }
+    button { padding:15px 18px; gap:12px; }
+    .mood { width:100%; justify-content:center; font-size:11px; padding-top:4px; }
+    footer { font-size:8px; letter-spacing:.7px; gap:12px; }
+  }
+  @media(prefers-reduced-motion:reduce) {
+    *,*::before,*::after { animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <rect width="40" height="40" rx="13" fill="#e7e9d8"/>
+        <path d="M9 26V20Q9 13 17 14L22 11Q27 9 28 16L32 18V25Q31 29 25 29H14Q9 29 9 26Z" fill="none" stroke="#4a6047" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M13 32H29M23 20h1m5 2h1" stroke="#4a6047" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      CAPY CRUISE
+    </div>
+    <div class="edition"><span class="dot"></span> A slower state of mind</div>
+  </header>
+
+  <div class="intro">
+    <h1>No hurry.<br><span>Just hover.</span></h1>
+    <p>Four little paws. Zero worries.<br>Enjoy the ride to absolutely nowhere.</p>
+  </div>
+
+  <main>
+    <div class="scene" id="scene">
+      <div class="scene-note">THE SCENIC ROUTE / 001</div>
+      <div class="live"><i></i> LIVE & LAID-BACK</div>
+      <svg class="landscape" viewBox="0 0 1000 560" role="img" aria-labelledby="sceneTitle sceneDesc">
+        <title id="sceneTitle">A very relaxed capybara riding a teal hoverboard</title>
+        <desc id="sceneDesc">A round brown capybara with an orange bandana and a little fruit on its head floats gently through a sunny, pastel landscape.</desc>
+        <defs>
+          <linearGradient id="sky" x2="0" y2="1">
+            <stop stop-color="#eeefdd"/>
+            <stop offset="1" stop-color="#f6ebd4"/>
+          </linearGradient>
+          <linearGradient id="sun" x2="0" y2="1">
+            <stop stop-color="#ecc58a"/>
+            <stop offset="1" stop-color="#f1d6a6"/>
+          </linearGradient>
+          <linearGradient id="fur" x1="0" y1="0" x2=".8" y2="1">
+            <stop stop-color="#bb9064"/>
+            <stop offset="1" stop-color="#a57951"/>
+          </linearGradient>
+          <linearGradient id="deck" x2="0" y2="1">
+            <stop stop-color="#8ac8b3"/>
+            <stop offset="1" stop-color="#559784"/>
+          </linearGradient>
+          <linearGradient id="beam" x2="0" y2="1">
+            <stop stop-color="#9de5c8" stop-opacity=".7"/>
+            <stop offset="1" stop-color="#a0e1c5" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="blur"><feGaussianBlur stdDeviation="8"/></filter>
+        </defs>
+
+        <path fill="url(#sky)" d="M0 0H1000V560H0Z"/>
+        <circle cx="705" cy="202" r="118" fill="url(#sun)"/>
+        <path d="M589 226H821M598 249H812M614 272H796M638 295H772" stroke="#f0ecd7" stroke-width="5" opacity=".65"/>
+
+        <g fill="#faf8e9" class="cloud-a">
+          <path d="M115 149Q112 135 131 134Q132 114 151 114Q173 113 177 132Q193 126 200 142Q218 142 221 151H115Z"/>
+          <path d="M332 104Q332 96 345 95Q350 78 366 82Q378 83 382 95Q401 95 404 105H332Z" opacity=".7"/>
+        </g>
+        <g class="cloud-b" fill="#faf8e9">
+          <path d="M787 130Q790 117 806 119Q809 102 825 103Q843 101 850 122Q867 119 872 132H787Z"/>
+          <path d="M58 246Q63 236 78 240Q82 226 95 228Q108 227 114 241H143Q150 241 152 247H58Z" opacity=".7"/>
+        </g>
+        <g stroke="#87937a" stroke-width="2" fill="none" stroke-linecap="round" opacity=".6">
+          <path d="M478 141q8-8 16 0q8-8 16 0"/>
+          <path d="M522 121q5-5 10 0q5-5 10 0"/>
+        </g>
+
+        <path d="M0 369Q100 310 197 346Q291 379 403 345Q516 307 631 352Q749 396 866 330Q940 294 1000 322V560H0Z" fill="#dce0c5"/>
+        <path d="M0 410Q145 354 287 403Q451 450 582 391Q717 341 842 403Q922 432 1000 397V560H0Z" fill="#c3ceb0"/>
+        <path d="M0 462Q139 429 305 458Q497 485 686 447Q843 415 1000 461V560H0Z" fill="#e6dfbf"/>
+        <path d="M0 507Q244 459 485 504Q742 545 1000 481V560H0Z" fill="#eee7cc"/>
+        <path d="M0 514Q226 467 466 510" stroke="#f8f1d9" stroke-width="3" fill="none"/>
+        <g fill="#9fac8b">
+          <ellipse cx="144" cy="459" rx="13" ry="4"/>
+          <ellipse cx="783" cy="499" rx="7" ry="3"/>
+          <ellipse cx="906" cy="456" rx="17" ry="4"/>
+        </g>
+        <g class="grass" fill="none" stroke="#859c76" stroke-width="4" stroke-linecap="round">
+          <path d="M835 479q-2-36-17-47M835 479q6-44 20-59M835 479q15-25 28-29"/>
+          <path d="M826 453q-20 0-21-16q15 1 21 16M845 444q21-2 22-17q-17 1-22 17" fill="#91a780" stroke="none"/>
+        </g>
+        <g fill="none" stroke="#a6b28c" stroke-width="3" stroke-linecap="round">
+          <path d="M109 460q-3-17-12-24M109 460q1-21 8-29M898 516l5-12m-5 12-7-8"/>
+        </g>
+
+        <g stroke="#fff7df" stroke-width="3" stroke-linecap="round">
+          <path class="streak" d="M340 487h68"/>
+          <path class="streak two" d="M430 534h117"/>
+          <path class="streak three" d="M530 464h36"/>
+        </g>
+        <ellipse class="shadow" cx="475" cy="516" rx="175" ry="15" fill="#536c58" opacity=".17"/>
+
+        <g class="rider">
+          <g class="lean">
+            <g id="boostTrail" stroke="#87bda3" stroke-linecap="round">
+              <path d="M275 446H155M255 461H115M273 478H183" stroke-width="4"/>
+              <path d="M139 446h-19M164 478h-22" stroke-width="3"/>
+            </g>
+
+            <g class="glow">
+              <path d="M324 466L304 503H391L374 466M548 466L527 503H612L595 466" fill="url(#beam)"/>
+              <ellipse cx="461" cy="479" rx="151" ry="8" fill="#9ce2c0" filter="url(#blur)" opacity=".6"/>
+            </g>
+
+            <!-- The far paws sit behind the body. -->
+            <path d="M345 369Q363 363 373 383L376 437Q374 449 356 449H344Q333 446 338 435L334 402Z" fill="#886342" stroke="#705238" stroke-width="3"/>
+            <path d="M492 362Q510 358 518 378L526 433Q527 447 511 447H495Q485 442 490 431L482 389Z" fill="#886342" stroke="#705238" stroke-width="3"/>
+
+            <!-- A softly rounded, low-slung capybara silhouette. -->
+            <path d="M295 380Q278 349 295 312Q313 272 364 267Q408 260 455 279L497 319L495 376Q473 415 411 415H348Q311 414 295 380Z" fill="url(#fur)" stroke="#78583c" stroke-width="3.5"/>
+            <path d="M308 324Q328 284 376 285Q404 283 424 290" fill="none" stroke="#cfaa7e" stroke-width="9" stroke-linecap="round" opacity=".55"/>
+            <path d="M302 376Q321 398 359 398H415Q450 397 470 385" fill="none" stroke="#946b46" stroke-width="10" opacity=".35" stroke-linecap="round"/>
+
+            <!-- Bandana tails catch the breeze. -->
+            <g class="scarf">
+              <path d="M450 327Q414 319 382 332Q402 335 410 348Q431 346 453 338Z" fill="#db6e3d" stroke="#ad532e" stroke-width="2"/>
+              <path d="M445 333Q413 341 393 365L416 360L422 370Q446 355 454 338" fill="#e98448" stroke="#ad532e" stroke-width="2"/>
+              <path d="M410 351l28-13" stroke="#f4ab69" stroke-width="2"/>
+            </g>
+
+            <path d="M320 373Q333 365 349 377L355 433Q354 440 367 441Q375 444 370 451Q365 455 343 453Q327 453 325 441L316 407" fill="#b58a5e" stroke="#78583c" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M343 443v9m9-8v9" stroke="#78583c" stroke-width="2" stroke-linecap="round"/>
+
+            <!-- Broad, blunt muzzle, tiny ears, and a wonderfully blank expression. -->
+            <path d="M445 331Q430 307 438 277Q443 255 465 250Q482 237 511 243Q534 246 550 267L596 277Q614 281 617 299L617 329Q615 352 592 359L518 368Q485 371 461 351Z" fill="url(#fur)" stroke="#78583c" stroke-width="3.5" stroke-linejoin="round"/>
+            <path d="M451 260Q435 252 441 234Q445 225 454 230Q468 235 467 252" fill="#b88d61" stroke="#78583c" stroke-width="3"/>
+            <path d="M449 250Q444 239 450 238Q457 239 459 249" fill="#8d6546"/>
+            <path d="M510 245Q508 231 519 231Q529 233 530 253" fill="#a47a50" stroke="#78583c" stroke-width="3"/>
+            <path d="M468 266Q492 252 516 263" stroke="#d0aa7d" stroke-width="7" stroke-linecap="round" fill="none" opacity=".65"/>
+            <path d="M557 293Q585 285 603 296Q612 305 608 329Q606 344 588 347L557 350Q542 343 542 324Q542 302 557 293Z" fill="#c29a6b" opacity=".8"/>
+            <g class="eye">
+              <path d="M540 297q10 7 19-1" stroke="#493b2c" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            </g>
+            <ellipse cx="599" cy="299" rx="4" ry="5" fill="#5c4530" transform="rotate(-12 599 299)"/>
+            <path d="M616 325q-10 7-19 1" fill="none" stroke="#78583c" stroke-width="2.5" stroke-linecap="round"/>
+            <ellipse cx="548" cy="320" rx="12" ry="7" fill="#cf8b64" opacity=".5"/>
+            <g stroke="#926b49" stroke-width="2" stroke-linecap="round" opacity=".7">
+              <path d="M575 316h1m8 5h1m-13 4h1M381 313l-2 5m11-3-2 5M308 354l-2 5"/>
+            </g>
+
+            <path d="M453 328Q472 351 505 355L497 371Q469 369 446 345Z" fill="#e47c43" stroke="#ad532e" stroke-width="2.5"/>
+            <path d="M460 342Q474 356 492 359" stroke="#f5ad6a" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path d="M477 368Q492 362 505 374L502 431Q500 439 514 441Q522 444 517 451Q512 455 491 453Q475 452 473 440L471 394" fill="#b78c60" stroke="#78583c" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M491 443v9m9-8v9" stroke="#78583c" stroke-width="2" stroke-linecap="round"/>
+
+            <!-- A tiny travel companion. -->
+            <g>
+              <path d="M479 237Q474 221 487 215Q504 209 514 223Q520 238 506 244Q488 248 479 237Z" fill="#e89843" stroke="#c77b36" stroke-width="2"/>
+              <path d="M485 226q2-6 8-6" fill="none" stroke="#ffd18a" stroke-width="3" stroke-linecap="round"/>
+              <g class="leaf">
+                <path d="M497 216q0-9 4-12" stroke="#667a49" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <path d="M499 210q4-15 20-9q-4 13-20 9" fill="#819756"/>
+                <path d="M501 209l11-5" stroke="#5f7b45" stroke-width="1.5"/>
+              </g>
+            </g>
+
+            <!-- Hoverboard: a curved mint deck and two glowing lift pods. -->
+            <path d="M281 446Q283 435 304 435L577 435Q608 433 629 423Q639 419 640 429Q635 449 612 459L311 466Q290 462 281 446Z" fill="url(#deck)" stroke="#365d50" stroke-width="3"/>
+            <path d="M282 447Q307 455 340 451L595 447Q622 443 637 430Q632 451 611 460L319 468Q293 467 282 447Z" fill="#34584e"/>
+            <path d="M310 458L602 451" fill="none" stroke="#a7e9c5" stroke-width="3" stroke-linecap="round"/>
+            <path d="M302 439H322M534 440h57q15 0 27-6" stroke="#c2e3c7" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M324 467h50l-4 8h-39ZM548 463h49l-6 9h-38Z" fill="#537368" stroke="#365d50" stroke-width="2"/>
+            <g class="glow" stroke="#aff3cf" stroke-width="4" stroke-linecap="round">
+              <path d="M335 475h29M558 472h27"/>
+            </g>
+            <path d="M424 462l14-1" stroke="#dfaa65" stroke-width="3" stroke-linecap="round"/>
+          </g>
+        </g>
+
+        <g stroke="#f9f8e9" stroke-width="2.5" stroke-linecap="round" fill="none">
+          <path class="spark" d="M684 357v14m-7-7h14"/>
+          <path class="spark b" d="M241 389v10m-5-5h10"/>
+          <path class="spark b" d="M651 437v8m-4-4h8"/>
+        </g>
+        <g fill="#909d7a" opacity=".6">
+          <circle cx="720" cy="409" r="2"/>
+          <circle cx="228" cy="313" r="2"/>
+          <circle cx="765" cy="305" r="2"/>
+        </g>
+      </svg>
+      <div class="caption">NEXT STOP: WHENEVER ↗</div>
+    </div>
+
+    <div class="controls">
+      <div class="speed-control">
+        <div>
+          <label class="label" for="speed" style="display:block">CRUISING SPEED</label>
+          <div class="speed-value"><output id="speedValue" for="speed">08</output> <span>km/h</span></div>
+        </div>
+        <input id="speed" type="range" min="2" max="20" value="8" aria-label="Cruising speed in kilometers per hour">
+      </div>
+      <div class="mood">
+        <svg viewBox="0 0 30 30" fill="none" stroke="#879775" stroke-width="1.5" aria-hidden="true">
+          <circle cx="15" cy="15" r="12"/>
+          <path d="M8 12q2 3 4 0m6 0q2 3 4 0M10 18q5 6 10 0" stroke-linecap="round"/>
+        </svg>
+        <span id="mood" aria-live="polite">100% unbothered</span>
+      </div>
+      <button id="boost" type="button">A little boost <span aria-hidden="true">↗</span></button>
+    </div>
+  </main>
+
+  <footer>
+    <span>Less rush. More capybara.</span>
+    <span>Powered by good vibes, not wheels.</span>
+  </footer>
+</div>
+<script>
+  (() => {
+    const speed = document.getElementById('speed');
+    const value = document.getElementById('speedValue');
+    const scene = document.getElementById('scene');
+    const mood = document.getElementById('mood');
+    const boost = document.getElementById('boost');
+    let boosting = false;
+
+    function updateSpeed() {
+      value.textContent = speed.value.padStart(2, '0');
+      if (!boosting) {
+        scene.style.setProperty('--pace', Number(speed.value) / 8);
+        mood.textContent = Number(speed.value) > 14 ? 'Still absolutely unbothered' : '100% unbothered';
+      }
+    }
+
+    speed.addEventListener('input', updateSpeed);
+    boost.addEventListener('click', () => {
+      if (boosting) return;
+      boosting = true;
+      scene.classList.add('boosting');
+      scene.style.setProperty('--pace', '3.8');
+      mood.textContent = 'Wheee. But, like, calmly.';
+      boost.setAttribute('aria-disabled', 'true');
+      setTimeout(() => {
+        scene.classList.remove('boosting');
+        boost.removeAttribute('aria-disabled');
+        boosting = false;
+        updateSpeed();
+      }, 1800);
+    });
+  })();
+</script>
+</body>
+</html>

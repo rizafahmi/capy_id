@@ -11,7 +11,7 @@
   date -u +%Y-%m-%dT%H:%M:%SZ >"$ATTEMPT/started-at.txt"
   PROMPT="$(<"$REPO/content/challenges/capybara-hoverboard-v1/prompt.txt")"$'\n'
   cd "$ATTEMPT/workspace"
-  pi --mode json --model deepseek/deepseek-flash --thinking high \
+  pi --mode json --model openai-codex/gpt-6-astra --thinking high \
     --no-approve --no-extensions --no-mcp --no-skills \
     --no-prompt-templates --no-context-files --no-themes \
     --tools read,bash,edit,write --session-dir "$ATTEMPT/sessions" \
