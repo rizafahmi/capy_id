@@ -34,11 +34,21 @@ test("redesign ships local imagery and fonts without widening preview permission
   for (const file of [
     "capybara.webp",
     "capybara-small.webp",
+    "favicon.svg",
     "favicon.png",
+    "og-card.png",
     "bricolage-grotesque-latin.woff2",
     "BricolageGrotesque-OFL.txt",
   ])
     assert.ok((await readFile(join(out, "gallery/assets", file))).length > 0);
+  assert.match(html, /<link rel="icon" href="\/assets\/favicon\.svg" type="image\/svg\+xml">/);
+  assert.match(
+    html,
+    /<meta property="og:image" content="http:\/\/127\.0\.0\.1:4173\/assets\/og-card\.png">/,
+  );
+  assert.match(html, /<meta property="og:image:width" content="1200">/);
+  assert.match(html, /<meta property="og:image:height" content="630">/);
+  assert.match(html, /<meta name="twitter:card" content="summary_large_image">/);
   assert.match(await readFile(join(out, "gallery/_headers"), "utf8"), /font-src 'self'/);
   assert.match(
     await readFile(join(out, "gallery/_headers"), "utf8"),
@@ -284,6 +294,13 @@ test("run pages and challenge evidence exist without a SPA fallback", async (t) 
     html,
     /<meta name="description" content="Inspect animation \(Development fixture, one-shot with Development harness \(low effort\)\) on the Capybara Hoverboard challenge\. Development fixture authored for application testing\. Not a genuine model experiment\.">/,
   );
+  assert.match(html, /<meta property="og:type" content="article">/);
+  assert.match(
+    html,
+    /<meta property="og:image" content="http:\/\/127\.0\.0\.1:4173\/assets\/og-card\.png">/,
+  );
+  assert.match(html, /<meta property="article:published_time" content="2026-10-09T00:00:00Z">/);
+  assert.doesNotMatch(notFound, /property="og:|name="twitter:/);
   assert.match(
     await readFile(join(out, "gallery/challenge/index.html"), "utf8"),
     /<meta name="description" content="Read the exact Capybara on a Hoverboard HTML, CSS, and JavaScript prompt, collection protocol, interpretation limits, and restricted preview policy\.">/,

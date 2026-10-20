@@ -64,6 +64,18 @@ const description = `Inspect ${run.model.display_name} (${run.provider}, ${run.g
   description={description}
   canonicalPath={`/runs/${(correction ?? entry).run.id}/`}
   noindex={Boolean(correction)}
+  ogType="article"
+  ogImage={
+    curation.thumbnail
+      ? {
+          path: `/${curation.thumbnail.path}`,
+          width: curation.thumbnail.viewport?.width ?? 640,
+          height: curation.thumbnail.viewport?.height ?? 480,
+          alt: `Screenshot of ${run.model.display_name} output`,
+        }
+      : undefined
+  }
+  publishedAt={curation.published_at}
   fixtures={fixtures}
   section="run"
   preloadImage={curation.thumbnail ? `/${curation.thumbnail.path}` : undefined}
