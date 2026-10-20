@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "run_id": "agy-40d2de86-2108-44fb-88b4-bd004b163ef8-capybara-hoverboard-v1",
+  "published_at": "2026-10-20T08:59:41Z",
+  "visible": true,
+  "preview_allowed": true,
+  "preview_disabled_reason": null,
+  "observations": [
+    "Reproduced zero-tool one-shot raw HTML output inside the coding-agent harness with 59% fewer thinking tokens (2,136 vs. 5,200), while syncing foreground canvas exhaust particles to the transformed SVG hoverboard via per-frame getBoundingClientRect() queries and adding a collectible highway yuzu loop."
+  ],
+  "series_publication_complete": true,
+  "series_incomplete_reason": null,
+  "thumbnail": {
+    "path": "thumbnails/agy-40d2de86-2108-44fb-88b4-bd004b163ef8-capybara-hoverboard-v1.png",
+    "viewport": {
+      "width": 640,
+      "height": 480
+    },
+    "capture_delay_ms": 1000,
+    "browser_version": "156.0.8078.4",
+    "preview_policy_version": "restricted-html-v1"
+  }
+}

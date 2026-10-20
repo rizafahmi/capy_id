@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capybara Hoverboard Cruise</title>
+<style>
+  :root {
+    --ui-bg: rgba(18, 14, 36, 0.72);
+    --ui-border: rgba(255, 214, 138, 0.35);
+    --ui-accent: #ff9e44;
+    --ui-cyan: #2bf0ff;
+    --ui-pink: #ff3e9d;
+    --ui-text: #fff7eb;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #120924;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ui-text);
+  }
+
+  #scene-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    cursor: crosshair;
+  }
+
+  #world-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 1;
+  }
+
+  #stage-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #capy-rig-wrapper {
+    position: relative;
+    width: min(640px, 88vw);
+    height: min(480px, 68vh);
+    transform-origin: 50% 65%;
+    will-change: transform;
+  }
+
+  #capy-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 12px 24px rgba(10, 4, 26, 0.45));
+  }
+
+  #fx-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  /* HUD Controls */
+  .hud-top {
+    position: absolute;
+    top: 20px;
+    left: 24px;
+    right: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .brand-card {
+    background: var(--ui-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--ui-border);
+    border-radius: 16px;
+    padding: 12px 18px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    pointer-events: auto;
+  }
+
+  .brand-title {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #ffe28a, #ff8f52, #ff4da6, #2bf0ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .brand-sub {
+    font-size: 12px;
+    color: rgba(255, 247, 235, 0.78);
+    margin-top: 3px;
+    letter-spacing: 0.03em;
+  }
+
+  .telemetry {
+    display: flex;
+    gap: 12px;
+    pointer-events: auto;
+  }
+
+  .stat-pill {
+    background: var(--ui-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--ui-border);
+    border-radius: 14px;
+    padding: 10px 15px;
+    min-width: 105px;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  .stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255, 247, 235, 0.65);
+    margin-bottom: 2px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: #ffe396;
+    text-shadow: 0 0 12px rgba(255, 174, 52, 0.45);
+  }
+
+  .stat-value.cyan {
+    color: #6df6ff;
+    text-shadow: 0 0 12px rgba(43, 240, 255, 0.5);
+  }
+
+  .hud-bottom {
+    position: absolute;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    background: var(--ui-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--ui-border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+    max-width: 94vw;
+  }
+
+  .ctrl-btn {
+    appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--ui-text);
+    padding: 8px 15px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ctrl-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 224, 150, 0.65);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(255, 158, 68, 0.3);
+  }
+
+  .ctrl-btn:active {
+    transform: translateY(0) scale(0.96);
+  }
+
+  .ctrl-btn.active {
+    background: linear-gradient(135deg, #ff8533, #ff3385);
+    border-color: #ffe299;
+    box-shadow: 0 0 18px rgba(255, 77, 150, 0.6);
+  }
+
+  .kbd-hint {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.35);
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+  }
+
+  @media (max-width: 680px) {
+    .hud-top {
+      flex-direction: column;
+      gap: 10px;
+      align-items: stretch;
+    }
+    .telemetry {
+      justify-content: space-between;
+    }
+    .stat-pill {
+      flex: 1;
+      min-width: 0;
+      padding: 8px 10px;
+    }
+    .kbd-hint {
+      display: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="scene-container">
+  <canvas id="world-canvas"></canvas>
+
+  <div id="stage-overlay">
+    <div id="capy-rig-wrapper">
+      <svg id="capy-svg" viewBox="0 0 700 540" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Capybara Fur Gradients -->
+          <linearGradient id="capyBodyGrad" x1="0%" y1="0%" x2="85%" y2="100%">
+            <stop offset="0%" stop-color="#c6864e"/>
+            <stop offset="48%" stop-color="#a86834"/>
+            <stop offset="100%" stop-color="#76421b"/>
+          </linearGradient>
+
+          <linearGradient id="capyHeadGrad" x1="15%" y1="0%" x2="90%" y2="95%">
+            <stop offset="0%" stop-color="#cf8f56"/>
+            <stop offset="55%" stop-color="#ad6d39"/>
+            <stop offset="100%" stop-color="#814b21"/>
+          </linearGradient>
+
+          <linearGradient id="capySnoutGrad" x1="0%" y1="10%" x2="100%" y2="90%">
+            <stop offset="0%" stop-color="#85502a"/>
+            <stop offset="60%" stop-color="#62381a"/>
+            <stop offset="100%" stop-color="#482710"/>
+          </linearGradient>
+
+          <linearGradient id="capyLegGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#8f5529"/>
+            <stop offset="100%" stop-color="#4d2911"/>
+          </linearGradient>
+
+          <linearGradient id="capyBellyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#b87842" stop-opacity="0"/>
+            <stop offset="100%" stop-color="#613314" stop-opacity="0.75"/>
+          </linearGradient>
+
+          <!-- Yuzu Fruit Gradient -->
+          <radialGradient id="yuzuGrad" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#fff380"/>
+            <stop offset="45%" stop-color="#ffc425"/>
+            <stop offset="100%" stop-color="#e07b00"/>
+          </radialGradient>
+
+          <!-- Scarf Gradient -->
+          <linearGradient id="scarfGrad" x1="0%" y1="0%" x2="100%" y2="20%">
+            <stop offset="0%" stop-color="#ff2a6d"/>
+            <stop offset="55%" stop-color="#ff5e3a"/>
+            <stop offset="100%" stop-color="#ffaa2b"/>
+          </linearGradient>
+
+          <!-- Hoverboard Gradients -->
+          <linearGradient id="deckTopGrad" x1="0%" y1="0%" x2="100%" y2="30%">
+            <stop offset="0%" stop-color="#2b3054"/>
+            <stop offset="45%" stop-color="#424a78"/>
+            <stop offset="100%" stop-color="#1d213b"/>
+          </linearGradient>
+
+          <linearGradient id="deckRimGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#ff2e93"/>
+            <stop offset="50%" stop-color="#ff9a3c"/>
+            <stop offset="100%" stop-color="#00f6ff"/>
+          </linearGradient>
+
+          <linearGradient id="deckBaseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#16182e"/>
+            <stop offset="100%" stop-color="#090a14"/>
+          </linearGradient>
+
+          <radialGradient id="thrusterGlowGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="35%" stop-color="#5cfaff"/>
+            <stop offset="72%" stop-color="#00a2ff" stop-opacity="0.65"/>
+            <stop offset="100%" stop-color="#0066ff" stop-opacity="0"/>
+          </radialGradient>
+
+          <radialGradient id="pinkGlowGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fff0f8"/>
+            <stop offset="40%" stop-color="#ff3ea5"/>
+            <stop offset="100%" stop-color="#ff0077" stop-opacity="0"/>
+          </radialGradient>
+
+          <!-- Cyber Visor Gradient -->
+          <linearGradient id="visorGrad" x1="0%" y1="0%" x2="100%" y2="20%">
+            <stop offset="0%" stop-color="#00f6ff"/>
+            <stop offset="50%" stop-color="#7b2cbf"/>
+            <stop offset="100%" stop-color="#ff2a85"/>
+          </linearGradient>
+
+          <filter id="neonGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="6" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+
+        <!-- MASTER RIG GROUP -->
+        <g id="rig-root" transform="translate(350, 310)">
+
+          <!-- HOVERBOARD GROUP -->
+          <g id="hoverboard-group" transform="translate(0, 72)">
+            <!-- Anti-gravity Ground Pulse Rings (SVG layer synced with board) -->
+            <g id="repulsor-waves">
+              <ellipse id="wave-rear" cx="-135" cy="52" rx="58" ry="15" fill="none" stroke="#2bf0ff" stroke-width="3" opacity="0.6"/>
+              <ellipse id="wave-front" cx="135" cy="52" rx="58" ry="15" fill="none" stroke="#2bf0ff" stroke-width="3" opacity="0.6"/>
+              <ellipse id="wave-rear-2" cx="-135" cy="68" rx="38" ry="10" fill="none" stroke="#ff3e9d" stroke-width="2" opacity="0.4"/>
+              <ellipse id="wave-front-2" cx="135" cy="68" rx="38" ry="10" fill="none" stroke="#ff3e9d" stroke-width="2" opacity="0.4"/>
+            </g>
+
+            <!-- Rear Thruster Housing & Core -->
+            <g id="thruster-rear-group" transform="translate(-135, 24)">
+              <ellipse cx="0" cy="14" rx="68" ry="22" fill="url(#thrusterGlowGrad)"/>
+              <path d="M -52,-8 L 52,-8 L 40,14 L -40,14 Z" fill="#14182e" stroke="#2bf0ff" stroke-width="2"/>
+              <ellipse cx="0" cy="12" rx="38" ry="9" fill="#0d1326" stroke="#ff3e9d" stroke-width="2"/>
+              <ellipse id="thruster-rear-core" cx="0" cy="12" rx="28" ry="6" fill="#99fcff" filter="url(#neonGlow)"/>
+            </g>
+
+            <!-- Front Thruster Housing & Core -->
+            <g id="thruster-front-group" transform="translate(135, 24)">
+              <ellipse cx="0" cy="14" rx="68" ry="22" fill="url(#thrusterGlowGrad)"/>
+              <path d="M -52,-8 L 52,-8 L 40,14 L -40,14 Z" fill="#14182e" stroke="#2bf0ff" stroke-width="2"/>
+              <ellipse cx="0" cy="12" rx="38" ry="9" fill="#0d1326" stroke="#ff3e9d" stroke-width="2"/>
+              <ellipse id="thruster-front-core" cx="0" cy="12" rx="28" ry="6" fill="#99fcff" filter="url(#neonGlow)"/>
+            </g>
+
+            <!-- Underside Hull / Chassis -->
+            <path d="M -230,0 C -246,16 -205,30 -150,30 L 155,30 C 210,30 250,14 238,-2 Z"
+                  fill="url(#deckBaseGrad)" stroke="#2c355c" stroke-width="2"/>
+
+            <!-- Side Neon Bumper Rail -->
+            <path d="M -242,-6 C -255,4 -215,18 -155,18 L 160,18 C 218,18 258,2 244,-8 C 232,-16 190,-12 155,-12 L -155,-12 C -195,-12 -232,-14 -242,-6 Z"
+                  fill="url(#deckRimGrad)" filter="url(#neonGlow)"/>
+
+            <!-- Main Deck Top Surface (Isometric Perspective) -->
+            <path d="M -236,-8 C -248,-24 -192,-38 -130,-38 L 140,-38 C 202,-38 252,-22 240,-6 C 228,8 182,11 140,11 L -135,11 C -185,11 -225,6 -236,-8 Z"
+                  fill="url(#deckTopGrad)" stroke="#ff7ec6" stroke-width="2.5"/>
+
+            <!-- Deck Graphic Stripes & Grip Pads -->
+            <path d="M -185,-14 L -120,-30 L -65,-30 L -130,-14 Z" fill="#ff3e9d" opacity="0.85"/>
+            <path d="M -105,-14 L -40,-30 L 10,-30 L -55,-14 Z" fill="#ffb84d" opacity="0.85"/>
+            <path d="M 35,-30 L 115,-30 L 165,-14 L 85,-14 Z" fill="#2bf0ff" opacity="0.8"/>
+
+            <!-- Rear & Front Grip Footpads -->
+            <ellipse cx="-112" cy="-13" rx="52" ry="13" fill="#171a30" stroke="#5cfaff" stroke-width="1.5" stroke-dasharray="6 4"/>
+            <ellipse cx="95" cy="-13" rx="52" ry="13" fill="#171a30" stroke="#5cfaff" stroke-width="1.5" stroke-dasharray="6 4"/>
+
+            <!-- Side Animated Speed Chevrons -->
+            <g id="board-chevrons" transform="translate(0, 4)">
+              <polygon class="chev" points="-90,-2 -76,-2 -68,5 -76,12 -90,12 -82,5" fill="#fff3a1"/>
+              <polygon class="chev" points="-55,-2 -41,-2 -33,5 -41,12 -55,12 -47,5" fill="#fff3a1"/>
+              <polygon class="chev" points="-20,-2 -6,-2 2,5 -6,12 -20,12 -12,5" fill="#fff3a1"/>
+              <polygon class="chev" points="15,-2 29,-2 37,5 29,12 15,12 23,5" fill="#fff3a1"/>
+              <polygon class="chev" points="50,-2 64,-2 72,5 64,12 50,12 58,5" fill="#fff3a1"/>
+            </g>
+
+            <!-- Front Laser Headlight Cone -->
+            <polygon id="headlight-cone" points="238,-6 430,-45 430,45" fill="url(#thrusterGlowGrad)" opacity="0.32" style="mix-blend-mode: screen;"/>
+            <ellipse cx="236" cy="-5" rx="7" ry="4" fill="#ffffff" filter="url(#neonGlow)"/>
+          </g>
+
+          <!-- CAPYBARA CHARACTER GROUP -->
+          <g id="capybara-group" transform="translate(-10, 0)">
+
+            <!-- Flowing Scarf Tail (Behind Capybara) -->
+            <g id="scarf-back-group">
+              <path id="scarf-tail-secondary" d="M 42,-58 C -25,-68 -95,-45 -165,-62 C -205,-72 -245,-55 -275,-68 L -265,-42 C -225,-32 -185,-48 -145,-38 C -85,-22 -20,-42 42,-36 Z"
+                    fill="#c9184a"/>
+              <path id="scarf-tail-primary" d="M 48,-52 C -20,-58 -95,-30 -168,-44 C -215,-54 -255,-34 -295,-46 L -280,-16 C -235,-8 -195,-26 -148,-16 C -80,-2 -18,-26 48,-24 Z"
+                    fill="url(#scarfGrad)" stroke="#ffe082" stroke-width="2"/>
+            </g>
+
+            <!-- Far Back Leg (Rear Left) -->
+            <g id="leg-rear-far" transform="translate(-128, 12)">
+              <path d="M -18,-35 C -30,-5 -28,22 -20,38 C -12,44 10,44 18,38 C 22,22 18,-10 10,-35 Z" fill="#5e3416"/>
+              <!-- Webbed Capybara Toes -->
+              <ellipse cx="-6" cy="40" rx="18" ry="7" fill="#3b1f0b"/>
+              <ellipse cx="8" cy="42" rx="14" ry="6" fill="#2c1607"/>
+            </g>
+
+            <!-- Far Front Leg (Front Left) -->
+            <g id="leg-front-far" transform="translate(68, 14)">
+              <path d="M -14,-36 C -20,-8 -16,20 -10,36 C -2,42 16,42 22,36 C 24,18 18,-12 12,-36 Z" fill="#633718"/>
+              <ellipse cx="4" cy="38" rx="17" ry="6.5" fill="#3b1f0b"/>
+              <ellipse cx="15" cy="40" rx="13" ry="5.5" fill="#2c1607"/>
+            </g>
+
+            <!-- Main Barrel Body -->
+            <g id="capy-torso">
+              <!-- Stout Potato/Barrel Shape -->
+              <path d="M -152,-38
+                       C -178,-78 -150,-142 -82,-150
+                       C -25,-156 32,-148 76,-142
+                       C 118,-136 135,-85 122,-32
+                       C 110,12 68,26 -10,26
+                       C -92,26 -134,2 -152,-38 Z"
+                    fill="url(#capyBodyGrad)" stroke="#593014" stroke-width="3"/>
+
+              <!-- Belly Shadow Shading -->
+              <path d="M -146,-28 C -120,16 -65,25 4,25 C 68,25 106,10 119,-28 C 85,-2 35,6 -20,6 C -80,6 -122,-6 -146,-28 Z"
+                    fill="url(#capyBellyGrad)"/>
+
+              <!-- Iconic Coarse Capybara Fur Texture Notches & Strokes -->
+              <g stroke="#6b3b19" stroke-width="2.6" stroke-linecap="round" opacity="0.65">
+                <path d="M -115,-125 Q -98,-130 -85,-124"/>
+                <path d="M -70,-134 Q -52,-138 -36,-132"/>
+                <path d="M -95,-102 Q -78,-106 -64,-100"/>
+                <path d="M -42,-112 Q -22,-115 -8,-109"/>
+                <path d="M -132,-88 Q -116,-94 -102,-87"/>
+                <path d="M -125,-60 Q -108,-64 -92,-58"/>
+                <path d="M -55,-78 Q -36,-82 -20,-75"/>
+                <path d="M 8,-96 Q 24,-100 38,-93"/>
+              </g>
+
+              <!-- Warm Fur Highlights on Back & Rump -->
+              <path d="M -125,-128 C -85,-148 -15,-148 45,-138" fill="none" stroke="#e3a66d" stroke-width="5" stroke-linecap="round" opacity="0.5"/>
+              <!-- Cute Fluffy Rump Tuft -->
+              <path d="M -150,-92 L -164,-98 L -155,-82 L -168,-80 L -154,-68" fill="#a86834" stroke="#593014" stroke-width="2.5" stroke-linejoin="round"/>
+            </g>
+
+            <!-- Near Back Leg (Rear Right - Planted on Rear Grip Pad) -->
+            <g id="leg-rear-near" transform="translate(-94, 14)">
+              <path d="M -26,-45 C -38,-18 -34,18 -24,39 C -14,46 14,46 22,39 C 28,20 24,-14 14,-42 Z"
+                    fill="url(#capyLegGrad)" stroke="#4a270f" stroke-width="2.5"/>
+              <!-- Foot & Webbed Toes -->
+              <path d="M -20,35 C -22,46 -4,49 26,46 C 34,44 34,36 20,33 Z" fill="#3d200c" stroke="#261205" stroke-width="2"/>
+              <line x1="6" y1="37" x2="14" y2="45" stroke="#241104" stroke-width="2.2" stroke-linecap="round"/>
+              <line x1="17" y1="36" x2="25" y2="44" stroke="#241104" stroke-width="2.2" stroke-linecap="round"/>
+            </g>
+
+            <!-- Near Front Leg (Front Right - Planted on Front Grip Pad) -->
+            <g id="leg-front-near" transform="translate(96, 14)">
+              <path d="M -20,-44 C -28,-14 -24,18 -16,39 C -6,45 16,45 24,39 C 28,18 22,-15 14,-42 Z"
+                    fill="url(#capyLegGrad)" stroke="#4a270f" stroke-width="2.5"/>
+              <path d="M -14,35 C -16,46 2,48 30,45 C 37,43 36,35 22,33 Z" fill="#3d200c" stroke="#261205" stroke-width="2"/>
+              <line x1="10" y1="37" x2="18" y2="44" stroke="#241104" stroke-width="2.2" stroke-linecap="round"/>
+              <line x1="20" y1="36" x2="28" y2="43" stroke="#241104" stroke-width="2.2" stroke-linecap="round"/>
+            </g>
+
+            <!-- Little Duckling / Bird Buddy Chilling on Capybara's Rump! -->
+            <g id="bird-buddy" transform="translate(-112, -148)">
+              <!-- Duckling Body -->
+              <path d="M -18,6 C -22,-6 -12,-16 0,-15 C 8,-15 14,-22 22,-20 C 29,-18 30,-8 25,0 C 22,8 10,12 -4,12 C -13,12 -16,10 -18,6 Z"
+                    fill="#ffe14d" stroke="#8c5808" stroke-width="2"/>
+              <!-- Wing -->
+              <path d="M -4,-5 C 4,-8 12,-3 10,4 C 4,6 -4,4 -4,-5 Z" fill="#ffc419" stroke="#b37400" stroke-width="1.5"/>
+              <!-- Tiny Beak -->
+              <path d="M 27,-13 L 36,-10 L 27,-7 Z" fill="#ff7326" stroke="#8c3100" stroke-width="1.5" stroke-linejoin="round"/>
+              <!-- Chill Eye -->
+              <circle cx="21" cy="-12" r="2" fill="#2b1605"/>
+              <!-- Tiny Aviator Goggles Strap -->
+              <line x1="14" y1="-16" x2="26" y2="-13" stroke="#2bf0ff" stroke-width="2" stroke-linecap="round"/>
+            </g>
+
+            <!-- Scarf Collar Wrapping Neck -->
+            <g id="scarf-collar">
+              <path d="M 32,-128 C 42,-82 68,-45 112,-32 C 126,-28 134,-44 126,-56 C 95,-72 72,-102 64,-136 Z"
+                    fill="url(#scarfGrad)" stroke="#6e1423" stroke-width="2.5"/>
+              <!-- Gold Stripe on Scarf Collar -->
+              <path d="M 46,-122 C 56,-84 82,-54 118,-42" fill="none" stroke="#ffe082" stroke-width="4" stroke-linecap="round"/>
+            </g>
+
+            <!-- CAPYBARA HEAD & ICONIC BOXY SNOUT -->
+            <g id="capy-head" transform="translate(86, -138)">
+              <!-- Far Ear (Left) -->
+              <g id="ear-far" transform="translate(18, -56)">
+                <ellipse cx="0" cy="0" rx="12" ry="16" transform="rotate(-18)" fill="#6e3d19" stroke="#3d1f0a" stroke-width="2.5"/>
+                <ellipse cx="1" cy="2" rx="6" ry="9" transform="rotate(-18)" fill="#42210b"/>
+              </g>
+
+              <!-- Head Base & Blunt Rectangular Capybara Snout -->
+              <path d="M -42,-36
+                       C -34,-62 2,-68 42,-64
+                       C 78,-60 116,-48 138,-38
+                       C 154,-30 160,-10 156,16
+                       C 152,40 136,52 108,52
+                       C 72,52 44,44 14,42
+                       C -22,40 -46,16 -42,-36 Z"
+                    fill="url(#capyHeadGrad)" stroke="#522b10" stroke-width="3"/>
+
+              <!-- Characteristic Dark Blunt Muzzle / Nose Patch -->
+              <path d="M 98,-43
+                       C 122,-42 144,-34 153,-20
+                       C 160,-6 158,22 148,38
+                       C 138,50 116,52 96,49
+                       C 82,46 78,24 80,-2
+                       C 82,-24 86,-42 98,-43 Z"
+                    fill="url(#capySnoutGrad)"/>
+
+              <!-- Crown Highlight -->
+              <path d="M -14,-56 C 22,-62 66,-54 102,-42" fill="none" stroke="#eab07a" stroke-width="4.5" stroke-linecap="round" opacity="0.55"/>
+
+              <!-- Near Ear (Right - Set Far Back & High) -->
+              <g id="ear-near" transform="translate(-14, -52)">
+                <path d="M -14,8 C -20,-12 -6,-26 8,-22 C 20,-18 20,2 10,14 C 2,20 -10,16 -14,8 Z"
+                      fill="#8c5024" stroke="#42210b" stroke-width="2.5"/>
+                <path d="M -7,5 C -10,-6 -2,-15 5,-12 C 12,-9 11,3 5,9 Z" fill="#4f280e"/>
+                <!-- Ear Fur Tuft -->
+                <path d="M -15,-4 L -24,-8 L -16,3" fill="none" stroke="#6e3d19" stroke-width="2.5" stroke-linecap="round"/>
+              </g>
+
+              <!-- Nostril (Iconic Comma Slit on Upper Muzzle) -->
+              <g id="capy-nostril" transform="translate(128, -16)">
+                <ellipse cx="0" cy="0" rx="7.5" ry="5" transform="rotate(24)" fill="#241105"/>
+                <ellipse cx="-2" cy="-1" rx="3" ry="2" fill="#593118" opacity="0.6"/>
+              </g>
+
+              <!-- Serene Mouth & Chin Whisker Dots -->
+              <path id="capy-mouth" d="M 118,26 C 128,28 138,24 146,16" fill="none" stroke="#261206" stroke-width="3" stroke-linecap="round"/>
+              <!-- Chew / Smile Corner -->
+              <path d="M 115,22 C 118,27 116,30 112,31" fill="none" stroke="#261206" stroke-width="2.5" stroke-linecap="round"/>
+
+              <!-- Muzzle Whisker Follicle Dots & Short Whiskers -->
+              <circle cx="112" cy="4" r="2" fill="#361a09"/>
+              <circle cx="124" cy="9" r="2" fill="#361a09"/>
+              <circle cx="106" cy="14" r="2" fill="#361a09"/>
+              <path d="M 108,8 Q 92,14 82,22" fill="none" stroke="#d9b38c" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
+              <path d="M 118,14 Q 104,22 95,30" fill="none" stroke="#d9b38c" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
+
+              <!-- Rosy Happy Cheek Blush -->
+              <ellipse id="capy-blush" cx="68" cy="12" rx="16" ry="9" fill="#ff5c8a" opacity="0.32"/>
+
+              <!-- Iconic Half-Closed Unbothered Capybara Eye -->
+              <g id="capy-eye" transform="translate(46, -24)">
+                <!-- Eye Socket Shadow -->
+                <ellipse cx="0" cy="0" rx="14" ry="10" fill="#633616"/>
+                <!-- Dark Eye Ball -->
+                <ellipse id="eye-open-part" cx="0" cy="1" rx="11" ry="8" fill="#1f0e04"/>
+                <!-- Warm Specular Glint -->
+                <circle id="eye-glint" cx="4" cy="-1" r="2.8" fill="#fff7e6"/>
+                <!-- Heavy Unbothered Upper Eyelid -->
+                <path id="upper-eyelid" d="M -14,-3 Q 0,-9 14,-2 L 14,-11 L -14,-11 Z" fill="#9c5d2c"/>
+                <path id="eyelid-line" d="M -14,-2 Q 1,-7 15,-1" fill="none" stroke="#361a08" stroke-width="3.2" stroke-linecap="round"/>
+                <!-- Lower Peaceful Lid -->
+                <path d="M -11,6 Q 0,10 11,6" fill="none" stroke="#6e3d19" stroke-width="2" stroke-linecap="round"/>
+              </g>
+
+              <!-- Toggleable Cool Cyber-Visor Shades -->
+              <g id="cyber-shades" transform="translate(52, -24)" opacity="1">
+                <!-- Temple Arm Going Back to Ear -->
+                <path d="M -18,-4 L -66,-22" stroke="#181b2e" stroke-width="5" stroke-linecap="round"/>
+                <path d="M -18,-4 L -66,-22" stroke="#00f6ff" stroke-width="2" stroke-linecap="round"/>
+                <!-- Futuristic Shield Lens -->
+                <path d="M -22,-12 L 42,-14 L 52,-2 L 32,12 L -14,10 Z"
+                      fill="url(#visorGrad)" stroke="#ffffff" stroke-width="2" filter="url(#neonGlow)"/>
+                <!-- Lens Glare Slash -->
+                <polygon points="-6,-10 8,-10 -2,8 -14,8" fill="#ffffff" opacity="0.55"/>
+                <polygon points="14,-10 21,-10 11,8 4,8" fill="#ffffff" opacity="0.35"/>
+              </g>
+
+              <!-- Iconic Yuzu Citrus Balanced on Head -->
+              <g id="yuzu-hat" transform="translate(32, -74)">
+                <!-- Subtle Cushion Shadow -->
+                <ellipse cx="0" cy="14" rx="22" ry="5" fill="#4a260c" opacity="0.45"/>
+                <!-- Yuzu Fruit Body -->
+                <ellipse cx="0" cy="0" rx="22" ry="17" fill="url(#yuzuGrad)" stroke="#7a4100" stroke-width="2.5"/>
+                <!-- Citrus Dimples -->
+                <circle cx="-8" cy="-4" r="1.3" fill="#d47200" opacity="0.7"/>
+                <circle cx="-3" cy="3" r="1.3" fill="#d47200" opacity="0.7"/>
+                <circle cx="8" cy="5" r="1.3" fill="#d47200" opacity="0.7"/>
+                <circle cx="11" cy="-2" r="1.3" fill="#d47200" opacity="0.7"/>
+                <!-- Stem & Green Leaf -->
+                <path d="M 0,-16 L 2,-23" stroke="#4d3319" stroke-width="3" stroke-linecap="round"/>
+                <path d="M 1,-19 C 12,-28 26,-24 22,-13 C 16,-6 6,-11 1,-19 Z"
+                      fill="#38d962" stroke="#165c29" stroke-width="2"/>
+              </g>
+            </g>
+
+          </g>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <canvas id="fx-canvas"></canvas>
+
+  <!-- Top HUD -->
+  <div class="hud-top">
+    <div class="brand-card">
+      <div class="brand-title">
+        <span>🍊 CAPY-GLIDE 3000</span>
+      </div>
+      <div class="brand-sub">Move cursor to carve &bull; Click or Space for 360° Yuzu Flip</div>
+    </div>
+
+    <div class="telemetry">
+      <div class="stat-pill">
+        <div class="stat-label">Velocity</div>
+        <div class="stat-value cyan" id="speed-readout">88 MPH</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-label">Yuzu Collected</div>
+        <div class="stat-value" id="yuzu-readout">🍊 12</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-label">Chill Level</div>
+        <div class="stat-value" id="chill-readout">100%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Interactive Controls -->
+  <div class="hud-bottom">
+    <button class="ctrl-btn" id="btn-trick" type="button">
+      <span>✨ 360° Trick</span>
+      <span class="kbd-hint">Space</span>
+    </button>
+    <button class="ctrl-btn" id="btn-boost" type="button">
+      <span>🚀 Hyper-Boost</span>
+      <span class="kbd-hint">B</span>
+    </button>
+    <button class="ctrl-btn active" id="btn-shades" type="button">
+      <span>🕶️ Cyber Visor</span>
+      <span class="kbd-hint">V</span>
+    </button>
+    <button class="ctrl-btn" id="btn-snack" type="button">
+      <span>🍊 Toss Yuzu</span>
+      <span class="kbd-hint">Y</span>
+    </button>
+    <button class="ctrl-btn" id="btn-theme" type="button">
+      <span id="theme-label">🌅 Theme: Sunset Cruise</span>
+      <span class="kbd-hint">T</span>
+    </button>
+  </div>
+</div>
+
+<script>
+(() => {
+  // DOM Elements
+  const worldCanvas = document.getElementById('world-canvas');
+  const wCtx = worldCanvas.getContext('2d');
+  const fxCanvas = document.getElementById('fx-canvas');
+  const fCtx = fxCanvas.getContext('2d');
+
+  const rigRoot = document.getElementById('rig-root');
+  const hoverboardGroup = document.getElementById('hoverboard-group');
+  const capybaraGroup = document.getElementById('capybara-group');
+  const capyHead = document.getElementById('capy-head');
+  const yuzuHat = document.getElementById('yuzu-hat');
+  const birdBuddy = document.getElementById('bird-buddy');
+  const earNear = document.getElementById('ear-near');
+  const earFar = document.getElementById('ear-far');
+  const scarfPrimary = document.getElementById('scarf-tail-primary');
+  const scarfSecondary = document.getElementById('scarf-tail-secondary');
+  const upperEyelid = document.getElementById('upper-eyelid');
+  const eyelidLine = document.getElementById('eyelid-line');
+  const cyberShades = document.getElementById('cyber-shades');
+  const capyBlush = document.getElementById('capy-blush');
+  const waveRear = document.getElementById('wave-rear');
+  const waveFront = document.getElementById('wave-front');
+  const waveRear2 = document.getElementById('wave-rear-2');
+  const waveFront2 = document.getElementById('wave-front-2');
+  const chevrons = document.querySelectorAll('#board-chevrons .chev');
+  const thrusterRearCore = document.getElementById('thruster-rear-core');
+  const thrusterFrontCore = document.getElementById('thruster-front-core');
+
+  const speedReadout = document.getElementById('speed-readout');
+  const yuzuReadout = document.getElementById('yuzu-readout');
+  const chillReadout = document.getElementById('chill-readout');
+
+  const btnTrick = document.getElementById('btn-trick');
+  const btnBoost = document.getElementById('btn-boost');
+  const btnShades = document.getElementById('btn-shades');
+  const btnSnack = document.getElementById('btn-snack');
+  const btnTheme = document.getElementById('btn-theme');
+  const themeLabel = document.getElementById('theme-label');
+
+  // Themes Configuration
+  const THEMES = [
+    {
+      name: 'Sunset Cruise',
+      icon: '🌅',
+      skyTop: '#160836',
+      skyMid: '#6b1d5c',
+      skyBot: '#ff7b47',
+      sunTop: '#fff394',
+      sunBot: '#ff2975',
+      mountainFar: '#2d114d',
+      mountainNear: '#190830',
+      roadFill: '#120726',
+      gridColor: 'rgba(255, 77, 166, 0.48)',
+      curbGlow: '#00f6ff',
+      thrusterA: '#00f6ff',
+      thrusterB: '#ff2e93'
+    },
+    {
+      name: 'Neon Night',
+      icon: '🌃',
+      skyTop: '#040614',
+      skyMid: '#0d1b3e',
+      skyBot: '#1b3b6f',
+      sunTop: '#70f8ff',
+      sunBot: '#5c27fe',
+      mountainFar: '#0c1633',
+      mountainNear: '#060b1c',
+      roadFill: '#050814',
+      gridColor: 'rgba(0, 246, 255, 0.42)',
+      curbGlow: '#ff2e93',
+      thrusterA: '#5cfaff',
+      thrusterB: '#9d4edd'
+    },
+    {
+      name: 'Matcha Springs',
+      icon: '🎋',
+      skyTop: '#132a2e',
+      skyMid: '#2e6f65',
+      skyBot: '#f4d58d',
+      sunTop: '#fff9db',
+      sunBot: '#ff9f68',
+      mountainFar: '#1f4742',
+      mountainNear: '#112926',
+      roadFill: '#0e1f1d',
+      gridColor: 'rgba(136, 242, 184, 0.42)',
+      curbGlow: '#ffe066',
+      thrusterA: '#72efdd',
+      thrusterB: '#ff9f1c'
+    }
+  ];
+
+  // Scene State
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  let state = {
+    time: 0,
+    themeIndex: 0,
+    boost: false,
+    shadesOn: true,
+    speed: 1,
+    targetSpeed: 1,
+    roadScroll: 0,
+    yuzuCount: 12,
+    chillScore: 100,
+
+    // Pointer tracking (-1 to 1)
+    pointerX: 0,
+    pointerY: 0,
+    smoothX: 0,
+    smoothY: 0,
+    lastPointerMove: 0,
+
+    // Trick / Jump state
+    trickActive: false,
+    trickProgress: 0,
+    trickType: 0,
+
+    // Blink & ear twitch timers
+    blinkTimer: 2.4,
+    isBlinking: false,
+    earTwitchTimer: 1.8,
+    earTwitchAmount: 0,
+    chewPhase: 0
+  };
+
+  // World Arrays
+  const stars = [];
+  const clouds = [];
+  const skyline = [];
+  const thrusterParticles = [];
+  const sparkParticles = [];
+  const floatingTexts = [];
+  const roadSnacks = [];
+  const speedLines = [];
+
+  function initWorldObjects() {
+    stars.length = 0;
+    for (let i = 0; i < 85; i++) {
+      stars.push({
+        x: Math.random(),
+        y: Math.random() * 0.52,
+        r: Math.random() * 2 + 0.6,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    clouds.length = 0;
+    for (let i = 0; i < 7; i++) {
+      clouds.push({
+        x: Math.random() * 1.4 - 0.2,
+        y: 0.12 + Math.random() * 0.3,
+        w: 140 + Math.random() * 180,
+        h: 22 + Math.random() * 24,
+        speed: 0.015 + Math.random() * 0.025
+      });
+    }
+
+    skyline.length = 0;
+    let cx = 0;
+    while (cx < 2000) {
+      const bw = 35 + Math.random() * 65;
+      const bh = 30 + Math.random() * 115;
+      skyline.push({ x: cx, w: bw, h: bh, windows: Math.floor(Math.random() * 4) + 2 });
+      cx += bw + 6;
+    }
+
+    speedLines.length = 0;
+    for (let i = 0; i < 28; i++) {
+      speedLines.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        len: 80 + Math.random() * 180,
+        speed: 18 + Math.random() * 16,
+        alpha: 0.15 + Math.random() * 0.35
+      });
+    }
+
+    // Spawn initial floating yuzu snacks on the highway
+    roadSnacks.length = 0;
+    spawnRoadSnack(width * 0.85);
+    spawnRoadSnack(width * 1.35);
+  }
+
+  function spawnRoadSnack(customX) {
+    const laneOffset = (Math.random() - 0.5) * 90;
+    roadSnacks.push({
+      x: customX !== undefined ? customX : width + 120,
+      laneOffset,
+      bobPhase: Math.random() * Math.PI * 2,
+      collected: false,
+      scale: 1
+    });
+  }
+
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    worldCanvas.width = width * dpr;
+    worldCanvas.height = height * dpr;
+    wCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    fxCanvas.width = width * dpr;
+    fxCanvas.height = height * dpr;
+    fCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  initWorldObjects();
+
+  // Actions & Controls
+  function triggerTrick() {
+    if (state.trickActive) return;
+    state.trickActive = true;
+    state.trickProgress = 0;
+    state.trickType = (state.trickType + 1) % 2;
+    state.chillScore += 25;
+    chillReadout.textContent = `${state.chillScore}%`;
+
+    // Burst of celebratory stars around the board
+    const cx = width * 0.5 + state.smoothX * 95;
+    const cy = height * 0.54 + state.smoothY * 35;
+    for (let i = 0; i < 28; i++) {
+      const angle = (Math.PI * 2 * i) / 28 + Math.random() * 0.2;
+      const spd = 3 + Math.random() * 7;
+      sparkParticles.push({
+        x: cx,
+        y: cy + 30,
+        vx: Math.cos(angle) * spd,
+        vy: Math.sin(angle) * spd - 2,
+        size: 4 + Math.random() * 5,
+        color: i % 2 === 0 ? '#ffe066' : '#00f6ff',
+        life: 1,
+        decay: 0.02 + Math.random() * 0.015,
+        star: true
+      });
+    }
+
+    floatingTexts.push({
+      text: state.trickType === 0 ? '360° YUZU FLIP! +25 CHILL' : 'CAPY BARREL ROLL! +25 CHILL',
+      x: cx,
+      y: cy - 110,
+      vy: -1.6,
+      life: 1
+    });
+  }
+
+  function toggleBoost(forceState) {
+    state.boost = typeof forceState === 'boolean' ? forceState : !state.boost;
+    state.targetSpeed = state.boost ? 2.25 : 1.0;
+    btnBoost.classList.toggle('active', state.boost);
+  }
+
+  function toggleShades() {
+    state.shadesOn = !state.shadesOn;
+    cyberShades.style.transition = 'opacity 0.25s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    if (state.shadesOn) {
+      cyberShades.style.opacity = '1';
+      cyberShades.setAttribute('transform', 'translate(52, -24) scale(1)');
+    } else {
+      cyberShades.style.opacity = '0';
+      cyberShades.setAttribute('transform', 'translate(65, -44) scale(0.7)');
+    }
+    btnShades.classList.toggle('active', state.shadesOn);
+  }
+
+  function cycleTheme() {
+    state.themeIndex = (state.themeIndex + 1) % THEMES.length;
+    const t = THEMES[state.themeIndex];
+    themeLabel.textContent = `${t.icon} Theme: ${t.name}`;
+  }
+
+  function tossSnack() {
+    spawnRoadSnack(width + 60);
+    const cx = width * 0.5 + state.smoothX * 95;
+    const cy = height * 0.5 + state.smoothY * 35;
+    floatingTexts.push({
+      text: '🍊 YUZU INCOMING!',
+      x: cx + 120,
+      y: cy - 60,
+      vy: -1.3,
+      life: 1
+    });
+  }
+
+  // Event Listeners
+  btnTrick.addEventListener('click', (e) => { e.stopPropagation(); triggerTrick(); });
+  btnBoost.addEventListener('click', (e) => { e.stopPropagation(); toggleBoost(); });
+  btnShades.addEventListener('click', (e) => { e.stopPropagation(); toggleShades(); });
+  btnSnack.addEventListener('click', (e) => { e.stopPropagation(); tossSnack(); });
+  btnTheme.addEventListener('click', (e) => { e.stopPropagation(); cycleTheme(); });
+
+  window.addEventListener('pointermove', (e) => {
+    state.pointerX = (e.clientX / width) * 2 - 1;
+    state.pointerY = (e.clientY / height) * 2 - 1;
+    state.lastPointerMove = performance.now();
+  });
+
+  document.getElementById('scene-container').addEventListener('click', (e) => {
+    if (e.target.closest('.hud-bottom') || e.target.closest('.hud-top')) return;
+    triggerTrick();
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      triggerTrick();
+    } else if (e.key === 'b' || e.key === 'B' || e.key === 'Shift') {
+      toggleBoost();
+    } else if (e.key === 'v' || e.key === 'V') {
+      toggleShades();
+    } else if (e.key === 'y' || e.key === 'Y') {
+      tossSnack();
+    } else if (e.key === 't' || e.key === 'T') {
+      cycleTheme();
+    }
+  });
+
+  // Draw Background & Parallax World on worldCanvas
+  function drawWorld(dt) {
+    const theme = THEMES[state.themeIndex];
+    const horizonY = height * 0.62;
+
+    // 1. Sky Gradient
+    const skyGrad = wCtx.createLinearGradient(0, 0, 0, horizonY);
+    skyGrad.addColorStop(0, theme.skyTop);
+    skyGrad.addColorStop(0.55, theme.skyMid);
+    skyGrad.addColorStop(1, theme.skyBot);
+    wCtx.fillStyle = skyGrad;
+    wCtx.fillRect(0, 0, width, horizonY + 2);
+
+    // 2. Twinkling Stars
+    for (let i = 0; i < stars.length; i++) {
+      const s = stars[i];
+      const twinkle = 0.35 + 0.65 * Math.sin(state.time * 2.5 + s.phase);
+      wCtx.fillStyle = `rgba(255, 250, 235, ${twinkle * 0.85})`;
+      wCtx.beginPath();
+      wCtx.arc(s.x * width, s.y * height, s.r, 0, Math.PI * 2);
+      wCtx.fill();
+    }
+
+    // 3. Giant Synthwave Sun / Moon with Retro Scanline Cutouts
+    const sunRadius = Math.min(width, height) * 0.21;
+    const sunX = width * 0.5 - state.smoothX * 22;
+    const sunY = horizonY - sunRadius * 0.52;
+
+    wCtx.save();
+    const sunGlow = wCtx.createRadialGradient(sunX, sunY, sunRadius * 0.2, sunX, sunY, sunRadius * 1.65);
+    sunGlow.addColorStop(0, theme.sunTop);
+    sunGlow.addColorStop(0.5, theme.sunBot);
+    sunGlow.addColorStop(1, 'rgba(0,0,0,0)');
+    wCtx.fillStyle = sunGlow;
+    wCtx.globalAlpha = 0.45;
+    wCtx.beginPath();
+    wCtx.arc(sunX, sunY, sunRadius * 1.65, 0, Math.PI * 2);
+    wCtx.fill();
+    wCtx.globalAlpha = 1;
+
+    // Sun body clipped with horizontal retro bands
+    wCtx.beginPath();
+    for (let bandY = sunY - sunRadius; bandY < sunY + sunRadius; bandY += 14) {
+      const rel = (bandY - sunY) / sunRadius;
+      const gap = rel > 0.05 ? Math.min(9, (rel + 0.1) * 9) : 0;
+      wCtx.rect(sunX - sunRadius - 10, bandY, sunRadius * 2 + 20, 14 - gap);
+    }
+    wCtx.clip();
+
+    const sunFill = wCtx.createLinearGradient(sunX, sunY - sunRadius, sunX, sunY + sunRadius);
+    sunFill.addColorStop(0, theme.sunTop);
+    sunFill.addColorStop(1, theme.sunBot);
+    wCtx.fillStyle = sunFill;
+    wCtx.beginPath();
+    wCtx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+    wCtx.fill();
+    wCtx.restore();
+
+    // 4. Soft Drifting Clouds
+    wCtx.fillStyle = 'rgba(255, 215, 195, 0.14)';
+    for (const c of clouds) {
+      c.x -= c.speed * state.speed * dt * 0.5;
+      if (c.x < -0.3) c.x = 1.25;
+      const cx = c.x * width;
+      const cy = c.y * height;
+      wCtx.beginPath();
+      wCtx.roundRect(cx, cy, c.w, c.h, c.h * 0.5);
+      wCtx.fill();
+    }
+
+    // 5. Distant Mountain Range & Parallax Skyline
+    drawMountains(horizonY, 0.18, 95, theme.mountainFar, 1.1);
+    drawSkyline(horizonY, theme);
+    drawMountains(horizonY, 0.42, 52, theme.mountainNear, 2.3);
+
+    // 6. Highway Ground Plane & Perspective Neon Grid
+    const roadGrad = wCtx.createLinearGradient(0, horizonY, 0, height);
+    roadGrad.addColorStop(0, theme.roadFill);
+    roadGrad.addColorStop(1, '#04020a');
+    wCtx.fillStyle = roadGrad;
+    wCtx.fillRect(0, horizonY, width, height - horizonY);
+
+    // Horizon Neon Curb Line
+    wCtx.save();
+    wCtx.strokeStyle = theme.curbGlow;
+    wCtx.shadowColor = theme.curbGlow;
+    wCtx.shadowBlur = 16;
+    wCtx.lineWidth = 3;
+    wCtx.beginPath();
+    wCtx.moveTo(0, horizonY);
+    wCtx.lineTo(width, horizonY);
+    wCtx.stroke();
+    wCtx.restore();
+
+    // Perspective Grid Lines
+    wCtx.save();
+    wCtx.strokeStyle = theme.gridColor;
+    wCtx.lineWidth = 1.6;
+    const vanishX = width * 0.5 - state.smoothX * 60;
+    const roadH = height - horizonY;
+
+    // Radial perspective lines
+    for (let i = -12; i <= 12; i++) {
+      wCtx.beginPath();
+      wCtx.moveTo(vanishX + i * 28, horizonY);
+      wCtx.lineTo(vanishX + i * 195, height);
+      wCtx.stroke();
+    }
+
+    // Scrolling vertical/transverse grid lines
+    state.roadScroll = (state.roadScroll + dt * 380 * state.speed) % 60;
+    for (let d = 1; d <= 16; d++) {
+      const norm = ((d * 60 - state.roadScroll) / (16 * 60));
+      if (norm <= 0) continue;
+      // Exponential depth curve for realistic perspective speed
+      const y = horizonY + Math.pow(norm, 2.15) * roadH;
+      wCtx.globalAlpha = Math.min(1, norm * 1.4);
+      wCtx.beginPath();
+      wCtx.moveTo(0, y);
+      wCtx.lineTo(width, y);
+      wCtx.stroke();
+    }
+    wCtx.restore();
+
+    // 7. Ground Anti-Gravity Shadow & Neon Reflection directly under Hoverboard
+    const rigX = width * 0.5 + state.smoothX * 95;
+    const groundY = horizonY + (height - horizonY) * 0.44 + state.smoothY * 28;
+    const jumpHeight = state.trickActive ? Math.sin(state.trickProgress * Math.PI) * 145 : 0;
+    const shadowScale = Math.max(0.45, 1 - jumpHeight / 280);
+
+    wCtx.save();
+    // Dark contact shadow
+    wCtx.fillStyle = 'rgba(3, 1, 10, 0.68)';
+    wCtx.beginPath();
+    wCtx.ellipse(rigX, groundY, 215 * shadowScale, 28 * shadowScale, 0, 0, Math.PI * 2);
+    wCtx.fill();
+
+    // Neon plasma reflection on asphalt
+    const reflGrad = wCtx.createRadialGradient(rigX, groundY, 10, rigX, groundY, 210 * shadowScale);
+    reflGrad.addColorStop(0, state.boost ? 'rgba(255, 46, 147, 0.65)' : 'rgba(0, 246, 255, 0.55)');
+    reflGrad.addColorStop(0.55, 'rgba(255, 62, 157, 0.25)');
+    reflGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    wCtx.fillStyle = reflGrad;
+    wCtx.beginPath();
+    wCtx.ellipse(rigX, groundY, 230 * shadowScale, 36 * shadowScale, 0, 0, Math.PI * 2);
+    wCtx.fill();
+    wCtx.restore();
+
+    // 8. Collectible Floating Yuzus on Road
+    updateAndDrawRoadSnacks(dt, rigX, groundY);
+  }
+
+  function drawMountains(horizonY, speedFactor, maxH, color, freq) {
+    const scroll = state.time * 90 * speedFactor * state.speed;
+    wCtx.fillStyle = color;
+    wCtx.beginPath();
+    wCtx.moveTo(0, horizonY);
+    const step = 32;
+    for (let x = 0; x <= width + step; x += step) {
+      const wx = x + scroll;
+      const h =
+        Math.sin(wx * 0.0035 * freq) * (maxH * 0.55) +
+        Math.cos(wx * 0.008 * freq) * (maxH * 0.35) +
+        maxH * 0.6;
+      wCtx.lineTo(x, horizonY - Math.max(8, h));
+    }
+    wCtx.lineTo(width, horizonY);
+    wCtx.closePath();
+    wCtx.fill();
+  }
+
+  function drawSkyline(horizonY, theme) {
+    const scroll = (state.time * 48 * state.speed) % 2000;
+    wCtx.save();
+    wCtx.fillStyle = theme.mountainNear;
+    for (const b of skyline) {
+      let bx = (b.x - scroll) % 2000;
+      if (bx < -120) bx += 2000;
+      if (bx > width + 100) continue;
+      wCtx.fillRect(bx, horizonY - b.h, b.w, b.h);
+
+      // Glowing cyber windows
+      wCtx.fillStyle = 'rgba(255, 214, 112, 0.28)';
+      for (let wy = horizonY - b.h + 10; wy < horizonY - 12; wy += 14) {
+        wCtx.fillRect(bx + 7, wy, b.w - 14, 4);
+      }
+      wCtx.fillStyle = theme.mountainNear;
+    }
+    wCtx.restore();
+  }
+
+  function updateAndDrawRoadSnacks(dt, capyX, capyGroundY) {
+    for (let i = roadSnacks.length - 1; i >= 0; i--) {
+      const s = roadSnacks[i];
+      s.x -= dt * 390 * state.speed;
+      s.bobPhase += dt * 5;
+
+      const sy = capyGroundY - 52 + s.laneOffset * 0.45 + Math.sin(s.bobPhase) * 9;
+
+      // Check pickup distance with Capybara
+      const dx = s.x - (capyX + 95);
+      const dy = sy - (capyGroundY - 55);
+      if (!s.collected && Math.hypot(dx, dy) < 95) {
+        s.collected = true;
+        state.yuzuCount += 1;
+        state.chillScore += 10;
+        yuzuReadout.textContent = `🍊 ${state.yuzuCount}`;
+        chillReadout.textContent = `${state.chillScore}%`;
+        state.chewPhase = 1.2; // Happy munching animation!
+
+        floatingTexts.push({
+          text: '+1 YUZU! MUNCH~',
+          x: s.x,
+          y: sy - 25,
+          vy: -1.8,
+          life: 1
+        });
+
+        for (let k = 0; k < 14; k++) {
+          const ang = (Math.PI * 2 * k) / 14;
+          sparkParticles.push({
+            x: s.x,
+            y: sy,
+            vx: Math.cos(ang) * 4.5,
+            vy: Math.sin(ang) * 4.5,
+            size: 4.5,
+            color: '#ffd147',
+            life: 1,
+            decay: 0.035,
+            star: true
+          });
+        }
+      }
+
+      if (s.collected) {
+        s.scale -= dt * 6;
+      }
+
+      if (s.x < -80 || s.scale <= 0) {
+        roadSnacks.splice(i, 1);
+        if (roadSnacks.length < 2) {
+          spawnRoadSnack(width + 250 + Math.random() * 450);
+        }
+        continue;
+      }
+
+      // Draw glowing collectible Yuzu on road
+      wCtx.save();
+      wCtx.translate(s.x, sy);
+      wCtx.scale(s.scale, s.scale);
+
+      // Aura
+      wCtx.fillStyle = 'rgba(255, 212, 71, 0.28)';
+      wCtx.beginPath();
+      wCtx.arc(0, 0, 26, 0, Math.PI * 2);
+      wCtx.fill();
+
+      // Yuzu fruit
+      wCtx.fillStyle = '#ffbe2e';
+      wCtx.strokeStyle = '#6e3800';
+      wCtx.lineWidth = 2.2;
+      wCtx.beginPath();
+      wCtx.ellipse(0, 0, 16, 13, 0, 0, Math.PI * 2);
+      wCtx.fill();
+      wCtx.stroke();
+
+      // Green leaf
+      wCtx.fillStyle = '#38d962';
+      wCtx.beginPath();
+      wCtx.ellipse(5, -13, 7, 4, -0.4, 0, Math.PI * 2);
+      wCtx.fill();
+      wCtx.restore();
+    }
+  }
+
+  // Update Capybara & Hoverboard Articulated SVG Rig
+  function updateCapybaraRig(dt) {
+    // Autonomous gentle weaving if user hasn't moved mouse recently
+    if (performance.now() - state.lastPointerMove > 2600) {
+      state.pointerX = Math.sin(state.time * 0.75) * 0.42;
+      state.pointerY = Math.cos(state.time * 1.1) * 0.25;
+    }
+
+    state.smoothX += (state.pointerX - state.smoothX) * Math.min(1, dt * 6);
+    state.smoothY += (state.pointerY - state.smoothY) * Math.min(1, dt * 6);
+    state.speed += (state.targetSpeed - state.speed) * Math.min(1, dt * 4);
+
+    // Update Speedometer Readout
+    const mph = Math.round(88 * state.speed + Math.sin(state.time * 7) * 2);
+    speedReadout.textContent = `${mph} MPH`;
+
+    // Harmonic Hover Oscillation
+    const hoverBob = Math.sin(state.time * 4.4) * 11 + Math.cos(state.time * 8.8) * 2.5;
+    const carveTilt = state.smoothX * 9 + Math.cos(state.time * 4.4) * 2.4 - (state.boost ? 4.5 : 0);
+
+    // Trick / Jump Calculation
+    let jumpY = 0;
+    let trickRotation = 0;
+    let yuzuPopY = 0;
+    let yuzuRot = 0;
+    let birdPopY = 0;
+
+    if (state.trickActive) {
+      state.trickProgress += dt * 1.55;
+      if (state.trickProgress >= 1) {
+        state.trickActive = false;
+        state.trickProgress = 0;
+      } else {
+        const p = state.trickProgress;
+        jumpY = -Math.sin(p * Math.PI) * 135;
+        // Smooth ease-in-out 360 spin
+        const ease = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+        trickRotation = ease * 360 * (state.trickType === 0 ? -1 : 1);
+        // Yuzu and bird float slightly higher during peak of flip!
+        yuzuPopY = -Math.sin(p * Math.PI) * 36;
+        yuzuRot = ease * 360;
+        birdPopY = -Math.sin(p * Math.PI) * 28;
+      }
+    }
+
+    // Position the entire wrapper slightly with pointer
+    const wrapper = document.getElementById('capy-rig-wrapper');
+    const offsetX = state.smoothX * 95;
+    const offsetY = state.smoothY * 32;
+    wrapper.style.transform = `translate3d(${offsetX.toFixed(1)}px, ${offsetY.toFixed(1)}px, 0)`;
+
+    // Apply Hover & Trick Transform to SVG Root
+    const totalY = 300 + hoverBob + jumpY;
+    const totalRot = carveTilt + trickRotation;
+    rigRoot.setAttribute('transform', `translate(350, ${totalY.toFixed(2)}) rotate(${totalRot.toFixed(2)})`);
+
+    // Subtle suspension compression between Capybara and Hoverboard
+    const kneeFlex = Math.sin(state.time * 4.4 - 0.5) * 3.5;
+    capybaraGroup.setAttribute('transform', `translate(-10, ${kneeFlex.toFixed(2)})`);
+
+    // Head bob, chew animation & serene nod
+    let headPitch = Math.sin(state.time * 4.4 + 0.6) * 2.2 + (state.boost ? 3.5 : 0);
+    if (state.chewPhase > 0) {
+      state.chewPhase = Math.max(0, state.chewPhase - dt);
+      headPitch += Math.sin(state.time * 28) * 3.2;
+      capyBlush.setAttribute('opacity', '0.68');
+    } else {
+      capyBlush.setAttribute('opacity', '0.32');
+    }
+    capyHead.setAttribute('transform', `translate(86, ${(-138 + kneeFlex * 0.4).toFixed(2)}) rotate(${headPitch.toFixed(2)})`);
+
+    // Yuzu Hat balance physics
+    const yuzuWobble = Math.sin(state.time * 5.5) * 4 + yuzuRot;
+    const yuzuBob = Math.abs(Math.cos(state.time * 4.4)) * -3 + yuzuPopY;
+    yuzuHat.setAttribute('transform', `translate(32, ${(-74 + yuzuBob).toFixed(2)}) rotate(${yuzuWobble.toFixed(2)})`);
+
+    // Bird Buddy physics on rump
+    const birdBob = Math.sin(state.time * 6.2 + 1) * 3 + birdPopY;
+    const birdTilt = Math.cos(state.time * 5) * 5;
+    birdBuddy.setAttribute('transform', `translate(-112, ${(-148 + birdBob).toFixed(2)}) rotate(${birdTilt.toFixed(2)})`);
+
+    // Procedural Wind-Whipped Scarf Path Morphing
+    const windFreq = state.time * (state.boost ? 18 : 11);
+    const w1 = Math.sin(windFreq) * (state.boost ? 22 : 13);
+    const w2 = Math.cos(windFreq - 1.3) * (state.boost ? 32 : 18);
+    const w3 = Math.sin(windFreq - 2.4) * (state.boost ? 26 : 15);
+
+    scarfPrimary.setAttribute(
+      'd',
+      `M 48,-52 C -20,${(-58 + w1).toFixed(1)} -95,${(-30 + w2).toFixed(1)} -168,${(-44 - w1).toFixed(1)} ` +
+      `C -215,${(-54 + w3).toFixed(1)} -255,${(-34 + w2).toFixed(1)} -298,${(-46 + w3).toFixed(1)} ` +
+      `L -282,${(-14 + w3).toFixed(1)} ` +
+      `C -235,${(-6 + w2).toFixed(1)} -195,${(-26 - w1).toFixed(1)} -148,${(-16 + w2).toFixed(1)} ` +
+      `C -80,${(-2 + w1).toFixed(1)} -18,-26 48,-24 Z`
+    );
+
+    scarfSecondary.setAttribute(
+      'd',
+      `M 42,-58 C -25,${(-68 - w1).toFixed(1)} -95,${(-45 + w3).toFixed(1)} -165,${(-62 + w2).toFixed(1)} ` +
+      `C -205,${(-72 - w2).toFixed(1)} -245,${(-55 + w1).toFixed(1)} -278,${(-68 - w3).toFixed(1)} ` +
+      `L -265,${(-40 - w3).toFixed(1)} ` +
+      `C -225,${(-32 + w1).toFixed(1)} -185,${(-48 - w2).toFixed(1)} -145,${(-38 + w3).toFixed(1)} ` +
+      `C -85,-22 -20,-42 42,-36 Z`
+    );
+
+    // Periodic Chill Blinking
+    state.blinkTimer -= dt;
+    if (state.blinkTimer <= 0) {
+      if (!state.isBlinking) {
+        state.isBlinking = true;
+        state.blinkTimer = 0.16; // Duration of closed eye
+        upperEyelid.setAttribute('d', 'M -14,7 Q 0,10 14,7 L 14,-11 L -14,-11 Z');
+        eyelidLine.setAttribute('d', 'M -14,5 Q 1,9 15,5');
+      } else {
+        state.isBlinking = false;
+        state.blinkTimer = 2.6 + Math.random() * 3.2;
+        upperEyelid.setAttribute('d', 'M -14,-3 Q 0,-9 14,-2 L 14,-11 L -14,-11 Z');
+        eyelidLine.setAttribute('d', 'M -14,-2 Q 1,-7 15,-1');
+      }
+    }
+
+    // Periodic Cute Ear Flick
+    state.earTwitchTimer -= dt;
+    if (state.earTwitchTimer <= 0) {
+      state.earTwitchAmount = 1;
+      state.earTwitchTimer = 1.8 + Math.random() * 2.8;
+    }
+    if (state.earTwitchAmount > 0) {
+      state.earTwitchAmount = Math.max(0, state.earTwitchAmount - dt * 6);
+    }
+    const earAngle = -Math.sin(state.earTwitchAmount * Math.PI * 2) * 18 - (state.boost ? 14 : 0);
+    earNear.setAttribute('transform', `translate(-14, -52) rotate(${earAngle.toFixed(1)})`);
+    earFar.setAttribute('transform', `translate(18, -56) rotate(${(earAngle * 0.7).toFixed(1)})`);
+
+    // Hoverboard Anti-Gravity Repulsor Rings Pulse
+    const pulse1 = (state.time * 2.2) % 1;
+    const pulse2 = (state.time * 2.2 + 0.5) % 1;
+
+    waveRear.setAttribute('rx', (32 + pulse1 * 42).toFixed(1));
+    waveRear.setAttribute('ry', (8 + pulse1 * 11).toFixed(1));
+    waveRear.setAttribute('cy', (38 + pulse1 * 28).toFixed(1));
+    waveRear.setAttribute('opacity', ((1 - pulse1) * 0.75).toFixed(2));
+
+    waveFront.setAttribute('rx', (32 + pulse1 * 42).toFixed(1));
+    waveFront.setAttribute('ry', (8 + pulse1 * 11).toFixed(1));
+    waveFront.setAttribute('cy', (38 + pulse1 * 28).toFixed(1));
+    waveFront.setAttribute('opacity', ((1 - pulse1) * 0.75).toFixed(2));
+
+    waveRear2.setAttribute('rx', (32 + pulse2 * 42).toFixed(1));
+    waveRear2.setAttribute('ry', (8 + pulse2 * 11).toFixed(1));
+    waveRear2.setAttribute('cy', (38 + pulse2 * 28).toFixed(1));
+    waveRear2.setAttribute('opacity', ((1 - pulse2) * 0.65).toFixed(2));
+
+    waveFront2.setAttribute('rx', (32 + pulse2 * 42).toFixed(1));
+    waveFront2.setAttribute('ry', (8 + pulse2 * 11).toFixed(1));
+    waveFront2.setAttribute('cy', (38 + pulse2 * 28).toFixed(1));
+    waveFront2.setAttribute('opacity', ((1 - pulse2) * 0.65).toFixed(2));
+
+    // Animated Sequential Side Chevrons
+    const activeChev = Math.floor(state.time * 10 * state.speed) % chevrons.length;
+    chevrons.forEach((el, idx) => {
+      const dist = (idx - activeChev + chevrons.length) % chevrons.length;
+      el.setAttribute('fill', dist === 0 ? '#00f6ff' : dist === 1 ? '#ff3e9d' : '#fff3a1');
+      el.setAttribute('opacity', dist <= 1 ? '1' : '0.45');
+    });
+  }
+
+  // Foreground FX Canvas: Thruster Plasma Jet, Sparks & Speed Lines
+  function updateAndDrawFX(dt) {
+    fCtx.clearRect(0, 0, width, height);
+    const theme = THEMES[state.themeIndex];
+
+    // Get exact screen coordinates of Hoverboard thrusters for pixel-locked exhaust
+    const rearRect = thrusterRearCore.getBoundingClientRect();
+    const frontRect = thrusterFrontCore.getBoundingClientRect();
+
+    const emitPoints = [
+      { x: rearRect.left + rearRect.width * 0.5, y: rearRect.top + rearRect.height * 0.5, main: true },
+      { x: frontRect.left + frontRect.width * 0.5, y: frontRect.top + frontRect.height * 0.5, main: false }
+    ];
+
+    // Spawn new plasma exhaust particles
+    const countPerFrame = state.boost ? 5 : 3;
+    for (const pt of emitPoints) {
+      for (let i = 0; i < countPerFrame; i++) {
+        thrusterParticles.push({
+          x: pt.x + (Math.random() - 0.5) * 26,
+          y: pt.y + (Math.random() - 0.5) * 8,
+          vx: -(6 + Math.random() * 7) * state.speed,
+          vy: (Math.random() - 0.35) * 2.2,
+          r: (pt.main ? 10 : 7) + Math.random() * 8,
+          color: Math.random() > 0.38 ? theme.thrusterA : theme.thrusterB,
+          life: 1,
+          decay: 0.032 + Math.random() * 0.025
+        });
+      }
+    }
+
+    // Render plasma trail with additive glow
+    fCtx.save();
+    fCtx.globalCompositeOperation = 'lighter';
+    for (let i = thrusterParticles.length - 1; i >= 0; i--) {
+      const p = thrusterParticles[i];
+      p.x += p.vx * dt * 60;
+      p.y += p.vy * dt * 60;
+      p.life -= p.decay * dt * 60;
+
+      if (p.life <= 0) {
+        thrusterParticles.splice(i, 1);
+        continue;
+      }
+
+      const radius = Math.max(1, p.r * p.life);
+      const grad = fCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius * 1.6);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.35, p.color);
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+      fCtx.fillStyle = grad;
+      fCtx.globalAlpha = p.life * 0.85;
+      fCtx.beginPath();
+      fCtx.arc(p.x, p.y, radius * 1.6, 0, Math.PI * 2);
+      fCtx.fill();
+    }
+    fCtx.restore();
+
+    // Render Trick & Snack Star Particles
+    for (let i = sparkParticles.length - 1; i >= 0; i--) {
+      const s = sparkParticles[i];
+      s.x += s.vx * dt * 60;
+      s.y += s.vy * dt * 60;
+      s.vy += 0.12 * dt * 60;
+      s.life -= s.decay * dt * 60;
+
+      if (s.life <= 0) {
+        sparkParticles.splice(i, 1);
+        continue;
+      }
+
+      fCtx.save();
+      fCtx.translate(s.x, s.y);
+      fCtx.rotate(state.time * 6 + i);
+      fCtx.globalAlpha = Math.max(0, s.life);
+      fCtx.fillStyle = s.color;
+      drawStar(fCtx, 0, 0, 4, s.size, s.size * 0.42);
+      fCtx.restore();
+    }
+
+    // Render Hyper-Boost Anime Speed Lines
+    if (state.speed > 1.25) {
+      const boostAlpha = Math.min(1, (state.speed - 1.2) * 0.9);
+      fCtx.save();
+      fCtx.strokeStyle = '#ffffff';
+      fCtx.lineWidth = 2;
+      for (const sl of speedLines) {
+        sl.x -= sl.speed * state.speed * dt * 60;
+        if (sl.x + sl.len < 0) {
+          sl.x = width + Math.random() * 200;
+          sl.y = Math.random() * height;
+        }
+        fCtx.globalAlpha = sl.alpha * boostAlpha;
+        fCtx.beginPath();
+        fCtx.moveTo(sl.x, sl.y);
+        fCtx.lineTo(sl.x + sl.len, sl.y);
+        fCtx.stroke();
+      }
+      fCtx.restore();
+    }
+
+    // Render Floating Score Popups
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+      const ft = floatingTexts[i];
+      ft.y += ft.vy * dt * 60;
+      ft.life -= 0.018 * dt * 60;
+      if (ft.life <= 0) {
+        floatingTexts.splice(i, 1);
+        continue;
+      }
+      fCtx.save();
+      fCtx.font = '800 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      fCtx.textAlign = 'center';
+      fCtx.globalAlpha = Math.min(1, ft.life * 1.4);
+      fCtx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      fCtx.shadowBlur = 8;
+      fCtx.fillStyle = '#ffe373';
+      fCtx.fillText(ft.text, ft.x, ft.y);
+      fCtx.restore();
+    }
+  }
+
+  function drawStar(ctx, cx, cy, spikes, outerR, innerR) {
+    let rot = (Math.PI / 2) * 3;
+    let x = cx;
+    let y = cy;
+    const step = Math.PI / spikes;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - outerR);
+    for (let i = 0; i < spikes; i++) {
+      x = cx + Math.cos(rot) * outerR;
+      y = cy + Math.sin(rot) * outerR;
+      ctx.lineTo(x, y);
+      rot += step;
+
+      x = cx + Math.cos(rot) * innerR;
+      y = cy + Math.sin(rot) * innerR;
+      ctx.lineTo(x, y);
+      rot += step;
+    }
+    ctx.lineTo(cx, cy - outerR);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Main 60fps Animation Loop
+  let lastTime = performance.now();
+  function animate(now) {
+    const dt = Math.min(0.05, (now - lastTime) / 1000);
+    lastTime = now;
+    state.time += dt;
+
+    updateCapybaraRig(dt);
+    drawWorld(dt);
+    updateAndDrawFX(dt);
+
+    requestAnimationFrame(animate);
+  }
+
+  requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>

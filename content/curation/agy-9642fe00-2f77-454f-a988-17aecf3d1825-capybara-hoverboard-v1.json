@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "run_id": "agy-9642fe00-2f77-454f-a988-17aecf3d1825-capybara-hoverboard-v1",
-  "published_at": "2026-10-20T03:43:11Z",
-  "visible": true,
-  "preview_allowed": true,
-  "preview_disabled_reason": null,
+  "published_at": null,
+  "visible": false,
+  "preview_allowed": false,
+  "preview_disabled_reason": "Unpublished at curator direction.",
   "observations": [
     "Despite running inside a coding-agent harness, the model completed the challenge in a single zero-tool turn and returned raw HTML without markdown fences or prose.",
     "The 1,630-line (58,361-byte) response uses a 3-layer hybrid architecture: a background 2D canvas for parallax scenery, an articulated inline SVG rig for the capybara and hoverboard, and a foreground 2D canvas for particle effects.",
@@ -13,7 +13,7 @@
     "The response is self-contained with no external assets, libraries, fonts, network calls, or audio, and uses Math.random for scenery, particles, and autonomous trick timing.",
     "Recorded usage totals 37,171 tokens (8,952 input, 0 cached, and 28,219 output including 5,200 thinking tokens); model time is null because the session records thinking duration and step timestamps rather than assistant durationMs."
   ],
-  "series_publication_complete": true,
+  "series_publication_complete": false,
   "series_incomplete_reason": null,
   "thumbnail": {
     "path": "thumbnails/agy-9642fe00-2f77-454f-a988-17aecf3d1825-capybara-hoverboard-v1.png",
