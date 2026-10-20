@@ -300,7 +300,33 @@ test("run pages and challenge evidence exist without a SPA fallback", async (t) 
     /<meta property="og:image" content="http:\/\/127\.0\.0\.1:4173\/assets\/og-card\.png">/,
   );
   assert.match(html, /<meta property="article:published_time" content="2026-10-09T00:00:00Z">/);
-  assert.doesNotMatch(notFound, /property="og:|name="twitter:/);
+  assert.match(
+    html,
+    /<link rel="alternate" type="text\/plain" href="\/llms\.txt" title="LLM summary and evidence index">/,
+  );
+  assert.match(
+    html,
+    /<link rel="alternate" type="application\/json" href="\/assets\/runs\.json" title="Published runs catalogue \(JSON\)">/,
+  );
+  assert.match(
+    html,
+    /<link rel="alternate" type="application\/json" href="\/evidence\/runs\/fixture-animation\/run\.json" title="Recorded run metadata \(JSON\)">/,
+  );
+  assert.match(
+    html,
+    /<link rel="alternate" type="text\/plain" href="\/evidence\/runs\/fixture-animation\/output\.html\.txt" title="Extracted HTML source">/,
+  );
+  const llms = await readFile(join(out, "gallery/llms.txt"), "utf8");
+  assert.match(llms, /^# Capyboard\n/m);
+  assert.match(
+    llms,
+    /\[Published Runs Catalogue \(JSON\)\]\(http:\/\/127\.0\.0\.1:4173\/assets\/runs\.json\)/,
+  );
+  assert.match(
+    llms,
+    /\[animation\]\(http:\/\/127\.0\.0\.1:4173\/runs\/fixture-animation\/\) \(`fixture-animation`, Development fixture, one-shot, Development harness \(low effort\);/,
+  );
+  assert.doesNotMatch(notFound, /property="og:|name="twitter:|rel="alternate"/);
   assert.match(
     await readFile(join(out, "gallery/challenge/index.html"), "utf8"),
     /<meta name="description" content="Read the exact Capybara on a Hoverboard HTML, CSS, and JavaScript prompt, collection protocol, interpretation limits, and restricted preview policy\.">/,
@@ -763,6 +789,8 @@ test("an empty collection builds honest production and local galleries", async (
   assert.match(sitemap, /<loc>https:\/\/gallery\.example\/<\/loc>/);
   assert.match(sitemap, /<loc>https:\/\/gallery\.example\/challenge\/<\/loc>/);
   assert.match(sitemap, /<loc>https:\/\/gallery\.example\/compare\/<\/loc>/);
+  const llms = await readFile(join(out, "gallery/llms.txt"), "utf8");
+  assert.match(llms, /No experiments published yet\./);
   await buildSite({
     root: content,
     out,

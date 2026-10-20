@@ -18,6 +18,13 @@ interface Props {
       }
     | undefined;
   publishedAt?: string | null | undefined;
+  alternateLinks?:
+    | Array<{
+        href: string;
+        type: string;
+        title: string;
+      }>
+    | undefined;
   fixtures: boolean;
   section: "gallery" | "challenge" | "run" | "compare" | "not-found";
   preloadImage?: string | undefined;
@@ -30,6 +37,7 @@ const {
   ogType = "website",
   ogImage,
   publishedAt,
+  alternateLinks = [],
   fixtures,
   section,
   preloadImage,
@@ -96,6 +104,26 @@ const metaImageAlt = cleanMetaText(resolvedOgImage.alt);
         <meta name="twitter:description" content={metaDescription} />
         <meta name="twitter:image" content={ogImageUrl} />
         <meta name="twitter:image:alt" content={metaImageAlt} />
+        <link
+          rel="alternate"
+          type="text/plain"
+          href="/llms.txt"
+          title="LLM summary and evidence index"
+        />
+        <link
+          rel="alternate"
+          type="application/json"
+          href="/assets/runs.json"
+          title="Published runs catalogue (JSON)"
+        />
+        {alternateLinks.map((link) => (
+          <link
+            rel="alternate"
+            type={link.type}
+            href={link.href}
+            title={cleanMetaText(link.title)}
+          />
+        ))}
       </>
     )}
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />

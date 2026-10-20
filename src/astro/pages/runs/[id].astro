@@ -76,6 +76,32 @@ const description = `Inspect ${run.model.display_name} (${run.provider}, ${run.g
       : undefined
   }
   publishedAt={curation.published_at}
+  alternateLinks={[
+    {
+      href: `/evidence/runs/${run.id}/run.json`,
+      type: "application/json",
+      title: "Recorded run metadata (JSON)",
+    },
+    {
+      href: `/evidence/curation/${run.id}.json`,
+      type: "application/json",
+      title: "Curator publication record (JSON)",
+    },
+    {
+      href: `/evidence/${run.artifacts.response.path}`,
+      type: "text/plain",
+      title: "Original model response",
+    },
+    ...(run.artifacts.html
+      ? [
+          {
+            href: `/evidence/${run.artifacts.html.path}`,
+            type: "text/plain",
+            title: "Extracted HTML source",
+          },
+        ]
+      : []),
+  ]}
   fixtures={fixtures}
   section="run"
   preloadImage={curation.thumbnail ? `/${curation.thumbnail.path}` : undefined}

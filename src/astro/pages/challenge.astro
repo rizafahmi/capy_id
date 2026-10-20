@@ -10,6 +10,11 @@ const { challenges, fixtures } = __CAPYBOARD_ASTRO_PAGES__.challenge;
 <Shell
   title="The challenge"
   description="Read the exact Capybara on a Hoverboard HTML, CSS, and JavaScript prompt, collection protocol, interpretation limits, and restricted preview policy."
+  alternateLinks={challenges.map((challenge) => ({
+    href: `/evidence/${challenge.prompt_path}`,
+    type: "text/plain",
+    title: `${challenge.title} prompt (${challenge.id})`,
+  }))}
   fixtures={fixtures}
   section="challenge"
 >

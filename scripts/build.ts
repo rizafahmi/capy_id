@@ -69,6 +69,55 @@ function buildSitemap(siteOrigin: string, entries: PublishedEntry[]): string {
     .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
 }
+function buildLlmsTxt(
+  siteOrigin: string,
+  challenges: ChallengePrompt[],
+  entries: PublishedEntry[],
+): string {
+  const challengeLines = challenges.map(
+    (challenge) =>
+      `- [${challenge.title} (${challenge.id})](${siteOrigin}/evidence/${challenge.prompt_path}): SHA-256 \`${challenge.prompt_sha256}\``,
+  );
+  const runLines =
+    entries.length === 0
+      ? ["No experiments published yet."]
+      : entries.map((entry) => {
+          const { run, curation, measurementRows: rows } = entry;
+          const harness = run.generation.harness
+            ? `${run.generation.harness.name}${run.generation.harness.effort ? ` (${run.generation.harness.effort} effort)` : ""}`
+            : "Unknown harness";
+          const metrics = rows.map(([label, value]) => `${label}: ${value}`).join(", ");
+          const observation = curation.observations[0] ? ` — ${curation.observations[0]}` : "";
+          const htmlLink = run.artifacts.html
+            ? `, [HTML source](${siteOrigin}/evidence/${run.artifacts.html.path})`
+            : "";
+          return `- [${run.model.display_name}](${siteOrigin}/runs/${encodeURIComponent(run.id)}/) (\`${run.id}\`, ${run.provider}, ${run.generation.mode}, ${harness}; ${metrics})${observation}\n  Evidence: [run.json](${siteOrigin}/evidence/runs/${run.id}/run.json), [curation.json](${siteOrigin}/evidence/curation/${run.id}.json), [transcript.json](${siteOrigin}/evidence/${run.instructions.transcript_path}), [response.txt](${siteOrigin}/evidence/${run.artifacts.response.path})${htmlLink}`;
+        });
+  return [
+    "# Capyboard",
+    "",
+    "> A curated, inspectable gallery of AI model responses to one HTML, CSS, and JavaScript coding challenge: animate a capybara on a hoverboard. Not a model leaderboard.",
+    "",
+    "Capyboard preserves each collected AI model attempt alongside its exact prompt, recorded generation conditions, token and timing metrics, SHA-256 artifact digests, and qualitative curator observations.",
+    "",
+    "## Key Pages & Machine-Readable Endpoints",
+    "",
+    `- [Gallery](${siteOrigin}/): Browse and filter all published model attempts.`,
+    `- [The Challenge & Protocol](${siteOrigin}/challenge/): Exact prompt text, SHA-256 checksums, collection protocol, and restricted preview policy.`,
+    `- [Side-by-Side Comparison](${siteOrigin}/compare/): Compare any two published runs across equal 4:3 viewports and recorded metrics.`,
+    `- [Published Runs Catalogue (JSON)](${siteOrigin}/assets/runs.json): Machine-readable JSON catalogue of all published runs, measurements, curator observations, and evidence URLs.`,
+    `- [Sitemap (XML)](${siteOrigin}/sitemap.xml): Canonical URL index.`,
+    "",
+    "## Challenge Prompts",
+    "",
+    ...challengeLines,
+    "",
+    "## Published Runs",
+    "",
+    ...runLines,
+    "",
+  ].join("\n");
+}
 export async function buildSite(options: {
   root: string;
   out: string;
@@ -259,6 +308,7 @@ export async function buildSite(options: {
         : `User-agent: *\nAllow: /\nSitemap: ${galleryOrigin}/sitemap.xml\n`,
     );
     await put("gallery/sitemap.xml", buildSitemap(galleryOrigin, activeEntries));
+    await put("gallery/llms.txt", buildLlmsTxt(galleryOrigin, challenges, activeEntries));
     await put("preview/_headers", headerFile("preview", previewOrigin));
     await put("preview/robots.txt", "User-agent: *\nDisallow: /\n");
     await put(
