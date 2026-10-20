@@ -67,6 +67,14 @@ const resolvedOgImage = ogImage ?? {
 };
 const ogImageUrl = `${origin}${resolvedOgImage.path}`;
 const metaImageAlt = cleanMetaText(resolvedOgImage.alt);
+const mainSchemaType =
+  section === "gallery"
+    ? "https://schema.org/CollectionPage"
+    : section === "run"
+      ? "https://schema.org/TechArticle"
+      : section === "not-found"
+        ? undefined
+        : "https://schema.org/WebPage";
 ---
 
 <!doctype html>
@@ -184,7 +192,11 @@ const metaImageAlt = cleanMetaText(resolvedOgImage.alt);
         experiments.
       </div>
     )}
-    <main id="main">
+    <main
+      id="main"
+      itemscope={Boolean(mainSchemaType)}
+      itemtype={mainSchemaType}
+    >
       <slot />
     </main>
     <footer class="site-footer">

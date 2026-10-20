@@ -34,6 +34,9 @@ const url = `/runs/${run.id}/`;
 
 <article
   class="card"
+  itemscope
+  itemtype="https://schema.org/CreativeWork"
+  itemprop="hasPart"
   data-card={run.id}
   data-provider={run.provider}
   data-name={run.model.display_name}
@@ -54,7 +57,9 @@ const url = `/runs/${run.id}/`;
     </div>
     <div class="card-title">
       <h3>
-        <a href={url}>{run.model.display_name}</a>
+        <a href={url} itemprop="url">
+          {run.model.display_name}
+        </a>
       </h3>
       <p class="card-effort">{effortLabel}</p>
     </div>

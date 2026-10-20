@@ -39,7 +39,9 @@ const { challenges, fixtures } = __CAPYBOARD_ASTRO_PAGES__.challenge;
       >
         Copy prompt
       </button>
-      <p class="checksum">SHA-256 {challenge.prompt_sha256}</p>
+      <p class="checksum" itemprop="sha256">
+        SHA-256 {challenge.prompt_sha256}
+      </p>
     </section>
   ))}
   <section class="prose">

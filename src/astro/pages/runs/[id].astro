@@ -110,6 +110,14 @@ const description = `Inspect ${run.model.display_name} (${run.provider}, ${run.g
     ← All attempts
   </a>
   <header class="run-heading run-overview">
+    <meta itemprop="identifier" content={run.id} />
+    {run.generated_at && (
+      <meta itemprop="dateCreated" content={run.generated_at} />
+    )}
+    {curation.published_at && (
+      <meta itemprop="datePublished" content={curation.published_at} />
+    )}
+    <link itemprop="isBasedOn" href={`/challenge/#${run.challenge_id}`} />
     <p class="eyebrow">
       {run.provider} · {run.generation.mode}
     </p>
@@ -155,7 +163,11 @@ const description = `Inspect ${run.model.display_name} (${run.provider}, ${run.g
     </section>
   </div>
   {curation.observations.length > 0 && (
-    <section class="run-insights" aria-labelledby="run-insights-title">
+    <section
+      class="run-insights"
+      itemprop="description"
+      aria-labelledby="run-insights-title"
+    >
       <div class="insight-heading">
         <div>
           <p class="eyebrow">Curator's read</p>

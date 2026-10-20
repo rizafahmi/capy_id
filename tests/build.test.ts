@@ -49,6 +49,8 @@ test("redesign ships local imagery and fonts without widening preview permission
   assert.match(html, /<meta property="og:image:width" content="1200">/);
   assert.match(html, /<meta property="og:image:height" content="630">/);
   assert.match(html, /<meta name="twitter:card" content="summary_large_image">/);
+  assert.match(html, /<main id="main" itemscope itemtype="https:\/\/schema\.org\/CollectionPage">/);
+  assert.match(html, /itemtype="https:\/\/schema\.org\/CreativeWork" itemprop="hasPart"/);
   assert.match(await readFile(join(out, "gallery/_headers"), "utf8"), /font-src 'self'/);
   assert.match(
     await readFile(join(out, "gallery/_headers"), "utf8"),
@@ -326,7 +328,11 @@ test("run pages and challenge evidence exist without a SPA fallback", async (t) 
     llms,
     /\[animation\]\(http:\/\/127\.0\.0\.1:4173\/runs\/fixture-animation\/\) \(`fixture-animation`, Development fixture, one-shot, Development harness \(low effort\);/,
   );
-  assert.doesNotMatch(notFound, /property="og:|name="twitter:|rel="alternate"/);
+  assert.match(html, /<main id="main" itemscope itemtype="https:\/\/schema\.org\/TechArticle">/);
+  assert.match(html, /<meta itemprop="dateCreated" content="2026-10-08T12:00:00Z">/);
+  assert.match(html, /<meta itemprop="datePublished" content="2026-10-09T00:00:00Z">/);
+  assert.match(html, /<link itemprop="isBasedOn" href="\/challenge\/#capybara-hoverboard-v1">/);
+  assert.doesNotMatch(notFound, /property="og:|name="twitter:|rel="alternate"|itemscope/);
   assert.match(
     await readFile(join(out, "gallery/challenge/index.html"), "utf8"),
     /<meta name="description" content="Read the exact Capybara on a Hoverboard HTML, CSS, and JavaScript prompt, collection protocol, interpretation limits, and restricted preview policy\.">/,
