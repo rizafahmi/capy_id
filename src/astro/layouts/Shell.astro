@@ -1,11 +1,19 @@
 ---
 interface Props {
   title: string;
+  description?: string | undefined;
   fixtures: boolean;
   section: "gallery" | "challenge" | "run" | "compare" | "not-found";
   preloadImage?: string | undefined;
 }
-const { title, fixtures, section, preloadImage } = Astro.props;
+const {
+  title,
+  description = "A curated, inspectable gallery of AI model responses to one HTML, CSS, and JavaScript coding challenge: animate a capybara on a hoverboard. Not a model leaderboard.",
+  fixtures,
+  section,
+  preloadImage,
+} = Astro.props;
+const metaDescription = description.replaceAll(/[<>]/g, "");
 ---
 
 <!doctype html>
@@ -14,10 +22,7 @@ const { title, fixtures, section, preloadImage } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
-    <meta
-      name="description"
-      content="A curated, inspectable gallery of model responses to one creative coding challenge. Not a model leaderboard."
-    />
+    <meta name="description" content={metaDescription} />
     <title>{title} · Capyboard</title>
     <link rel="icon" href="/assets/favicon.png" type="image/png" />
     <link

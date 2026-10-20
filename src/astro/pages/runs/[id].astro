@@ -50,10 +50,18 @@ const timingNote =
     : run.generation.metrics?.time?.kind === "elapsed"
       ? "Elapsed time covers the recorded attempt."
       : "Timing was not recorded.";
+const harnessDescription = run.generation.harness
+  ? ` with ${run.generation.harness.name}${run.generation.harness.effort ? ` (${run.generation.harness.effort} effort)` : ""}`
+  : "";
+const leadObservation = curation.observations[0]
+  ? ` ${curation.observations[0]}`
+  : "";
+const description = `Inspect ${run.model.display_name} (${run.provider}, ${run.generation.mode}${harnessDescription}) on the Capybara Hoverboard challenge.${leadObservation}`;
 ---
 
 <Shell
   title={run.model.display_name}
+  description={description}
   fixtures={fixtures}
   section="run"
   preloadImage={curation.thumbnail ? `/${curation.thumbnail.path}` : undefined}

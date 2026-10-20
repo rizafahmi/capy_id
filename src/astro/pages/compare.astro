@@ -7,7 +7,12 @@ declare const __CAPYBOARD_ASTRO_PAGES__: AstroPages;
 const { runs, fixtures } = __CAPYBOARD_ASTRO_PAGES__.comparison;
 ---
 
-<Shell title="Compare" fixtures={fixtures} section="compare">
+<Shell
+  title="Compare"
+  description="Compare two AI model attempts side by side across equal 4:3 viewports, recorded harness settings, token and timing metrics, and generation provenance."
+  fixtures={fixtures}
+  section="compare"
+>
   <a class="back-link" href="/">
     ← All attempts
   </a>

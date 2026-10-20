@@ -6,7 +6,12 @@ declare const __CAPYBOARD_ASTRO_PAGES__: AstroPages;
 const { fixtures } = __CAPYBOARD_ASTRO_PAGES__.notFound;
 ---
 
-<Shell title="Run not found" fixtures={fixtures} section="not-found">
+<Shell
+  title="Run not found"
+  description="This experiment run is unknown or is no longer published in the Capyboard gallery."
+  fixtures={fixtures}
+  section="not-found"
+>
   <section class="empty-state">
     <h1>Run not found</h1>
     <p>

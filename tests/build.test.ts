@@ -276,6 +276,22 @@ test("run pages and challenge evidence exist without a SPA fallback", async (t) 
   );
   const notFound = await readFile(join(out, "gallery/404.html"), "utf8");
   assert.match(notFound, /<title>Run not found · Capyboard<\/title>/);
+  assert.match(
+    notFound,
+    /<meta name="description" content="This experiment run is unknown or is no longer published in the Capyboard gallery\.">/,
+  );
+  assert.match(
+    html,
+    /<meta name="description" content="Inspect animation \(Development fixture, one-shot with Development harness \(low effort\)\) on the Capybara Hoverboard challenge\. Development fixture authored for application testing\. Not a genuine model experiment\.">/,
+  );
+  assert.match(
+    await readFile(join(out, "gallery/challenge/index.html"), "utf8"),
+    /<meta name="description" content="Read the exact Capybara on a Hoverboard HTML, CSS, and JavaScript prompt, collection protocol, interpretation limits, and restricted preview policy\.">/,
+  );
+  assert.match(
+    await readFile(join(out, "gallery/compare/index.html"), "utf8"),
+    /<meta name="description" content="Compare two AI model attempts side by side across equal 4:3 viewports, recorded harness settings, token and timing metrics, and generation provenance\.">/,
+  );
   assert.match(notFound, /<body data-page="not-found">/);
   assert.match(notFound, /<h1>Run not found<\/h1>/);
   assert.match(notFound, /class="button" href="\/">Return to the gallery<\/a>/);
