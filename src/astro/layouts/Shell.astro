@@ -31,7 +31,7 @@ interface Props {
 }
 const {
   title,
-  description = "A curated, inspectable gallery of AI model responses to one HTML, CSS, and JavaScript coding challenge: animate a capybara on a hoverboard. Not a model leaderboard.",
+  description = "Curated gallery of AI model responses to one HTML, CSS, and JavaScript challenge: animate a capybara on a hoverboard. Not a model leaderboard.",
   canonicalPath,
   noindex,
   ogType = "website",
@@ -75,6 +75,33 @@ const mainSchemaType =
       : section === "not-found"
         ? undefined
         : "https://schema.org/WebPage";
+const jsonLdType =
+  section === "gallery"
+    ? "CollectionPage"
+    : section === "run"
+      ? "TechArticle"
+      : "WebPage";
+const jsonLd =
+  section === "not-found"
+    ? undefined
+    : JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": jsonLdType,
+        name: metaTitle,
+        description: metaDescription,
+        ...(canonicalUrl ? { url: canonicalUrl } : {}),
+        image: ogImageUrl,
+        inLanguage: "en-US",
+        ...(publishedAt ? { datePublished: publishedAt } : {}),
+        isPartOf: {
+          "@type": "WebSite",
+          name: "Capyboard",
+          url: `${origin}/`,
+        },
+      })
+        .replaceAll("<", "\\u003c")
+        .replaceAll(">", "\\u003e")
+        .replaceAll("&", "\\u0026");
 ---
 
 <!doctype html>
@@ -83,6 +110,7 @@ const mainSchemaType =
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#203d32" />
     <meta name="description" content={metaDescription} />
     {shouldNoindex && <meta name="robots" content="noindex" />}
     <title>{title} · Capyboard</title>
@@ -90,6 +118,7 @@ const mainSchemaType =
     {section !== "not-found" && (
       <>
         <meta property="og:site_name" content="Capyboard" />
+        <meta property="og:locale" content="en_US" />
         <meta property="og:type" content={ogType} />
         <meta property="og:title" content={metaTitle} />
         <meta property="og:description" content={metaDescription} />
@@ -108,6 +137,7 @@ const mainSchemaType =
           <meta property="article:published_time" content={publishedAt} />
         )}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@rizafahmi" />
         <meta name="twitter:title" content={metaTitle} />
         <meta name="twitter:description" content={metaDescription} />
         <meta name="twitter:image" content={ogImageUrl} />
@@ -132,15 +162,22 @@ const mainSchemaType =
             title={cleanMetaText(link.title)}
           />
         ))}
+        {jsonLd && (
+          <script is:inline type="application/ld+json" set:html={jsonLd} />
+        )}
       </>
     )}
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link
       rel="icon"
       href="/assets/favicon.png"
       type="image/png"
       sizes="64x64"
     />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <link
       rel="preload"
       href="/assets/bricolage-grotesque-latin.woff2"

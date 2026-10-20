@@ -1,0 +1,32 @@
+{
+  "name": "Capyboard",
+  "short_name": "Capyboard",
+  "description": "Curated gallery of AI model responses to one HTML, CSS, and JavaScript challenge: animate a capybara on a hoverboard. Not a model leaderboard.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f8f5",
+  "theme_color": "#203d32",
+  "icons": [
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

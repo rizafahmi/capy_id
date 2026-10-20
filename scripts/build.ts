@@ -300,6 +300,17 @@ export async function buildSite(options: {
     await cp(new URL("../src/assets/", import.meta.url), join(staging, "gallery/assets"), {
       recursive: true,
     });
+    for (const rootAsset of [
+      "favicon.ico",
+      "favicon-32x32.png",
+      "apple-touch-icon.png",
+      "site.webmanifest",
+    ]) {
+      await cp(
+        new URL(`../src/assets/${rootAsset}`, import.meta.url),
+        join(staging, `gallery/${rootAsset}`),
+      );
+    }
     await put("gallery/_headers", headerFile("gallery", previewOrigin));
     await put(
       "gallery/robots.txt",

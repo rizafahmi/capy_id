@@ -27,8 +27,10 @@ const mime: Record<string, string> = {
   ".xml": "application/xml; charset=utf-8",
   ".svg": "image/svg+xml",
   ".png": "image/png",
+  ".ico": "image/x-icon",
   ".webp": "image/webp",
   ".woff2": "font/woff2",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
 };
 export async function staticHandler(root: string) {
   const base = resolve(root);

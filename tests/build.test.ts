@@ -34,14 +34,40 @@ test("redesign ships local imagery and fonts without widening preview permission
   for (const file of [
     "capybara.webp",
     "capybara-small.webp",
+    "favicon.ico",
     "favicon.svg",
+    "favicon-32x32.png",
     "favicon.png",
+    "apple-touch-icon.png",
+    "site.webmanifest",
     "og-card.png",
     "bricolage-grotesque-latin.woff2",
     "BricolageGrotesque-OFL.txt",
   ])
     assert.ok((await readFile(join(out, "gallery/assets", file))).length > 0);
+  for (const rootFile of [
+    "favicon.ico",
+    "favicon-32x32.png",
+    "apple-touch-icon.png",
+    "site.webmanifest",
+  ])
+    assert.ok((await readFile(join(out, "gallery", rootFile))).length > 0);
+  assert.ok((await readFile(join(out, "gallery/assets/og-card.png"))).length < 500 * 1024);
+  assert.match(html, /<link rel="icon" href="\/favicon\.ico" sizes="any">/);
   assert.match(html, /<link rel="icon" href="\/assets\/favicon\.svg" type="image\/svg\+xml">/);
+  assert.match(
+    html,
+    /<link rel="icon" type="image\/png" sizes="32x32" href="\/favicon-32x32\.png">/,
+  );
+  assert.match(
+    html,
+    /<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png">/,
+  );
+  assert.match(html, /<link rel="manifest" href="\/site\.webmanifest">/);
+  assert.match(html, /<meta name="theme-color" content="#203d32">/);
+  assert.match(html, /<meta property="og:locale" content="en_US">/);
+  assert.match(html, /<meta name="twitter:site" content="@rizafahmi">/);
+  assert.match(html, /<script type="application\/ld\+json">\{[^<]*"@type":"CollectionPage"/);
   assert.match(
     html,
     /<meta property="og:image" content="http:\/\/127\.0\.0\.1:4173\/assets\/og-card\.png">/,
@@ -51,7 +77,10 @@ test("redesign ships local imagery and fonts without widening preview permission
   assert.match(html, /<meta name="twitter:card" content="summary_large_image">/);
   assert.match(html, /<main id="main" itemscope itemtype="https:\/\/schema\.org\/CollectionPage">/);
   assert.match(html, /itemtype="https:\/\/schema\.org\/CreativeWork" itemprop="hasPart"/);
-  assert.match(await readFile(join(out, "gallery/_headers"), "utf8"), /font-src 'self'/);
+  assert.match(
+    await readFile(join(out, "gallery/_headers"), "utf8"),
+    /font-src 'self'; manifest-src 'self'/,
+  );
   assert.match(
     await readFile(join(out, "gallery/_headers"), "utf8"),
     /\/thumbnails\/\*\n\s+Cache-Control: public, max-age=31536000, immutable/,
@@ -125,7 +154,8 @@ test("challenge versions preserve prompt bytes, escape text, and keep scripts ex
   assert.ok(html.includes(`data-sha256="${challenge.prompt_sha256}"`));
   assert.match(html, /aria-current="page">The challenge/);
   assert.doesNotMatch(html, /Development fixtures|<iframe|<style|astro-island/);
-  assert.equal((html.match(/<script\b/g) ?? []).length, 1);
+  assert.equal((html.match(/<script\b/g) ?? []).length, 2);
+  assert.match(html, /<script type="application\/ld\+json">/);
   assert.match(html, /<script type="module" src="\/assets\/app.js"><\/script>/);
   for (const path of ["challenges/capybara-hoverboard-v1/prompt.txt", challenge.prompt_path])
     assert.deepEqual(
@@ -177,7 +207,8 @@ test("gallery and comparison escape untrusted labels and keep scripts external",
   });
   const html = await readFile(join(out, "gallery/index.html"), "utf8");
   assert.doesNotMatch(html, /<iframe|<style|astro-island/);
-  assert.equal((html.match(/<script\b/g) ?? []).length, 1);
+  assert.equal((html.match(/<script\b/g) ?? []).length, 2);
+  assert.match(html, /<script type="application\/ld\+json">/);
   assert.match(html, /<script type="module" src="\/assets\/app.js"><\/script>/);
   assert.match(html, /<h3><a[^>]*>&lt;img src=x onerror=/);
   assert.match(html, /<option>&lt;img src=x onerror=/);
@@ -189,7 +220,8 @@ test("gallery and comparison escape untrusted labels and keep scripts external",
     2,
   );
   assert.doesNotMatch(comparison, /<img|<iframe|<style|astro-island/);
-  assert.equal((comparison.match(/<script\b/g) ?? []).length, 1);
+  assert.equal((comparison.match(/<script\b/g) ?? []).length, 2);
+  assert.match(comparison, /<script type="application\/ld\+json">/);
   assert.match(comparison, /<script type="module" src="\/assets\/app.js"><\/script>/);
 });
 
@@ -398,7 +430,8 @@ test("run detail escapes content and keeps scripts external under the existing C
   });
   const html = await readFile(join(out, `gallery/runs/${run.id}/index.html`), "utf8");
   assert.doesNotMatch(html, /<script>alert|<style|style=|astro-island/);
-  assert.equal((html.match(/<script\b/g) ?? []).length, 1);
+  assert.equal((html.match(/<script\b/g) ?? []).length, 2);
+  assert.match(html, /<script type="application\/ld\+json">/);
   assert.match(html, /<script type="module" src="\/assets\/app.js"><\/script>/);
   assert.match(html, /&lt;script&gt;alert\(/);
   assert.match(html, /<title>&lt;script&gt;/);
