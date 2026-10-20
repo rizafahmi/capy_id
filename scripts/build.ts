@@ -38,6 +38,37 @@ function origin(value: string, development: boolean): string {
     );
   return url.origin;
 }
+function escapeXml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+}
+function buildSitemap(siteOrigin: string, entries: PublishedEntry[]): string {
+  const latest = entries
+    .map((entry) => entry.curation.published_at ?? entry.run.generated_at)
+    .filter((date): date is string => Boolean(date))
+    .sort()
+    .at(-1);
+  const urls: Array<{ loc: string; lastmod?: string | undefined }> = [
+    { loc: `${siteOrigin}/`, lastmod: latest },
+    { loc: `${siteOrigin}/challenge/` },
+    { loc: `${siteOrigin}/compare/` },
+    ...entries.map((entry) => ({
+      loc: `${siteOrigin}/runs/${encodeURIComponent(entry.run.id)}/`,
+      lastmod: entry.curation.published_at ?? entry.run.generated_at ?? undefined,
+    })),
+  ];
+  const body = urls
+    .map(
+      ({ loc, lastmod }) =>
+        `  <url>\n    <loc>${escapeXml(loc)}</loc>${lastmod ? `\n    <lastmod>${escapeXml(lastmod)}</lastmod>` : ""}\n  </url>`,
+    )
+    .join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
+}
 export async function buildSite(options: {
   root: string;
   out: string;
@@ -185,9 +216,10 @@ export async function buildSite(options: {
       challenges.push({ ...challenge, prompt: utf8(bytes) });
       await put(`gallery/evidence/${challenge.prompt_path}`, bytes);
     }
+    const activeEntries = views.filter((entry) => !corrections.has(entry.run.id));
     const pages: AstroPages = {
       origin: galleryOrigin,
-      gallery: { entries: views.filter((entry) => !corrections.has(entry.run.id)), fixtures },
+      gallery: { entries: activeEntries, fixtures },
       challenge: { challenges, fixtures },
       comparison: {
         runs: entries.map(({ run }) => ({
@@ -220,7 +252,15 @@ export async function buildSite(options: {
       recursive: true,
     });
     await put("gallery/_headers", headerFile("gallery", previewOrigin));
+    await put(
+      "gallery/robots.txt",
+      fixtures
+        ? "User-agent: *\nDisallow: /\n"
+        : `User-agent: *\nAllow: /\nSitemap: ${galleryOrigin}/sitemap.xml\n`,
+    );
+    await put("gallery/sitemap.xml", buildSitemap(galleryOrigin, activeEntries));
     await put("preview/_headers", headerFile("preview", previewOrigin));
+    await put("preview/robots.txt", "User-agent: *\nDisallow: /\n");
     await put(
       "preview/404.html",
       '<!doctype html><html lang="en"><title>Preview unavailable</title><body><h1>Preview unavailable</h1><p>Return to the gallery to inspect the preserved evidence.</p></body></html>',

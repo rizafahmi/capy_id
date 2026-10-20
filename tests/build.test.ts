@@ -276,7 +276,7 @@ test("run pages and challenge evidence exist without a SPA fallback", async (t) 
   assert.match(html, /Run preview/);
   assert.match(
     html,
-    /<a class="button preview-open" href="http:\/\/127\.0\.0\.1:4174\/runs\/fixture-animation\/" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">Open preview in new tab<\/a>/,
+    /<a class="button preview-open" href="http:\/\/127\.0\.0\.1:4174\/runs\/fixture-animation\/" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Open preview in new tab<\/a>/,
   );
   assert.match(html, /Exact user instructions/);
   assert.doesNotMatch(html, /<iframe/);
@@ -667,6 +667,16 @@ test("a provenance correction preserves the old route and replaces its gallery c
     latestPage,
     /<link rel="canonical" href="http:\/\/127\.0\.0\.1:4173\/runs\/fixture-animation-metrics\/">/,
   );
+  const sitemap = await readFile(join(out, "gallery/sitemap.xml"), "utf8");
+  assert.match(
+    sitemap,
+    /<loc>http:\/\/127\.0\.0\.1:4173\/runs\/fixture-animation-metrics\/<\/loc>/,
+  );
+  assert.match(sitemap, /<lastmod>2026-10-10T01:00:00Z<\/lastmod>/);
+  assert.doesNotMatch(
+    sitemap,
+    /<loc>http:\/\/127\.0\.0\.1:4173\/runs\/fixture-animation(-provenance)?\/<\/loc>|404\.html/,
+  );
   const comparison = await readFile(join(out, "gallery/compare/index.html"), "utf8");
   for (const id of [
     "fixture-animation",
@@ -691,6 +701,15 @@ test("download artifacts and derived previews preserve the extracted bytes", asy
   const headers = await readFile(join(out, "preview/_headers"), "utf8");
   assert.match(headers, /sandbox allow-scripts/);
   assert.match(headers, /connect-src 'none'/);
+  assert.match(headers, /X-Robots-Tag: noindex, nofollow, noarchive/);
+  assert.equal(
+    await readFile(join(out, "preview/robots.txt"), "utf8"),
+    "User-agent: *\nDisallow: /\n",
+  );
+  assert.equal(
+    await readFile(join(out, "gallery/robots.txt"), "utf8"),
+    "User-agent: *\nDisallow: /\n",
+  );
 });
 test("a production build refuses same-origin previews and insecure origins", async (t) => {
   const { content, out } = await buildFixture(t);
@@ -736,6 +755,14 @@ test("an empty collection builds honest production and local galleries", async (
   const notFound = await readFile(join(out, "gallery/404.html"), "utf8");
   assert.doesNotMatch(notFound, /Development fixtures|<link rel="canonical"/);
   assert.match(notFound, /<meta name="robots" content="noindex">/);
+  assert.equal(
+    await readFile(join(out, "gallery/robots.txt"), "utf8"),
+    "User-agent: *\nAllow: /\nSitemap: https://gallery.example/sitemap.xml\n",
+  );
+  const sitemap = await readFile(join(out, "gallery/sitemap.xml"), "utf8");
+  assert.match(sitemap, /<loc>https:\/\/gallery\.example\/<\/loc>/);
+  assert.match(sitemap, /<loc>https:\/\/gallery\.example\/challenge\/<\/loc>/);
+  assert.match(sitemap, /<loc>https:\/\/gallery\.example\/compare\/<\/loc>/);
   await buildSite({
     root: content,
     out,

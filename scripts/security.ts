@@ -16,7 +16,9 @@ export function responseHeaders(
     "Referrer-Policy": "no-referrer",
     "Permissions-Policy": permissionsPolicy,
     "Strict-Transport-Security": "max-age=300",
-    ...(kind === "gallery" ? { "X-Frame-Options": "DENY" } : {}),
+    ...(kind === "gallery"
+      ? { "X-Frame-Options": "DENY" }
+      : { "X-Robots-Tag": "noindex, nofollow, noarchive" }),
   };
 }
 export function headerFile(kind: "gallery" | "preview", previewOrigin: string): string {

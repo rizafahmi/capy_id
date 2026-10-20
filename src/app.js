@@ -573,7 +573,7 @@ function comparePreview(entry) {
     openPreview.append(arrow);
     openPreview.href = entry.preview.url;
     openPreview.target = "_blank";
-    openPreview.rel = "noopener noreferrer";
+    openPreview.rel = "noopener noreferrer nofollow";
     openPreview.referrerPolicy = "no-referrer";
     controls.append(openPreview);
     for (const [name, label] of [
