@@ -4,7 +4,7 @@ export const permissionsPolicy =
 export const previewCsp =
   "sandbox allow-scripts; default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'";
 export function galleryCsp(previewOrigin: string): string {
-  return `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; font-src 'self'; frame-src ${previewOrigin}; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'`;
+  return `default-src 'none'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; img-src 'self'; connect-src 'self' https://cloudflareinsights.com; font-src 'self'; frame-src ${previewOrigin}; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'`;
 }
 export function responseHeaders(
   kind: "gallery" | "preview",

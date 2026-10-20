@@ -126,7 +126,10 @@ test("managed Astro development reloads source edits in Chromium and stops both 
       assert.equal(response?.headers()["x-content-type-options"], "nosniff");
       const policy = response?.headers()["content-security-policy"] ?? "";
       assert.match(policy, /connect-src 'self' ws:\/\/127\.0\.0\.1:4173/);
-      assert.match(policy, /script-src 'self'; style-src 'self'/);
+      assert.match(
+        policy,
+        /script-src 'self' https:\/\/static\.cloudflareinsights\.com; style-src 'self'/,
+      );
       assert.doesNotMatch(policy, /unsafe-inline|unsafe-eval/);
       await expect(page.locator('script[src="/@vite/client"]')).toHaveCount(1);
       await expect(page.locator("astro-dev-toolbar")).toHaveCount(0);

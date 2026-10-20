@@ -655,6 +655,7 @@ async function enableComparison() {
   const provenanceDetails = document.querySelector("#compare-provenance");
   const generation = document.querySelector("#compare-generation");
   let currentComparison = null;
+  let renderId = 0;
   const renderProvenance = () => {
     if (!provenanceDetails?.open || !currentComparison || generation.hasChildNodes()) return;
     const [a, b] = currentComparison;
@@ -667,6 +668,7 @@ async function enableComparison() {
   };
   provenanceDetails?.addEventListener("toggle", renderProvenance);
   const render = async () => {
+    const currentRender = ++renderId;
     for (const controller of previews.values()) controller.stop();
     previews.clear();
     if (resizeObserver) {
@@ -692,9 +694,11 @@ async function enableComparison() {
     try {
       catalogue = await getCatalogue();
     } catch (error) {
+      if (currentRender !== renderId) return;
       status.textContent = `${error.message} Open individual run pages to inspect evidence.`;
       return;
     }
+    if (currentRender !== renderId) return;
     const a = catalogue.get(left.value);
     const b = catalogue.get(right.value);
     if (!a || !b) {
