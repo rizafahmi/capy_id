@@ -27,13 +27,11 @@ async function buildFixture(t: test.TestContext) {
 test("redesign ships local imagery and fonts without widening preview permissions", async (t) => {
   const { out } = await buildFixture(t);
   const html = await readFile(join(out, "gallery/index.html"), "utf8");
-  assert.match(html, /class="hero-visual"/);
-  assert.match(html, /fetchpriority="high"/);
+  assert.match(html, /class="hero-summary"/);
+  assert.match(html, /class="hero-metrics"/);
   assert.match(html, /color-scheme" content="light dark"/);
-  assert.match(html, /Giles Laurent/);
+  assert.match(html, /Single-file HTML, CSS, and JS/);
   for (const file of [
-    "capybara.webp",
-    "capybara-small.webp",
     "favicon.ico",
     "favicon.svg",
     "favicon-32x32.png",
@@ -64,7 +62,7 @@ test("redesign ships local imagery and fonts without widening preview permission
     /<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png">/,
   );
   assert.match(html, /<link rel="manifest" href="\/site\.webmanifest">/);
-  assert.match(html, /<meta name="theme-color" content="#203d32">/);
+  assert.match(html, /<meta name="theme-color" content="#0f1724">/);
   assert.match(html, /<meta property="og:locale" content="en_US">/);
   assert.match(html, /<meta name="twitter:site" content="@rizafahmi">/);
   assert.match(html, /<script type="application\/ld\+json">\{[^<]*"@type":"CollectionPage"/);

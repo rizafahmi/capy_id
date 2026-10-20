@@ -212,7 +212,7 @@ test("gallery and comparison keep hostile-looking metadata as text and preserve 
       }
       await expect(card.locator("h3")).toHaveText(injected);
       await expect(card.locator(".card-meta .eyebrow")).toHaveText(injected);
-      await expect(page.locator("img")).toHaveCount(1);
+      await expect(page.locator("img")).toHaveCount(0);
       await expect(page.locator("html")).not.toHaveAttribute("data-injected");
       await page.getByText("Filter and sort", { exact: true }).click();
       await page

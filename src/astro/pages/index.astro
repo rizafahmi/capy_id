@@ -62,30 +62,30 @@ const comparable = entries.length > 1;
         </a>
       </div>
     </div>
-    <figure class="hero-visual">
-      <div class="hero-photo">
-        <img
-          src="/assets/capybara.webp"
-          srcset="/assets/capybara-small.webp 640w, /assets/capybara.webp 960w"
-          sizes="240px"
-          width="960"
-          height="640"
-          decoding="async"
-          fetchpriority="high"
-          alt="A capybara resting beside a river, the real-life subject of our coding challenge"
-        />
-      </div>
-      <figcaption>
-        Photo by{" "}
-        <a href="https://commons.wikimedia.org/wiki/File:Capybaracropped.jpg">
-          Giles Laurent
-        </a>
-        ,{" "}
-        <a href="https://creativecommons.org/licenses/by-sa/4.0">
-          CC BY-SA 4.0
-        </a>
-      </figcaption>
-    </figure>
+    <aside class="hero-summary" aria-label="Benchmark summary">
+      <dl class="hero-metrics">
+        <div>
+          <dt>Attempts</dt>
+          <dd>{entries.length}</dd>
+        </div>
+        <div>
+          <dt>Models</dt>
+          <dd>{models.length}</dd>
+        </div>
+        <div>
+          <dt>Harnesses</dt>
+          <dd>{harnesses.length}</dd>
+        </div>
+        <div>
+          <dt>Providers</dt>
+          <dd>{providers.length}</dd>
+        </div>
+      </dl>
+      <p class="hero-spec">
+        <strong class="hero-spec-label">Task spec</strong>
+        <code>Single-file HTML, CSS, and JS</code>
+      </p>
+    </aside>
   </section>
   <section id="attempts" aria-labelledby="attempts-title" tabindex="-1">
     <div class="collection-heading">

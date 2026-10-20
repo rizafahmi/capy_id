@@ -25,11 +25,9 @@ for (const colorScheme of ["light", "dark"] as const) {
     }
     await page.goto("/");
     await page.evaluate(() => document.fonts.ready);
-    const image = page.locator(".hero-visual img");
-    await expect(image).toBeVisible();
-    expect(
-      await image.evaluate((node) => node instanceof HTMLImageElement && node.naturalWidth > 0),
-    ).toBe(true);
+    await expect(page.locator(".hero-summary")).toBeVisible();
+    await expect(page.locator(".hero-metrics > div")).toHaveCount(4);
+    await expect(page.locator(".card-image").first()).toBeVisible();
     expect(
       await page.evaluate(() =>
         [...document.fonts].some(
