@@ -34,6 +34,7 @@ export function astroConfig(
         __CAPYBOARD_ASTRO_PAGES__: JSON.stringify(
           input?.pages ??
             ({
+              origin: "http://127.0.0.1:4173",
               gallery: { entries: [], fixtures: false },
               challenge: { challenges: [], fixtures: false },
               comparison: { runs: [], fixtures: false },

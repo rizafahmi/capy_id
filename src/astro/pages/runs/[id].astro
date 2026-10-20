@@ -62,6 +62,8 @@ const description = `Inspect ${run.model.display_name} (${run.provider}, ${run.g
 <Shell
   title={run.model.display_name}
   description={description}
+  canonicalPath={`/runs/${(correction ?? entry).run.id}/`}
+  noindex={Boolean(correction)}
   fixtures={fixtures}
   section="run"
   preloadImage={curation.thumbnail ? `/${curation.thumbnail.path}` : undefined}

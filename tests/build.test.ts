@@ -600,6 +600,28 @@ test("a provenance correction preserves the old route and replaces its gallery c
     path,
     jsonBytes({ ...curation, visible: true, published_at: "2026-10-10T00:00:00Z" }),
   );
+  const second = await importRun({
+    root: content,
+    metadata: {
+      ...original,
+      id: "fixture-animation-metrics",
+      supersedes_run_id: "fixture-animation-provenance",
+      correction_reason: "Add observed cost.",
+      generation: {
+        mode: "one-shot",
+        interface: "coding-agent",
+        tools_used: "no",
+        harness: { name: "Pi", version: "1.1.0", effort: "low" },
+      },
+    },
+    response: await readFile(join(content, original.artifacts.response.path)),
+  });
+  const secondPath = join(content, `curation/${second.id}.json`);
+  const secondCuration = curationSchema.parse(JSON.parse(await readFile(secondPath, "utf8")));
+  await writeFile(
+    secondPath,
+    jsonBytes({ ...secondCuration, visible: true, published_at: "2026-10-10T01:00:00Z" }),
+  );
   await buildSite({
     root: content,
     out,
@@ -608,13 +630,32 @@ test("a provenance correction preserves the old route and replaces its gallery c
     development: true,
   });
   const gallery = await readFile(join(out, "gallery/index.html"), "utf8");
-  assert.match(gallery, /data-card="fixture-animation-provenance"/);
-  assert.doesNotMatch(gallery, /data-card="fixture-animation"/);
-  const oldPage = await readFile(join(out, "gallery/runs/fixture-animation/index.html"), "utf8");
-  assert.match(oldPage, /href="\/runs\/fixture-animation-provenance\/"/);
-  assert.match(oldPage, /View corrected run/);
+  assert.match(gallery, /data-card="fixture-animation-metrics"/);
+  assert.doesNotMatch(gallery, /data-card="fixture-animation(-provenance)?"/);
+  for (const supersededId of ["fixture-animation", "fixture-animation-provenance"]) {
+    const oldPage = await readFile(join(out, `gallery/runs/${supersededId}/index.html`), "utf8");
+    assert.match(oldPage, /href="\/runs\/fixture-animation-metrics\/"/);
+    assert.match(oldPage, /View corrected run/);
+    assert.match(
+      oldPage,
+      /<link rel="canonical" href="http:\/\/127\.0\.0\.1:4173\/runs\/fixture-animation-metrics\/">/,
+    );
+    assert.match(oldPage, /<meta name="robots" content="noindex">/);
+  }
+  const latestPage = await readFile(
+    join(out, "gallery/runs/fixture-animation-metrics/index.html"),
+    "utf8",
+  );
+  assert.match(
+    latestPage,
+    /<link rel="canonical" href="http:\/\/127\.0\.0\.1:4173\/runs\/fixture-animation-metrics\/">/,
+  );
   const comparison = await readFile(join(out, "gallery/compare/index.html"), "utf8");
-  for (const id of ["fixture-animation", "fixture-animation-provenance"])
+  for (const id of [
+    "fixture-animation",
+    "fixture-animation-provenance",
+    "fixture-animation-metrics",
+  ])
     assert.equal((comparison.match(new RegExp(`<option value="${id}">`, "g")) ?? []).length, 2);
   assert.deepEqual(await readFile(oldPath), oldBytes);
 });
@@ -673,11 +714,11 @@ test("an empty collection builds honest production and local galleries", async (
   });
   const html = await readFile(join(out, "gallery/index.html"), "utf8");
   assert.match(html, /No experiments published yet/);
-  assert.doesNotMatch(html, /Development fixtures|<iframe/);
-  assert.doesNotMatch(
-    await readFile(join(out, "gallery/404.html"), "utf8"),
-    /Development fixtures/,
-  );
+  assert.match(html, /<link rel="canonical" href="https:\/\/gallery\.example\/">/);
+  assert.doesNotMatch(html, /Development fixtures|<iframe|<meta name="robots" content="noindex">/);
+  const notFound = await readFile(join(out, "gallery/404.html"), "utf8");
+  assert.doesNotMatch(notFound, /Development fixtures|<link rel="canonical"/);
+  assert.match(notFound, /<meta name="robots" content="noindex">/);
   await buildSite({
     root: content,
     out,

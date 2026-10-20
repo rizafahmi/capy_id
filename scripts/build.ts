@@ -104,9 +104,21 @@ export async function buildSite(options: {
             (a.run.generated_at ? Date.parse(a.run.generated_at) : -Infinity) ||
           a.run.id.localeCompare(b.run.id, "en"),
       );
-    const corrections = new Map<string, Entry>();
+    const directCorrections = new Map<string, Entry>();
     for (const entry of entries)
-      if (entry.run.supersedes_run_id) corrections.set(entry.run.supersedes_run_id, entry);
+      if (entry.run.supersedes_run_id) directCorrections.set(entry.run.supersedes_run_id, entry);
+    const corrections = new Map<string, Entry>();
+    for (const [id, first] of directCorrections) {
+      let current = first;
+      const seen = new Set([id, current.run.id]);
+      while (directCorrections.has(current.run.id)) {
+        const next = directCorrections.get(current.run.id);
+        if (!next || seen.has(next.run.id)) break;
+        seen.add(next.run.id);
+        current = next;
+      }
+      corrections.set(id, current);
+    }
     const views: PublishedEntry[] = [];
     const runPages: RunPage[] = [];
     for (const entry of entries) {
@@ -174,6 +186,7 @@ export async function buildSite(options: {
       await put(`gallery/evidence/${challenge.prompt_path}`, bytes);
     }
     const pages: AstroPages = {
+      origin: galleryOrigin,
       gallery: { entries: views.filter((entry) => !corrections.has(entry.run.id)), fixtures },
       challenge: { challenges, fixtures },
       comparison: {

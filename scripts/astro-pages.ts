@@ -24,6 +24,7 @@ type ComparisonPage = {
 };
 
 export type AstroPages = {
+  origin: string;
   gallery: GalleryPage;
   challenge: ChallengePage;
   comparison: ComparisonPage;

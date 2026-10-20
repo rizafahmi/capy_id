@@ -1,7 +1,13 @@
 ---
+import type { AstroPages } from "../../../scripts/astro-pages.ts";
+
+declare const __CAPYBOARD_ASTRO_PAGES__: AstroPages;
+
 interface Props {
   title: string;
   description?: string | undefined;
+  canonicalPath?: string | undefined;
+  noindex?: boolean | undefined;
   fixtures: boolean;
   section: "gallery" | "challenge" | "run" | "compare" | "not-found";
   preloadImage?: string | undefined;
@@ -9,11 +15,26 @@ interface Props {
 const {
   title,
   description = "A curated, inspectable gallery of AI model responses to one HTML, CSS, and JavaScript coding challenge: animate a capybara on a hoverboard. Not a model leaderboard.",
+  canonicalPath,
+  noindex,
   fixtures,
   section,
   preloadImage,
 } = Astro.props;
 const metaDescription = description.replaceAll(/[<>]/g, "");
+const resolvedCanonicalPath =
+  canonicalPath ??
+  (section === "gallery"
+    ? "/"
+    : section === "challenge"
+      ? "/challenge/"
+      : section === "compare"
+        ? "/compare/"
+        : undefined);
+const canonicalUrl = resolvedCanonicalPath
+  ? `${__CAPYBOARD_ASTRO_PAGES__.origin}${resolvedCanonicalPath}`
+  : undefined;
+const shouldNoindex = Boolean(noindex || fixtures || section === "not-found");
 ---
 
 <!doctype html>
@@ -23,7 +44,9 @@ const metaDescription = description.replaceAll(/[<>]/g, "");
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
     <meta name="description" content={metaDescription} />
+    {shouldNoindex && <meta name="robots" content="noindex" />}
     <title>{title} · Capyboard</title>
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
     <link rel="icon" href="/assets/favicon.png" type="image/png" />
     <link
       rel="preload"
