@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyber-Chill Capybara Hoverboard</title>
+<style>
+  :root {
+    --ui-bg: rgba(15, 18, 34, 0.72);
+    --ui-border: rgba(0, 243, 255, 0.35);
+    --neon-cyan: #00f3ff;
+    --neon-pink: #ff2a85;
+    --neon-gold: #ffbe0b;
+    --text-light: #f0f6ff;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #0d0826;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-light);
+  }
+
+  #scene-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  canvas#bg-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    display: block;
+  }
+
+  #character-stage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #capy-rig {
+    width: min(560px, 88vw);
+    height: min(450px, 72vh);
+    transform-origin: 50% 62%;
+    will-change: transform;
+    filter: drop-shadow(0 18px 28px rgba(7, 4, 22, 0.55));
+  }
+
+  canvas#fg-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+    display: block;
+  }
+
+  /* HUD Controls */
+  .hud {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 20px rgba(0, 243, 255, 0.15);
+  }
+
+  .hud-btn {
+    appearance: none;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text-light);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 8px 15px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .hud-btn:hover {
+    background: rgba(0, 243, 255, 0.18);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 12px rgba(0, 243, 255, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .hud-btn:active {
+    transform: translateY(1px);
+  }
+
+  .hud-btn.active {
+    background: linear-gradient(135deg, rgba(255, 42, 133, 0.8), rgba(0, 243, 255, 0.8));
+    border-color: #ffffff;
+    color: #fff;
+    box-shadow: 0 0 16px rgba(255, 42, 133, 0.5);
+  }
+
+  .key-hint {
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .status-banner {
+    position: absolute;
+    top: 20px;
+    left: 24px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    pointer-events: none;
+  }
+
+  .pulse-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--neon-cyan);
+    box-shadow: 0 0 10px var(--neon-cyan);
+    animation: pulseGlow 1.6s infinite ease-in-out;
+  }
+
+  .speedometer {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    z-index: 10;
+    padding: 8px 16px;
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    pointer-events: none;
+    box-shadow: 0 0 16px rgba(0, 243, 255, 0.12);
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50% { transform: scale(1.35); opacity: 1; }
+  }
+
+  /* Subtle internal SVG animations */
+  .capy-ear-back, .capy-ear-front {
+    transform-box: fill-box;
+    transform-origin: 30% 85%;
+    animation: earTwitch 4.5s infinite ease-in-out;
+  }
+
+  .capy-ear-front {
+    animation-delay: 0.25s;
+  }
+
+  @keyframes earTwitch {
+    0%, 84%, 100% { transform: rotate(0deg); }
+    87% { transform: rotate(-11deg); }
+    90% { transform: rotate(4deg); }
+    93% { transform: rotate(-8deg); }
+    96% { transform: rotate(0deg); }
+  }
+
+  .capy-eye-blink {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: blinkEye 6s infinite ease-in-out;
+  }
+
+  @keyframes blinkEye {
+    0%, 45%, 49%, 94%, 98%, 100% { transform: scaleY(1); }
+    47%, 96% { transform: scaleY(0.12); }
+  }
+
+  .board-core-light {
+    animation: corePulse 0.9s infinite alternate ease-in-out;
+  }
+
+  @keyframes corePulse {
+    0% { opacity: 0.72; }
+    100% { opacity: 1; }
+  }
+
+  @media (max-width: 640px) {
+    .key-hint { display: none; }
+    .hud { bottom: 14px; padding: 8px 12px; gap: 6px; width: 94vw; }
+    .hud-btn { padding: 7px 11px; font-size: 12px; }
+    .status-banner, .speedometer { top: 12px; font-size: 11px; padding: 6px 12px; }
+    .status-banner { left: 12px; }
+    .speedometer { right: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="scene-container">
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="status-banner">
+    <span class="pulse-dot"></span>
+    <span id="vibe-label">UNBOTHERED HOVER-CRUISE</span>
+  </div>
+
+  <div class="speedometer">
+    <span id="speed-readout">42</span> KM/H &bull; <span id="yuzu-status">YUZU STABLE</span>
+  </div>
+
+  <div id="character-stage">
+    <svg id="capy-rig" viewBox="0 0 600 480" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+      <defs>
+        <!-- Capybara Fur Gradients -->
+        <linearGradient id="furBody" x1="0%" y1="0%" x2="85%" y2="100%">
+          <stop offset="0%" stop-color="#c88d55"/>
+          <stop offset="55%" stop-color="#a86d38"/>
+          <stop offset="100%" stop-color="#7c4a21"/>
+        </linearGradient>
+
+        <linearGradient id="furHead" x1="10%" y1="0%" x2="90%" y2="100%">
+          <stop offset="0%" stop-color="#d1975e"/>
+          <stop offset="65%" stop-color="#b27640"/>
+          <stop offset="100%" stop-color="#875227"/>
+        </linearGradient>
+
+        <linearGradient id="snoutGrad" x1="0%" y1="15%" x2="100%" y2="95%">
+          <stop offset="0%" stop-color="#8f592c"/>
+          <stop offset="50%" stop-color="#6b3e1b"/>
+          <stop offset="100%" stop-color="#4e2a10"/>
+        </linearGradient>
+
+        <linearGradient id="legBackGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#7e4c23"/>
+          <stop offset="100%" stop-color="#49280f"/>
+        </linearGradient>
+
+        <linearGradient id="legFrontGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#a56a35"/>
+          <stop offset="100%" stop-color="#5d3516"/>
+        </linearGradient>
+
+        <!-- Hoverboard Gradients -->
+        <linearGradient id="deckTopGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#2b3052"/>
+          <stop offset="50%" stop-color="#434b7a"/>
+          <stop offset="100%" stop-color="#232744"/>
+        </linearGradient>
+
+        <linearGradient id="boardRimGrad" x1="0%" y1="0%" x2="100%" y2="15%">
+          <stop offset="0%" stop-color="#ff2a85"/>
+          <stop offset="35%" stop-color="#7a2cff"/>
+          <stop offset="70%" stop-color="#00f3ff"/>
+          <stop offset="100%" stop-color="#00ffaa"/>
+        </linearGradient>
+
+        <linearGradient id="boardBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#14182b"/>
+          <stop offset="50%" stop-color="#1e243d"/>
+          <stop offset="100%" stop-color="#0d101f"/>
+        </linearGradient>
+
+        <linearGradient id="thrusterGlowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="30%" stop-color="#00f3ff" stop-opacity="0.95"/>
+          <stop offset="75%" stop-color="#ff2a85" stop-opacity="0.45"/>
+          <stop offset="100%" stop-color="#ff2a85" stop-opacity="0"/>
+        </linearGradient>
+
+        <linearGradient id="scarfGrad" x1="0%" y1="0%" x2="100%" y2="25%">
+          <stop offset="0%" stop-color="#ff2a85"/>
+          <stop offset="55%" stop-color="#ff5e57"/>
+          <stop offset="100%" stop-color="#ffbe0b"/>
+        </linearGradient>
+
+        <linearGradient id="visorGrad" x1="0%" y1="0%" x2="100%" y2="80%">
+          <stop offset="0%" stop-color="#00f3ff"/>
+          <stop offset="45%" stop-color="#3a86ff"/>
+          <stop offset="80%" stop-color="#ff2a85"/>
+          <stop offset="100%" stop-color="#ffbe0b"/>
+        </linearGradient>
+
+        <radialGradient id="yuzuGrad" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#ffe169"/>
+          <stop offset="45%" stop-color="#ffaa00"/>
+          <stop offset="100%" stop-color="#e06d00"/>
+        </radialGradient>
+
+        <filter id="neonGlow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="6" result="blur"/>
+          <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+
+        <filter id="heavyNeonGlow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="12" result="blur1"/>
+          <feGaussianBlur stdDeviation="4" result="blur2"/>
+          <feMerge>
+            <feMergeNode in="blur1"/>
+            <feMergeNode in="blur2"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+
+      <!-- HOVERBOARD AND CAPYBARA MASTER GROUP -->
+      <g id="master-board-group">
+
+        <!-- THRUSTER PLUMES (UNDER BOARD) -->
+        <g id="thrusters">
+          <!-- Rear Thruster -->
+          <g id="thruster-rear" transform="translate(185, 360)">
+            <ellipse cx="0" cy="26" rx="46" ry="22" fill="url(#thrusterGlowGrad)" id="rear-plume-outer"/>
+            <ellipse cx="0" cy="14" rx="28" ry="12" fill="#00f3ff" opacity="0.85" filter="url(#neonGlow)" id="rear-plume-core"/>
+            <ellipse cx="0" cy="8" rx="16" ry="5" fill="#ffffff"/>
+          </g>
+          <!-- Front Thruster -->
+          <g id="thruster-front" transform="translate(415, 360)">
+            <ellipse cx="0" cy="26" rx="46" ry="22" fill="url(#thrusterGlowGrad)" id="front-plume-outer"/>
+            <ellipse cx="0" cy="14" rx="28" ry="12" fill="#00f3ff" opacity="0.85" filter="url(#neonGlow)" id="front-plume-core"/>
+            <ellipse cx="0" cy="8" rx="16" ry="5" fill="#ffffff"/>
+          </g>
+        </g>
+
+        <!-- HOVERBOARD DECK -->
+        <g id="hoverboard" transform="translate(0, 2)">
+          <!-- Undercarriage Thruster Housings -->
+          <path d="M 142,350 L 156,368 L 214,368 L 228,350 Z" fill="#121526" stroke="#00f3ff" stroke-width="1.5"/>
+          <path d="M 372,350 L 386,368 L 444,368 L 458,350 Z" fill="#121526" stroke="#00f3ff" stroke-width="1.5"/>
+
+          <!-- Main Board Lower Hull -->
+          <path d="M 96,334 C 96,356 155,363 300,363 C 445,363 508,355 514,332 C 495,342 435,347 300,347 C 165,347 112,342 96,334 Z" fill="url(#boardBodyGrad)" stroke="#2c355c" stroke-width="1.5"/>
+
+          <!-- Top Foot Deck -->
+          <path d="M 88,328 C 94,309 180,304 300,304 C 420,304 504,310 518,328 C 506,345 425,350 300,350 C 175,350 94,344 88,328 Z" fill="url(#deckTopGrad)" stroke="#4f5b91" stroke-width="1.5"/>
+
+          <!-- Grip Pads -->
+          <path d="M 155,321 L 245,318 L 252,334 L 148,334 Z" fill="#16192b" stroke="#ff2a85" stroke-width="1" opacity="0.9"/>
+          <path d="M 330,318 L 430,320 L 422,334 L 336,334 Z" fill="#16192b" stroke="#00f3ff" stroke-width="1" opacity="0.9"/>
+          <!-- Grip Texture Lines -->
+          <line x1="175" y1="320" x2="170" y2="333" stroke="#2d3459" stroke-width="2"/>
+          <line x1="195" y1="319" x2="190" y2="333" stroke="#2d3459" stroke-width="2"/>
+          <line x1="215" y1="319" x2="210" y2="333" stroke="#2d3459" stroke-width="2"/>
+          <line x1="358" y1="319" x2="362" y2="333" stroke="#2d3459" stroke-width="2"/>
+          <line x1="378" y1="319" x2="382" y2="333" stroke="#2d3459" stroke-width="2"/>
+          <line x1="398" y1="320" x2="402" y2="333" stroke="#2d3459" stroke-width="2"/>
+
+          <!-- Neon Side Bumper Tube -->
+          <path d="M 86,329 C 110,348 205,353 300,353 C 395,353 492,347 520,328" fill="none" stroke="url(#boardRimGrad)" stroke-width="6.5" stroke-linecap="round" filter="url(#neonGlow)" class="board-core-light"/>
+          <path d="M 90,329 C 114,347 205,352 300,352 C 395,352 489,346 516,328" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+
+          <!-- Side Energy Cells -->
+          <rect x="275" y="346" width="50" height="7" rx="3.5" fill="#00f3ff" filter="url(#neonGlow)" class="board-core-light"/>
+          <circle cx="142" cy="340" r="3.5" fill="#ffbe0b" filter="url(#neonGlow)"/>
+          <circle cx="458" cy="340" r="3.5" fill="#00ffaa" filter="url(#neonGlow)"/>
+
+          <!-- Front Nose Headlight Cone -->
+          <path d="M 516,327 L 598,302 L 598,358 Z" fill="url(#thrusterGlowGrad)" opacity="0.28" transform="rotate(-8 516 327)"/>
+        </g>
+
+        <!-- CAPYBARA BODY GROUP (Allows squat/jump compression) -->
+        <g id="capy-body-group">
+
+          <!-- Flowing Scarf Tail (Behind body, dynamic path updated in JS) -->
+          <g id="scarf-tail-group">
+            <path id="scarf-tail-shadow" d="M 275,205 Q 195,215 125,195 Q 85,185 55,200" fill="none" stroke="#9e1450" stroke-width="22" stroke-linecap="round"/>
+            <path id="scarf-tail-main" d="M 275,200 Q 195,208 125,188 Q 85,178 55,192" fill="none" stroke="url(#scarfGrad)" stroke-width="19" stroke-linecap="round"/>
+            <path id="scarf-tail-stripe" d="M 275,200 Q 195,208 125,188 Q 85,178 55,192" fill="none" stroke="#fff3b0" stroke-width="3" stroke-dasharray="10 14" stroke-linecap="round" opacity="0.85"/>
+          </g>
+
+          <!-- Back Far Legs -->
+          <g id="legs-far">
+            <!-- Rear Far Leg -->
+            <path d="M 192,272 C 186,294 180,312 183,325 C 185,330 206,331 209,325 C 211,312 214,292 216,272 Z" fill="url(#legBackGrad)"/>
+            <ellipse cx="198" cy="326" rx="14" ry="5.5" fill="#3a1e0a"/>
+            <!-- Front Far Leg -->
+            <path d="M 342,270 C 344,292 346,310 349,324 C 351,329 372,329 374,323 C 374,308 370,288 366,268 Z" fill="url(#legBackGrad)"/>
+            <ellipse cx="363" cy="324" rx="14" ry="5.5" fill="#3a1e0a"/>
+          </g>
+
+          <!-- Main Potato Torso -->
+          <g id="torso">
+            <path d="M 164,250
+                     C 155,205 186,166 244,164
+                     C 288,162 325,168 358,162
+                     C 392,156 410,188 408,228
+                     C 406,274 374,294 316,295
+                     C 248,296 173,294 164,250 Z"
+                  fill="url(#furBody)" stroke="#593213" stroke-width="2"/>
+
+            <!-- Warm Sunlight Rim Highlight on Back -->
+            <path d="M 178,204 C 198,173 242,166 294,167 C 324,168 345,166 364,164"
+                  fill="none" stroke="#ecc08d" stroke-width="4.5" stroke-linecap="round" opacity="0.55"/>
+
+            <!-- Cute Fur Texture Strokes -->
+            <path d="M 215,198 L 203,203 M 228,205 L 214,211 M 265,212 L 250,216 M 192,235 L 178,240 M 288,248 L 274,252 M 242,262 L 226,266"
+                  stroke="#70411b" stroke-width="2.5" stroke-linecap="round" opacity="0.65"/>
+
+            <!-- Little Capy Butt Notch -->
+            <path d="M 163,234 C 157,242 158,254 165,260" fill="none" stroke="#593213" stroke-width="3" stroke-linecap="round"/>
+          </g>
+
+          <!-- Foreground Near Legs -->
+          <g id="legs-near">
+            <!-- Rear Near Leg -->
+            <path d="M 212,266 C 206,292 202,314 205,329 C 208,334 232,334 235,328 C 237,312 242,290 245,268 Z"
+                  fill="url(#legFrontGrad)" stroke="#593213" stroke-width="1.8"/>
+            <!-- Toes -->
+            <ellipse cx="222" cy="329" rx="16" ry="6" fill="#472710"/>
+            <path d="M 228,325 L 233,332 M 221,325 L 225,333" stroke="#2b1607" stroke-width="2" stroke-linecap="round"/>
+
+            <!-- Front Near Leg -->
+            <path d="M 362,262 C 365,288 370,312 374,327 C 377,333 400,332 402,326 C 402,310 396,285 390,260 Z"
+                  fill="url(#legFrontGrad)" stroke="#593213" stroke-width="1.8"/>
+            <!-- Toes -->
+            <ellipse cx="389" cy="327" rx="16" ry="6" fill="#472710"/>
+            <path d="M 395,323 L 400,330 M 388,323 L 392,331" stroke="#2b1607" stroke-width="2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Cozy Neck Scarf Wrap -->
+          <path d="M 318,166 C 314,196 346,232 396,236 C 406,237 415,224 410,210 C 374,202 346,180 338,156 Z"
+                fill="url(#scarfGrad)" stroke="#7a113b" stroke-width="2"/>
+          <path d="M 325,176 C 328,198 356,222 398,226"
+                fill="none" stroke="#fff3b0" stroke-width="2.5" stroke-dasharray="8 10" stroke-linecap="round" opacity="0.8"/>
+
+          <!-- CAPYBARA HEAD GROUP (Tilts & bobs slightly) -->
+          <g id="capy-head-group" transform="translate(0, 0)">
+
+            <!-- Back Ear -->
+            <g class="capy-ear-back">
+              <ellipse cx="348" cy="108" rx="12" ry="16" transform="rotate(-24 348 108)" fill="#5c3415" stroke="#3d210b" stroke-width="2"/>
+              <ellipse cx="349" cy="109" rx="6" ry="9" transform="rotate(-24 349 109)" fill="#42230c"/>
+            </g>
+
+            <!-- Main Rectangular/Rounded Capybara Head -->
+            <path d="M 322,175
+                     C 314,142 322,106 356,102
+                     C 386,98 432,102 458,110
+                     C 482,118 492,142 488,172
+                     C 484,202 462,212 428,210
+                     C 392,208 352,212 322,175 Z"
+                  fill="url(#furHead)" stroke="#593213" stroke-width="2"/>
+
+            <!-- Dark Blunt Snout Patch -->
+            <path d="M 434,106
+                     C 462,109 490,124 490,162
+                     C 490,196 468,210 436,210
+                     C 418,210 412,182 414,154
+                     C 416,126 420,105 434,106 Z"
+                  fill="url(#snoutGrad)"/>
+
+            <!-- Head Top Highlight -->
+            <path d="M 356,105 C 386,101 422,104 448,111" fill="none" stroke="#f0c797" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+
+            <!-- Nostril -->
+            <ellipse cx="468" cy="138" rx="6.5" ry="4" transform="rotate(18 468 138)" fill="#261205"/>
+            <circle cx="466" cy="137" r="1.5" fill="#704526" opacity="0.6"/>
+
+            <!-- Serene Unbothered Mouth & Nose Split -->
+            <path d="M 484,158 C 478,164 472,172 472,184" fill="none" stroke="#2b1506" stroke-width="2.8" stroke-linecap="round"/>
+            <path d="M 454,183 Q 465,190 476,182" fill="none" stroke="#2b1506" stroke-width="2.8" stroke-linecap="round"/>
+
+            <!-- Subtle Cheek Blush -->
+            <ellipse cx="418" cy="172" rx="12" ry="7" fill="#ff5e7e" opacity="0.28"/>
+
+            <!-- Whiskers -->
+            <path d="M 452,166 L 434,169 M 456,174 L 438,179 M 482,168 L 497,172" stroke="#d8ad80" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
+
+            <!-- Calm Half-Closed Eye (Visible under or through visor) -->
+            <g class="capy-eye-blink">
+              <ellipse cx="404" cy="136" rx="9" ry="6.5" fill="#211004"/>
+              <!-- Heavy Chill Eyelid -->
+              <path d="M 393,133 Q 404,136 415,132 L 414,127 L 394,128 Z" fill="#a86d38"/>
+              <line x1="393" y1="134" x2="416" y2="132" stroke="#3b1e08" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="407" cy="136" r="2" fill="#ffffff" opacity="0.9"/>
+            </g>
+
+            <!-- Futuristic Cyber-Visor Shades (Toggleable) -->
+            <g id="cyber-visor">
+              <!-- Strap -->
+              <path d="M 332,126 L 386,129" fill="none" stroke="#1e2238" stroke-width="5" stroke-linecap="round"/>
+              <!-- Lens -->
+              <path d="M 380,121 L 444,122 L 436,146 L 408,147 L 398,141 L 376,141 Z"
+                    fill="url(#visorGrad)" stroke="#ffffff" stroke-width="1.8" filter="url(#neonGlow)" opacity="0.92"/>
+              <!-- Lens Glint -->
+              <path d="M 392,125 L 404,125 L 396,142 L 386,142 Z" fill="#ffffff" opacity="0.55"/>
+              <path d="M 410,125 L 415,125 L 407,142 L 402,142 Z" fill="#ffffff" opacity="0.35"/>
+            </g>
+
+            <!-- Front Ear -->
+            <g class="capy-ear-front">
+              <ellipse cx="332" cy="115" rx="13" ry="17" transform="rotate(-30 332 115)" fill="#78461f" stroke="#47270e" stroke-width="2"/>
+              <ellipse cx="334" cy="116" rx="7" ry="10" transform="rotate(-30 334 116)" fill="#4d2b10"/>
+              <path d="M 326,105 C 330,101 336,103 339,108" fill="none" stroke="#c88d55" stroke-width="2" stroke-linecap="round"/>
+            </g>
+
+            <!-- Iconic Yuzu / Tangerine Balanced on Head (Physics Driven in JS) -->
+            <g id="yuzu-group" transform="translate(384, 98)">
+              <!-- Contact Shadow -->
+              <ellipse cx="0" cy="4" rx="16" ry="4" fill="#4a280d" opacity="0.45"/>
+              <!-- Orange Fruit Body -->
+              <ellipse cx="0" cy="-11" rx="19" ry="15.5" fill="url(#yuzuGrad)" stroke="#9e4700" stroke-width="1.8"/>
+              <!-- Dimple Texture -->
+              <circle cx="-8" cy="-14" r="1" fill="#ffffff" opacity="0.6"/>
+              <circle cx="-4" cy="-18" r="1.2" fill="#ffffff" opacity="0.5"/>
+              <circle cx="7" cy="-7" r="1" fill="#c45100" opacity="0.5"/>
+              <circle cx="11" cy="-12" r="1" fill="#c45100" opacity="0.5"/>
+              <!-- Stem & Green Leaf -->
+              <path d="M 0,-26 L 1,-31" stroke="#4f3111" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M 1,-27 C 8,-34 19,-32 22,-23 C 14,-20 6,-22 1,-27 Z" fill="#38b000" stroke="#1b5e00" stroke-width="1.5"/>
+              <path d="M 3,-27 Q 11,-27 18,-24" fill="none" stroke="#9ef01a" stroke-width="1.2" stroke-linecap="round"/>
+            </g>
+
+          </g> <!-- End Head Group -->
+        </g> <!-- End Body Group -->
+      </g> <!-- End Master Board Group -->
+    </svg>
+  </div>
+
+  <canvas id="fg-canvas"></canvas>
+
+  <div class="hud" id="hud-bar">
+    <button class="hud-btn" id="btn-trick" title="Perform Ollie &amp; 360 Flip">
+      <span>Ollie Flip</span>
+      <span class="key-hint">SPACE</span>
+    </button>
+    <button class="hud-btn" id="btn-boost" title="Toggle Turbo Hyperdrive">
+      <span>Turbo Boost</span>
+      <span class="key-hint">B</span>
+    </button>
+    <button class="hud-btn active" id="btn-shades" title="Toggle Cyber Shades">
+      <span>Cyber Shades</span>
+      <span class="key-hint">S</span>
+    </button>
+    <button class="hud-btn" id="btn-theme" title="Switch Atmosphere">
+      <span id="theme-btn-text">Theme: Synthwave</span>
+      <span class="key-hint">T</span>
+    </button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const bgCanvas = document.getElementById('bg-canvas');
+  const bgCtx = bgCanvas.getContext('2d');
+  const fgCanvas = document.getElementById('fg-canvas');
+  const fgCtx = fgCanvas.getContext('2d');
+
+  // SVG Elements for procedural physics & animation
+  const masterBoardGroup = document.getElementById('master-board-group');
+  const capyBodyGroup = document.getElementById('capy-body-group');
+  const capyHeadGroup = document.getElementById('capy-head-group');
+  const yuzuGroup = document.getElementById('yuzu-group');
+  const scarfTailMain = document.getElementById('scarf-tail-main');
+  const scarfTailShadow = document.getElementById('scarf-tail-shadow');
+  const scarfTailStripe = document.getElementById('scarf-tail-stripe');
+  const rearPlumeOuter = document.getElementById('rear-plume-outer');
+  const rearPlumeCore = document.getElementById('rear-plume-core');
+  const frontPlumeOuter = document.getElementById('front-plume-outer');
+  const frontPlumeCore = document.getElementById('front-plume-core');
+  const cyberVisor = document.getElementById('cyber-visor');
+
+  // UI Elements
+  const btnTrick = document.getElementById('btn-trick');
+  const btnBoost = document.getElementById('btn-boost');
+  const btnShades = document.getElementById('btn-shades');
+  const btnTheme = document.getElementById('btn-theme');
+  const themeBtnText = document.getElementById('theme-btn-text');
+  const speedReadout = document.getElementById('speed-readout');
+  const vibeLabel = document.getElementById('vibe-label');
+  const yuzuStatus = document.getElementById('yuzu-status');
+  const sceneContainer = document.getElementById('scene-container');
+
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+
+  // Color Palettes / Themes
+  const themes = [
+    {
+      name: 'Synthwave',
+      skyTop: '#090418',
+      skyMid: '#260b47',
+      skyBot: '#871e64',
+      sunTop: '#ffea79',
+      sunBot: '#ff1e74',
+      mtnFar: '#1b0938',
+      mtnNear: '#110526',
+      groundTop: '#16072e',
+      groundBot: '#06020f',
+      gridColor: 'rgba(0, 243, 255, 0.38)',
+      gridGlow: 'rgba(255, 42, 133, 0.45)',
+      accent1: '#00f3ff',
+      accent2: '#ff2a85'
+    },
+    {
+      name: 'Golden Sunset',
+      skyTop: '#1a1936',
+      skyMid: '#7c2e52',
+      skyBot: '#f78848',
+      sunTop: '#fff7ae',
+      sunBot: '#ff5436',
+      mtnFar: '#3d1936',
+      mtnNear: '#230d24',
+      groundTop: '#240e26',
+      groundBot: '#0c0510',
+      gridColor: 'rgba(255, 190, 11, 0.35)',
+      gridGlow: 'rgba(255, 94, 87, 0.45)',
+      accent1: '#ffbe0b',
+      accent2: '#ff5e57'
+    },
+    {
+      name: 'Neo Tokyo Mint',
+      skyTop: '#03131f',
+      skyMid: '#092e42',
+      skyBot: '#106973',
+      sunTop: '#a8ffdb',
+      sunBot: '#00bbf9',
+      mtnFar: '#072230',
+      mtnNear: '#04141f',
+      groundTop: '#061a26',
+      groundBot: '#02090f',
+      gridColor: 'rgba(0, 255, 170, 0.35)',
+      gridGlow: 'rgba(0, 187, 249, 0.45)',
+      accent1: '#00ffaa',
+      accent2: '#00bbf9'
+    }
+  ];
+
+  let currentThemeIdx = 0;
+
+  // Interactive & Physics State
+  const state = {
+    time: 0,
+    baseSpeed: 1,
+    targetSpeed: 1,
+    speed: 1,
+    isBoosting: false,
+    shadesOn: true,
+    pointerX: 0,
+    pointerY: 0,
+    smoothPointerX: 0,
+    smoothPointerY: 0,
+    scrollOffset: 0,
+    // Trick jump state
+    isJumping: false,
+    jumpProgress: 0,
+    trickType: 0, // 0: 360 flip, 1: backflip + yuzu toss
+    // Yuzu secondary physics
+    yuzuY: 0,
+    yuzuVy: 0,
+    yuzuRot: 0
+  };
+
+  // Parallax World Entities
+  const stars = [];
+  const farBuildings = [];
+  const mountains = [];
+  const palmTrees = [];
+  const particles = [];
+  const speedLines = [];
+  const floatingOrbs = [];
+
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    bgCanvas.width = width * dpr;
+    bgCanvas.height = height * dpr;
+    bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    fgCanvas.width = width * dpr;
+    fgCanvas.height = height * dpr;
+    fgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function initWorld() {
+    stars.length = 0;
+    for (let i = 0; i < 95; i++) {
+      stars.push({
+        x: Math.random(),
+        y: Math.random() * 0.58,
+        r: Math.random() * 1.8 + 0.5,
+        phase: Math.random() * Math.PI * 2,
+        speed: Math.random() * 2 + 1
+      });
+    }
+
+    farBuildings.length = 0;
+    let bx = 0;
+    while (bx < 2200) {
+      const bw = 32 + Math.random() * 55;
+      const bh = 45 + Math.random() * 145;
+      farBuildings.push({
+        x: bx,
+        w: bw,
+        h: bh,
+        hasSpire: Math.random() > 0.65,
+        winSeed: Math.floor(Math.random() * 100)
+      });
+      bx += bw + 4 + Math.random() * 14;
+    }
+
+    mountains.length = 0;
+    const numPeaks = 18;
+    for (let i = 0; i < numPeaks; i++) {
+      mountains.push({
+        x: (i / numPeaks) * 2000,
+        w: 180 + Math.random() * 140,
+        h: 70 + Math.random() * 95
+      });
+    }
+
+    palmTrees.length = 0;
+    for (let i = 0; i < 7; i++) {
+      palmTrees.push({
+        x: i * 340 + Math.random() * 110,
+        scale: 0.75 + Math.random() * 0.35,
+        lean: 0.18 + Math.random() * 0.14
+      });
+    }
+
+    speedLines.length = 0;
+    for (let i = 0; i < 24; i++) {
+      speedLines.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        len: 60 + Math.random() * 140,
+        speed: 14 + Math.random() * 12,
+        alpha: 0.12 + Math.random() * 0.25
+      });
+    }
+  }
+
+  // Trigger a hoverboard trick
+  function triggerTrick() {
+    if (state.isJumping) return;
+    state.isJumping = true;
+    state.jumpProgress = 0;
+    state.trickType = (state.trickType + 1) % 2;
+    state.yuzuVy = -8.5;
+    vibeLabel.textContent = state.trickType === 0 ? '360 SHUVIT OLLIE!' : 'CITRUS BACKFLIP!';
+    yuzuStatus.textContent = 'FREEFALLING!';
+
+    // Spawn burst of neon sparks beneath the board
+    const rigRect = masterBoardGroup.getBoundingClientRect();
+    const cx = rigRect.left + rigRect.width * 0.5;
+    const cy = rigRect.top + rigRect.height * 0.78;
+    const theme = themes[currentThemeIdx];
+
+    for (let i = 0; i < 28; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd = 2 + Math.random() * 7;
+      particles.push({
+        x: cx + (Math.random() - 0.5) * 140,
+        y: cy,
+        vx: Math.cos(angle) * spd - 3 * state.speed,
+        vy: Math.sin(angle) * spd - 1,
+        size: 3 + Math.random() * 5,
+        life: 1,
+        decay: 0.02 + Math.random() * 0.02,
+        color: i % 2 === 0 ? theme.accent1 : theme.accent2,
+        type: 'spark'
+      });
+    }
+  }
+
+  function toggleBoost() {
+    state.isBoosting = !state.isBoosting;
+    state.targetSpeed = state.isBoosting ? 2.35 : 1.0;
+    btnBoost.classList.toggle('active', state.isBoosting);
+    vibeLabel.textContent = state.isBoosting ? 'MAXIMUM CITRUS OVERDRIVE' : 'UNBOTHERED HOVER-CRUISE';
+  }
+
+  function toggleShades() {
+    state.shadesOn = !state.shadesOn;
+    cyberVisor.style.display = state.shadesOn ? 'block' : 'none';
+    btnShades.classList.toggle('active', state.shadesOn);
+  }
+
+  function cycleTheme() {
+    currentThemeIdx = (currentThemeIdx + 1) % themes.length;
+    themeBtnText.textContent = `Theme: ${themes[currentThemeIdx].name}`;
+  }
+
+  // Event Listeners
+  btnTrick.addEventListener('click', (e) => {
+    e.stopPropagation();
+    triggerTrick();
+  });
+
+  btnBoost.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleBoost();
+  });
+
+  btnShades.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleShades();
+  });
+
+  btnTheme.addEventListener('click', (e) => {
+    e.stopPropagation();
+    cycleTheme();
+  });
+
+  sceneContainer.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('#hud-bar')) return;
+    triggerTrick();
+  });
+
+  window.addEventListener('pointermove', (e) => {
+    state.pointerX = (e.clientX / width - 0.5) * 2;
+    state.pointerY = (e.clientY / height - 0.5) * 2;
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowUp') {
+      e.preventDefault();
+      triggerTrick();
+    } else if (e.key === 'b' || e.key === 'B') {
+      toggleBoost();
+    } else if (e.key === 's' || e.key === 'S') {
+      toggleShades();
+    } else if (e.key === 't' || e.key === 'T') {
+      cycleTheme();
+    }
+  });
+
+  window.addEventListener('resize', resize);
+
+  // Draw Background Synthwave / Sunset World
+  function drawBackground(dt, theme) {
+    const horizonY = height * 0.64;
+
+    // 1. Sky Gradient
+    const skyGrad = bgCtx.createLinearGradient(0, 0, 0, horizonY);
+    skyGrad.addColorStop(0, theme.skyTop);
+    skyGrad.addColorStop(0.55, theme.skyMid);
+    skyGrad.addColorStop(1, theme.skyBot);
+    bgCtx.fillStyle = skyGrad;
+    bgCtx.fillRect(0, 0, width, horizonY);
+
+    // 2. Twinkling Stars
+    for (let i = 0; i < stars.length; i++) {
+      const s = stars[i];
+      const alpha = 0.35 + 0.65 * Math.sin(state.time * s.speed + s.phase);
+      bgCtx.fillStyle = `rgba(255, 255, 255, ${alpha.toFixed(2)})`;
+      bgCtx.beginPath();
+      bgCtx.arc(s.x * width, s.y * height, s.r, 0, Math.PI * 2);
+      bgCtx.fill();
+    }
+
+    // 3. Retro Sliced Sun
+    const sunRadius = Math.min(width, height) * 0.21;
+    const sunX = width * 0.5 - state.smoothPointerX * 18;
+    const sunY = horizonY - sunRadius * 0.52 - state.smoothPointerY * 10;
+
+    bgCtx.save();
+    const sunGlow = bgCtx.createRadialGradient(sunX, sunY, sunRadius * 0.2, sunX, sunY, sunRadius * 1.7);
+    sunGlow.addColorStop(0, theme.sunBot + '66');
+    sunGlow.addColorStop(1, 'transparent');
+    bgCtx.fillStyle = sunGlow;
+    bgCtx.beginPath();
+    bgCtx.arc(sunX, sunY, sunRadius * 1.7, 0, Math.PI * 2);
+    bgCtx.fill();
+
+    const sunGrad = bgCtx.createLinearGradient(sunX, sunY - sunRadius, sunX, sunY + sunRadius);
+    sunGrad.addColorStop(0, theme.sunTop);
+    sunGrad.addColorStop(1, theme.sunBot);
+    bgCtx.fillStyle = sunGrad;
+    bgCtx.beginPath();
+    bgCtx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+    bgCtx.fill();
+
+    // Horizontal Sun Scanline Cutouts
+    bgCtx.fillStyle = theme.skyBot;
+    for (let i = 0; i < 7; i++) {
+      const sliceY = sunY + sunRadius * (0.1 + i * 0.13);
+      const sliceH = (i + 1) * 2.1;
+      bgCtx.fillRect(sunX - sunRadius - 2, sliceY, sunRadius * 2 + 4, sliceH);
+    }
+    bgCtx.restore();
+
+    // 4. Distant Cyber City Skyline
+    bgCtx.save();
+    const citySpeed = state.scrollOffset * 0.14;
+    for (let i = 0; i < farBuildings.length; i++) {
+      const b = farBuildings[i];
+      let drawX = ((b.x - citySpeed) % 2200 + 2200) % 2200 - 200;
+      if (drawX > width + 100) continue;
+
+      bgCtx.fillStyle = theme.mtnFar;
+      bgCtx.fillRect(drawX, horizonY - b.h, b.w, b.h + 2);
+
+      if (b.hasSpire) {
+        bgCtx.beginPath();
+        bgCtx.moveTo(drawX + b.w * 0.5, horizonY - b.h - 28);
+        bgCtx.lineTo(drawX + b.w * 0.35, horizonY - b.h);
+        bgCtx.lineTo(drawX + b.w * 0.65, horizonY - b.h);
+        bgCtx.fill();
+      }
+
+      // Tiny lit windows
+      bgCtx.fillStyle = (i % 2 === 0) ? theme.accent1 : theme.accent2;
+      bgCtx.globalAlpha = 0.35;
+      for (let wy = horizonY - b.h + 10; wy < horizonY - 12; wy += 12) {
+        for (let wx = drawX + 6; wx < drawX + b.w - 8; wx += 10) {
+          if (((wx + wy + b.winSeed) % 5) < 2) {
+            bgCtx.fillRect(wx, wy, 4, 6);
+          }
+        }
+      }
+      bgCtx.globalAlpha = 1;
+    }
+    bgCtx.restore();
+
+    // 5. Layered Mountain Ridge
+    bgCtx.save();
+    const mtnSpeed = state.scrollOffset * 0.32;
+    bgCtx.fillStyle = theme.mtnNear;
+    bgCtx.beginPath();
+    bgCtx.moveTo(-200, horizonY + 4);
+    for (let i = 0; i < mountains.length; i++) {
+      const m = mountains[i];
+      let mx = ((m.x - mtnSpeed) % 2000 + 2000) % 2000 - 200;
+      bgCtx.lineTo(mx, horizonY);
+      bgCtx.lineTo(mx + m.w * 0.5, horizonY - m.h);
+      bgCtx.lineTo(mx + m.w, horizonY);
+    }
+    bgCtx.lineTo(width + 200, horizonY + 4);
+    bgCtx.closePath();
+    bgCtx.fill();
+    bgCtx.restore();
+
+    // 6. Ground Plane & Moving Perspective Grid
+    const groundGrad = bgCtx.createLinearGradient(0, horizonY, 0, height);
+    groundGrad.addColorStop(0, theme.groundTop);
+    groundGrad.addColorStop(1, theme.groundBot);
+    bgCtx.fillStyle = groundGrad;
+    bgCtx.fillRect(0, horizonY, width, height - horizonY);
+
+    // Horizon Glow Strip
+    const hGlow = bgCtx.createLinearGradient(0, horizonY - 10, 0, horizonY + 24);
+    hGlow.addColorStop(0, 'transparent');
+    hGlow.addColorStop(0.45, theme.accent2);
+    hGlow.addColorStop(1, 'transparent');
+    bgCtx.fillStyle = hGlow;
+    bgCtx.fillRect(0, horizonY - 10, width, 34);
+
+    // Perspective Grid Lines
+    bgCtx.save();
+    bgCtx.strokeStyle = theme.gridColor;
+    bgCtx.lineWidth = 1.5;
+
+    const gridSpacing = 90;
+    const gridOffset = (state.scrollOffset * 1.45) % gridSpacing;
+    const centerX = width * 0.5;
+    const groundH = height - horizonY;
+
+    bgCtx.beginPath();
+    for (let x = -width * 1.5 - gridOffset; x < width * 2.5; x += gridSpacing) {
+      const topX = centerX + (x - centerX) * 0.18;
+      bgCtx.moveTo(topX, horizonY);
+      bgCtx.lineTo(x, height);
+    }
+
+    // Horizontal perspective rungs
+    for (let i = 1; i <= 11; i++) {
+      const norm = Math.pow(i / 11, 2.1);
+      const y = horizonY + norm * groundH;
+      bgCtx.moveTo(0, y);
+      bgCtx.lineTo(width, y);
+    }
+    bgCtx.stroke();
+    bgCtx.restore();
+
+    // 7. Silhouette Palm Trees Passing By
+    const palmSpeed = state.scrollOffset * 0.65;
+    for (let i = 0; i < palmTrees.length; i++) {
+      const p = palmTrees[i];
+      let px = ((p.x - palmSpeed) % 2380 + 2380) % 2380 - 200;
+      if (px > width + 150) continue;
+      drawPalmTree(bgCtx, px, horizonY + 12, p.scale, p.lean, theme.mtnNear);
+    }
+
+    // 8. Hoverboard Dynamic Neon Ground Reflection
+    const rigRect = masterBoardGroup.getBoundingClientRect();
+    const boardCenterX = rigRect.left + rigRect.width * 0.5;
+    const shadowY = Math.min(height * 0.82, rigRect.bottom + 14);
+    const jumpFactor = state.isJumping ? (1 - Math.sin(state.jumpProgress * Math.PI) * 0.55) : 1;
+
+    bgCtx.save();
+    const reflGrad = bgCtx.createRadialGradient(
+      boardCenterX, shadowY, 10,
+      boardCenterX, shadowY, 195 * jumpFactor
+    );
+    reflGrad.addColorStop(0, theme.accent1 + '88');
+    reflGrad.addColorStop(0.45, theme.accent2 + '44');
+    reflGrad.addColorStop(1, 'transparent');
+    bgCtx.fillStyle = reflGrad;
+    bgCtx.beginPath();
+    bgCtx.ellipse(boardCenterX, shadowY, 190 * jumpFactor, 26 * jumpFactor, 0, 0, Math.PI * 2);
+    bgCtx.fill();
+
+    // Dark Core Shadow
+    bgCtx.fillStyle = 'rgba(4, 2, 14, 0.65)';
+    bgCtx.beginPath();
+    bgCtx.ellipse(boardCenterX, shadowY, 115 * jumpFactor, 12 * jumpFactor, 0, 0, Math.PI * 2);
+    bgCtx.fill();
+    bgCtx.restore();
+  }
+
+  function drawPalmTree(ctx, x, y, scale, lean, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 8;
+    ctx.lineCap = 'round';
+
+    const topX = 28 * lean * 4;
+    const topY = -128;
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(topX * 0.3, topY * 0.5, topX, topY);
+    ctx.stroke();
+
+    const frondAngles = [-2.5, -1.9, -1.3, -0.5, 0.2, 0.8];
+    for (let a of frondAngles) {
+      ctx.beginPath();
+      ctx.moveTo(topX, topY);
+      const fx = topX + Math.cos(a) * 52;
+      const fy = topY + Math.sin(a) * 36 + 14;
+      ctx.quadraticCurveTo(topX + Math.cos(a) * 26, topY + Math.sin(a) * 18 - 10, fx, fy);
+      ctx.lineWidth = 5;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // Update Capybara & Hoverboard SVG Rig + Particle System
+  function updateAndDrawForeground(dt, theme) {
+    fgCtx.clearRect(0, 0, width, height);
+
+    // Smooth pointer interpolation
+    state.smoothPointerX += (state.pointerX - state.smoothPointerX) * 0.08;
+    state.smoothPointerY += (state.pointerY - state.smoothPointerY) * 0.08;
+    state.speed += (state.targetSpeed - state.speed) * 0.06;
+
+    // Update speedometer readout
+    const displayKmh = Math.round(42 * state.speed + Math.sin(state.time * 3) * 2);
+    speedReadout.textContent = displayKmh;
+
+    // Hover bobbing & pitch
+    const hoverFreq = 3.2 * (0.85 + state.speed * 0.15);
+    const hoverBobY = Math.sin(state.time * hoverFreq) * 11;
+    const hoverPitch = Math.cos(state.time * hoverFreq) * 2.2
+                     + state.smoothPointerX * 7
+                     + (state.isBoosting ? -4.5 : 0);
+
+    let jumpOffsetY = 0;
+    let trickRotation = 0;
+    let bodySquashY = 1;
+
+    if (state.isJumping) {
+      state.jumpProgress += dt * 1.45;
+      if (state.jumpProgress >= 1) {
+        state.isJumping = false;
+        state.jumpProgress = 0;
+        vibeLabel.textContent = state.isBoosting ? 'MAXIMUM CITRUS OVERDRIVE' : 'UNBOTHERED HOVER-CRUISE';
+        yuzuStatus.textContent = 'YUZU STABLE';
+      } else {
+        const p = state.jumpProgress;
+        jumpOffsetY = -Math.sin(p * Math.PI) * 135;
+        if (state.trickType === 0) {
+          trickRotation = p * 360;
+        } else {
+          trickRotation = -p * 360;
+        }
+        // Subtle squash at takeoff and landing
+        if (p < 0.12) {
+          bodySquashY = 0.92;
+        } else if (p > 0.88) {
+          bodySquashY = 0.94;
+        }
+      }
+    }
+
+    const totalX = state.smoothPointerX * 32;
+    const totalY = hoverBobY + jumpOffsetY + state.smoothPointerY * 18;
+    const totalRot = hoverPitch + trickRotation;
+
+    masterBoardGroup.setAttribute(
+      'transform',
+      `translate(${totalX.toFixed(2)}, ${totalY.toFixed(2)}) rotate(${totalRot.toFixed(2)} 300 320)`
+    );
+
+    // Subtle secondary knee/body breathing bounce
+    const bodyBounceY = Math.sin(state.time * hoverFreq - 0.5) * 3.2;
+    capyBodyGroup.setAttribute(
+      'transform',
+      `translate(0, ${bodyBounceY.toFixed(2)}) scale(1, ${bodySquashY.toFixed(3)})`
+    );
+
+    // Subtle head counter-stabilization (Capybara keeps its head remarkably level)
+    const headPitch = -hoverPitch * 0.35 + Math.sin(state.time * hoverFreq - 0.9) * 1.4;
+    capyHeadGroup.setAttribute(
+      'transform',
+      `rotate(${headPitch.toFixed(2)} 390 165)`
+    );
+
+    // Yuzu Physics on Head
+    if (state.isJumping) {
+      const yuzuArc = -Math.sin(state.jumpProgress * Math.PI) * 38;
+      const yuzuSpin = state.jumpProgress * 360;
+      yuzuGroup.setAttribute(
+        'transform',
+        `translate(384, ${(98 + yuzuArc).toFixed(2)}) rotate(${yuzuSpin.toFixed(1)} 0 -11)`
+      );
+    } else {
+      const yuzuBob = Math.max(0, Math.sin(state.time * hoverFreq - 1.1)) * -4.5;
+      const yuzuRock = Math.cos(state.time * hoverFreq) * 4;
+      yuzuGroup.setAttribute(
+        'transform',
+        `translate(384, ${(98 + yuzuBob).toFixed(2)}) rotate(${yuzuRock.toFixed(1)} 0 -4)`
+      );
+    }
+
+    // Dynamic Wind-Blown Scarf Wave
+    const wTime = state.time * (8 + state.speed * 5);
+    const sY1 = 204 + Math.sin(wTime) * 12;
+    const sY2 = 190 + Math.cos(wTime - 1.2) * 18;
+    const sY3 = 194 + Math.sin(wTime - 2.4) * (24 * state.speed);
+    const sX3 = 52 - (state.speed - 1) * 24;
+
+    const scarfPath = `M 318,198 Q 225,${sY1.toFixed(1)} 140,${sY2.toFixed(1)} T ${sX3.toFixed(1)},${sY3.toFixed(1)}`;
+    scarfTailMain.setAttribute('d', scarfPath);
+    scarfTailStripe.setAttribute('d', scarfPath);
+    scarfTailShadow.setAttribute(
+      'd',
+      `M 318,203 Q 225,${(sY1 + 6).toFixed(1)} 140,${(sY2 + 6).toFixed(1)} T ${sX3.toFixed(1)},${(sY3 + 6).toFixed(1)}`
+    );
+
+    // Thruster Plume Pulsing
+    const thrustPulse = 0.85 + Math.sin(state.time * 28) * 0.18 + (state.speed - 1) * 0.35;
+    rearPlumeOuter.setAttribute('rx', (44 * thrustPulse).toFixed(1));
+    rearPlumeCore.setAttribute('rx', (27 * thrustPulse).toFixed(1));
+    frontPlumeOuter.setAttribute('rx', (44 * thrustPulse).toFixed(1));
+    frontPlumeCore.setAttribute('rx', (27 * thrustPulse).toFixed(1));
+
+    // Spawn Exhaust Trail Particles from Hoverboard Rear & Thrusters
+    const rigRect = masterBoardGroup.getBoundingClientRect();
+    const tailX = rigRect.left + rigRect.width * 0.19;
+    const tailY = rigRect.top + rigRect.height * 0.72;
+
+    if (Math.random() < 0.85) {
+      particles.push({
+        x: tailX + (Math.random() - 0.5) * 14,
+        y: tailY + (Math.random() - 0.5) * 12,
+        vx: -(4.5 + Math.random() * 4) * state.speed,
+        vy: (Math.random() - 0.5) * 1.4,
+        size: 6 + Math.random() * 10,
+        life: 1,
+        decay: 0.022 + Math.random() * 0.015,
+        color: Math.random() > 0.45 ? theme.accent1 : theme.accent2,
+        type: 'ring'
+      });
+    }
+
+    // Update & Render Foreground Particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const pt = particles[i];
+      pt.x += pt.vx;
+      pt.y += pt.vy;
+      pt.life -= pt.decay;
+
+      if (pt.life <= 0) {
+        particles.splice(i, 1);
+        continue;
+      }
+
+      fgCtx.save();
+      fgCtx.globalAlpha = Math.max(0, pt.life);
+      if (pt.type === 'ring') {
+        fgCtx.strokeStyle = pt.color;
+        fgCtx.lineWidth = 2.2;
+        fgCtx.beginPath();
+        fgCtx.ellipse(
+          pt.x,
+          pt.y,
+          pt.size * (1.5 - pt.life * 0.5),
+          pt.size * 0.45 * (1.5 - pt.life * 0.5),
+          0, 0, Math.PI * 2
+        );
+        fgCtx.stroke();
+      } else {
+        fgCtx.fillStyle = pt.color;
+        fgCtx.beginPath();
+        fgCtx.arc(pt.x, pt.y, pt.size * pt.life, 0, Math.PI * 2);
+        fgCtx.fill();
+      }
+      fgCtx.restore();
+    }
+
+    // High-Speed Wind Streaks
+    fgCtx.save();
+    for (let i = 0; i < speedLines.length; i++) {
+      const sl = speedLines[i];
+      sl.x -= sl.speed * state.speed;
+      if (sl.x + sl.len < 0) {
+        sl.x = width + Math.random() * 200;
+        sl.y = Math.random() * height * 0.88;
+      }
+
+      const boostAlpha = state.isBoosting ? sl.alpha * 1.9 : sl.alpha * 0.65;
+      const grad = fgCtx.createLinearGradient(sl.x, sl.y, sl.x + sl.len * state.speed, sl.y);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+      grad.addColorStop(0.5, `rgba(0, 243, 255, ${boostAlpha.toFixed(2)})`);
+      grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+      fgCtx.strokeStyle = grad;
+      fgCtx.lineWidth = state.isBoosting ? 2.2 : 1.2;
+      fgCtx.beginPath();
+      fgCtx.moveTo(sl.x, sl.y);
+      fgCtx.lineTo(sl.x + sl.len * state.speed, sl.y);
+      fgCtx.stroke();
+    }
+    fgCtx.restore();
+  }
+
+  let lastTime = performance.now();
+
+  function animate(now) {
+    const dt = Math.min((now - lastTime) / 1000, 0.05);
+    lastTime = now;
+
+    state.time += dt;
+    state.scrollOffset += dt * 240 * state.speed;
+
+    const theme = themes[currentThemeIdx];
+    drawBackground(dt, theme);
+    updateAndDrawForeground(dt, theme);
+
+    requestAnimationFrame(animate);
+  }
+
+  resize();
+  initWorld();
+  requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
