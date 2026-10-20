@@ -341,6 +341,10 @@ test("run pages and challenge evidence exist without a SPA fallback", async (t) 
     await readFile(join(out, "gallery/compare/index.html"), "utf8"),
     /<meta name="description" content="Compare two AI model attempts side by side across equal 4:3 viewports, recorded harness settings, token and timing metrics, and generation provenance\.">/,
   );
+  assert.match(
+    await readFile(join(out, "gallery/compare/index.html"), "utf8"),
+    /toolname="compare_runs"/,
+  );
   assert.match(notFound, /<body data-page="not-found">/);
   assert.match(notFound, /<h1>Run not found<\/h1>/);
   assert.match(notFound, /class="button" href="\/">Return to the gallery<\/a>/);

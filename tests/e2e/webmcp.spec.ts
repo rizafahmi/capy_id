@@ -128,6 +128,30 @@ test.describe("native WebMCP gallery tools", () => {
     await expect(page.locator("[data-card]:visible")).toHaveCount(1);
   });
 
+  test("compares two runs via compare_runs on the comparison page", async ({ page }) => {
+    await page.goto("/compare/");
+    const tools = await page.webmcp.tools();
+    expect(tools).toHaveLength(1);
+    expect(tools[0]).toMatchObject({
+      name: "compare_runs",
+      description: expect.stringContaining("Compare two published AI model attempts"),
+    });
+    const result = await page.webmcp.callTool(
+      "compare_runs",
+      { left: "fixture-animation", right: "fixture-unknown" },
+      { timeout: 5000 },
+    );
+    expect(result).toMatchObject({
+      status: "Two attempts selected. Previews do not start automatically.",
+      compared: [
+        { id: "fixture-animation", name: "animation" },
+        { id: "fixture-unknown", name: "unknown" },
+      ],
+    });
+    await expect(page).toHaveURL("/compare/?left=fixture-animation&right=fixture-unknown");
+    await expect(page.locator(".compare-panel")).toHaveCount(2);
+  });
+
   test("does not register an unusable tool without JavaScript", async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     try {

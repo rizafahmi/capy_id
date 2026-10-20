@@ -22,12 +22,28 @@ const { runs, fixtures } = __CAPYBOARD_ASTRO_PAGES__.comparison;
       Inspect the differences. No scores, no automatic winners.
     </p>
   </header>
-  <form id="compare-form" action="/compare/" method="get" autocomplete="off">
+  <form
+    id="compare-form"
+    action="/compare/"
+    method="get"
+    autocomplete="off"
+    toolname="compare_runs"
+    tooldescription="Compare two published AI model attempts side by side across equal 4:3 viewports, recorded harness settings, token and timing metrics, and generation provenance."
+    toolautosubmit
+  >
     <div class="compare-selectors">
       {["left", "right"].map((side) => (
         <label>
           {side === "left" ? "Left run" : "Right run"}
-          <select name={side} required>
+          <select
+            name={side}
+            required
+            toolparamdescription={
+              side === "left"
+                ? "Select the first published run ID to compare on the left."
+                : "Select a distinct second published run ID to compare on the right."
+            }
+          >
             <option value="">Select a run</option>
             {runs.map((run) => (
               <option value={run.id}>

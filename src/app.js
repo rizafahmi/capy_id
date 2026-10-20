@@ -821,17 +821,39 @@ async function enableComparison() {
       "",
       `/compare/?${new URLSearchParams({ left: left.value, right: right.value })}`,
     );
-    render();
+    return render();
   };
   const loadUrl = () => {
     const params = new URLSearchParams(location.search);
     left.value = params.get("left") ?? "";
     right.value = params.get("right") ?? "";
-    render();
+    return render();
   };
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    sync();
+    const pending = sync();
+    if (event.agentInvoked && typeof event.respondWith === "function") {
+      event.respondWith(
+        pending.then(() => {
+          if (!currentComparison) return { status: status.textContent, compared: null };
+          const [a, b] = currentComparison;
+          return {
+            status: status.textContent,
+            url: location.href,
+            compared: [a, b].map((entry) => ({
+              id: entry.run.id,
+              name: entry.run.model.display_name,
+              provider: entry.run.provider,
+              mode: entry.run.generation.mode,
+              harness: entry.run.generation.harness?.name ?? "Unknown",
+              effort: entry.run.generation.harness?.effort ?? "Unknown",
+              metrics: Object.fromEntries(entry.measurementRows),
+              url: `${location.origin}/runs/${entry.run.id}/`,
+            })),
+          };
+        }),
+      );
+    }
   });
   left.addEventListener("change", sync);
   right.addEventListener("change", sync);
