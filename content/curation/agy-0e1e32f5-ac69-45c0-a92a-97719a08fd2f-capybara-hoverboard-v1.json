@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "run_id": "agy-0e1e32f5-ac69-45c0-a92a-97719a08fd2f-capybara-hoverboard-v1",
+  "published_at": "2026-10-20T15:53:48Z",
+  "visible": true,
+  "preview_allowed": true,
+  "preview_disabled_reason": null,
+  "observations": [
+    "At low effort, the model emitted 0 thinking tokens (~3.3s time-to-first-token) and streamed a 1,338-line (50,658-byte) raw HTML document in a single zero-tool turn; elapsed time was 208s vs. 193s at medium effort because it generated 1,451 more HTML tokens (20,243 vs. 18,792).",
+    "Simplifies the 3-layer dual-canvas architecture used in medium and high effort to a 2-layer stack (a single background canvas for both synthwave scenery and particles behind the articulated inline SVG rig) using fixed pixel offsets rather than getBoundingClientRect() coordinate queries.",
+    "Uses velocity-and-gravity jump integration, damped Hooke's-law spring physics on the head-balanced yuzu, dual phase-offset anti-gravity SVG pulse rings, and forehead-mounted cyber-goggles that smoothly slide and rotate over the eye when Turbo mode is toggled."
+  ],
+  "series_publication_complete": true,
+  "series_incomplete_reason": null,
+  "thumbnail": {
+    "path": "thumbnails/agy-0e1e32f5-ac69-45c0-a92a-97719a08fd2f-capybara-hoverboard-v1.png",
+    "viewport": {
+      "width": 640,
+      "height": 480
+    },
+    "capture_delay_ms": 1000,
+    "browser_version": "156.0.8078.4",
+    "preview_policy_version": "restricted-html-v1"
+  }
+}
